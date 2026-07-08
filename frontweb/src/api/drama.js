@@ -22,6 +22,10 @@ export const dramaAPI = {
   saveCharacters(id, data) {
     return request.put(`/dramas/${id}/characters`, data)
   },
+  /** AI 一键推荐配音：为该剧集下所有角色（或仅未分配的）批量匹配语音库中的语音 */
+  recommendVoices(id, onlyUnassigned) {
+    return request.post(`/dramas/${id}/characters/voice-recommend`, { only_unassigned: !!onlyUnassigned })
+  },
   /** 保存梗概/故事摘要到项目（outline），body: { summary, title?, genre?, tags? } */
   saveOutline(id, data) {
     return request.put(`/dramas/${id}/outline`, data)
