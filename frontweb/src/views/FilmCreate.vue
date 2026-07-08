@@ -1236,23 +1236,25 @@
                     </template>
                   </el-dropdown>
                 </div>
-                <UniversalSegmentOmniAtEditor
-                  v-if="!generatingUniversalSegmentIds.has(sb.id)"
-                  v-model="sbUniversalSegmentText[sb.id]"
-                  :slots="getSbUniversalOmniRefSlots(sb)"
-                  class="sb-universal-textarea"
-                  @blur="() => onSaveUniversalSegmentField(sb)"
-                />
-                <el-input
-                  v-else
-                  v-model="sbUniversalSegmentText[sb.id]"
-                  type="textarea"
-                  :rows="10"
-                  :autosize="{ minRows: 10, maxRows: 22 }"
-                  placeholder="例如：@图片1 为夜景街道，@图片2 从餐厅冲出停在光斑里，低头操作手机…"
-                  class="sb-universal-textarea"
-                  @blur="() => onSaveUniversalSegmentField(sb)"
-                />
+                <div class="sb-universal-editor-slot">
+                  <UniversalSegmentOmniAtEditor
+                    v-show="!generatingUniversalSegmentIds.has(sb.id)"
+                    v-model="sbUniversalSegmentText[sb.id]"
+                    :slots="getSbUniversalOmniRefSlots(sb)"
+                    class="sb-universal-textarea"
+                    @blur="() => onSaveUniversalSegmentField(sb)"
+                  />
+                  <el-input
+                    v-show="generatingUniversalSegmentIds.has(sb.id)"
+                    v-model="sbUniversalSegmentText[sb.id]"
+                    type="textarea"
+                    :rows="10"
+                    :autosize="{ minRows: 10, maxRows: 22 }"
+                    placeholder="例如：@图片1 为夜景街道，@图片2 从餐厅冲出停在光斑里，低头操作手机…"
+                    class="sb-universal-textarea"
+                    @blur="() => onSaveUniversalSegmentField(sb)"
+                  />
+                </div>
               </template>
               <template v-else>
               <div
@@ -9923,6 +9925,16 @@ html.light .sb-universal-tooltip {
 }
 html.light .sb-universal-tooltip strong {
   color: #020617;
+}
+.sb-universal-editor-slot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sb-universal-editor-slot > .sb-universal-textarea {
+  flex: 1;
+  min-height: 0;
 }
 .sb-universal-textarea {
   flex: 1;
