@@ -59,5 +59,8 @@ export const characterAPI = {
   },
   sd2VoiceRefresh(characterId) {
     return request.post(`/characters/${characterId}/sd2-voice-refresh`, {})
+  },
+  recommendVoice(characterId) {
+    return request.post(`/characters/${characterId}/voice-recommend`, {})
   }
 }

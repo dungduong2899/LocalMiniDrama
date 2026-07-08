@@ -259,6 +259,11 @@
         </template>
         <!-- 本剧制作角色 -->
         <template v-if="activeResTab === 'drama-char'">
+          <div class="drama-char-toolbar">
+            <el-button type="primary" plain :loading="voiceRecommending" @click="doRecommendVoices">
+              <el-icon><Microphone /></el-icon>AI 一键推荐配音
+            </el-button>
+          </div>
           <div class="drama-res-list">
             <template v-if="drama?.characters?.length">
               <div v-for="item in drama.characters" :key="item.id" class="drama-res-item">
@@ -271,9 +276,13 @@
                   <div class="drama-res-meta" v-if="item.role">
                     <el-tag size="small" type="info">{{ item.role === 'main' ? '主角' : item.role === 'supporting' ? '配角' : item.role }}</el-tag>
                   </div>
+                  <div class="drama-res-meta" v-if="voiceNameById[item.voice_id]">
+                    <el-tag size="small" type="success">🎤 {{ voiceNameById[item.voice_id] }}</el-tag>
+                  </div>
                   <div class="drama-res-desc">{{ (item.description || item.prompt || '').slice(0, 80) }}</div>
                   <div class="drama-res-actions">
                     <el-button size="small" @click="openEditDramaChar(item)">编辑</el-button>
+                    <el-button size="small" :loading="regeneratingVoiceId === item.id" @click="doRegenerateVoice(item)">🔄 重新推荐</el-button>
                   </div>
                 </div>
               </div>
@@ -563,7 +572,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, VideoPlay, Plus, Delete, Sunny, Moon, PictureFilled, Grid } from '@element-plus/icons-vue'
+import { ArrowLeft, VideoPlay, Plus, Delete, Sunny, Moon, PictureFilled, Grid, Microphone } from '@element-plus/icons-vue'
 import EpisodeBatchImportDialog from '@/components/EpisodeBatchImportDialog.vue'
 import { useTheme } from '@/composables/useTheme'
 import { dramaAPI } from '@/api/drama'
@@ -574,6 +583,7 @@ import { uploadAPI } from '@/api/upload'
 import { imagesAPI } from '@/api/images'
 import { taskAPI } from '@/api/task'
 import { characterAPI } from '@/api/characters'
+import { voiceLibraryAPI } from '@/api/voiceLibrary'
 import { sceneAPI } from '@/api/scenes'
 import { propAPI } from '@/api/props'
 import { stylePromptMetadataForSave, backfillDramaStylePromptMetadataIfNeeded } from '@/constants/styleOptions'
@@ -605,6 +615,10 @@ const editDramaPropVisible = ref(false)
 const editDramaPropForm    = ref(null)
 const editDramaPropSaving  = ref(false)
 const episodeBatchImportDialogRef = ref(null)
+
+const voiceRecommending = ref(false)
+const regeneratingVoiceId = ref(null)
+const voiceNameById = ref({})
 
 // 共享：上传图片到库条目
 async function doUploadLibImg(event, form, api, reloadFn) {
@@ -658,6 +672,46 @@ async function doGenerateLibImg(form, prompt, api, reloadFn) {
 }
 
 // ── 制作资源编辑函数 ────────────────────────────────────────────────────────
+
+async function loadVoiceNames() {
+  try {
+    const data = await voiceLibraryAPI.list({})
+    const map = {}
+    for (const v of (data?.items || [])) map[v.id] = v.name
+    voiceNameById.value = map
+  } catch (_) {
+    // 语音库加载失败不阻塞角色页面，静默忽略
+  }
+}
+
+async function doRecommendVoices() {
+  voiceRecommending.value = true
+  try {
+    const data = await dramaAPI.recommendVoices(dramaId, false)
+    const items = data?.items || []
+    ElMessage.success(`已为 ${items.length} 个角色推荐配音`)
+    await loadVoiceNames()
+    await loadDrama()
+  } catch (e) {
+    ElMessage.error(e.message || '推荐配音失败')
+  } finally {
+    voiceRecommending.value = false
+  }
+}
+
+async function doRegenerateVoice(item) {
+  regeneratingVoiceId.value = item.id
+  try {
+    await characterAPI.recommendVoice(item.id)
+    ElMessage.success('已重新推荐配音')
+    await loadVoiceNames()
+    await loadDrama()
+  } catch (e) {
+    ElMessage.error(e.message || '重新推荐失败')
+  } finally {
+    regeneratingVoiceId.value = null
+  }
+}
 
 function openEditDramaChar(item) {
   editDramaCharForm.value = {
@@ -1206,6 +1260,7 @@ watch(activeResTab, (tab) => {
 onMounted(() => {
   loadDrama()
   loadCharList()
+  loadVoiceNames()
   if (route.query.importBatch) {
     setTimeout(() => {
       episodeBatchImportDialogRef.value?.openDialog?.()
@@ -1499,6 +1554,7 @@ html.light .res-tab--drama.active { color: #7c3aed; }
 html.light .res-tab--drama.active::after { background: #7c3aed; }
 
 /* 本剧制作资源列表 */
+.drama-char-toolbar { margin-bottom: 12px; }
 .drama-res-list { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 8px; }
 .drama-res-item { display: flex; gap: 12px; width: calc(50% - 6px); background: var(--bg-inner, #1c1c1e); border: 1px solid var(--border-color, #27272a); border-radius: 8px; padding: 10px; box-sizing: border-box; }
 .drama-res-cover { width: 72px; height: 72px; border-radius: 6px; overflow: hidden; flex-shrink: 0; cursor: zoom-in; background: var(--bg-page, #0f0f12); display: flex; align-items: center; justify-content: center; }

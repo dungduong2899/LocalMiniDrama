@@ -44,6 +44,12 @@ const router = createRouter({
       name: 'media-library',
       component: () => import('@/views/MediaLibrary.vue'),
       meta: { title: '媒体素材库' }
+    },
+    {
+      path: '/voice-library',
+      name: 'voice-library',
+      component: () => import('@/views/VoiceLibrary.vue'),
+      meta: { title: '配音管理' }
     }
   ]
 })
