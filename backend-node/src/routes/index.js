@@ -22,6 +22,7 @@ const audioRoutes = require('./audio');
 const promptOverridesRoutes = require('./promptOverrides');
 const sceneModelMapRoutes = require('./sceneModelMap');
 const voiceLibraryRoutes = require('./voiceLibrary');
+const voiceMatchRoutes = require('./voiceMatch');
 
 function setupRouter(cfg, db, log) {
   const r = express.Router();
@@ -33,6 +34,7 @@ function setupRouter(cfg, db, log) {
   const stub = stubRoutes(db, cfg, log);
   const sceneModelMap = sceneModelMapRoutes(db, log);
   const voiceLibrary = voiceLibraryRoutes(db, cfg, log);
+  const voiceMatch = voiceMatchRoutes(db, log);
 
   const uploadService = require('../services/uploadService');
   const charLibrary = characterLibraryRoutes(db, cfg, log);
@@ -307,6 +309,10 @@ function setupRouter(cfg, db, log) {
   r.post('/voice-library/design/save', voiceLibrary.designSave);
   r.post('/voice-library/:id/test', voiceLibrary.test);
   r.delete('/voice-library/:id', voiceLibrary.delete);
+
+  // ---------- voice-recommend ----------
+  r.post('/dramas/:dramaId/characters/voice-recommend', voiceMatch.recommendForDrama);
+  r.post('/characters/:id/voice-recommend', voiceMatch.regenerateForCharacter);
 
   // ---------- settings ----------
   r.get('/settings/language', settings.getLanguage);
