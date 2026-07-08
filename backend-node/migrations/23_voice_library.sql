@@ -1,3 +1,4 @@
+-- 配音库表：存储可复用的语音克隆参考音频（ElevenLabs 导入 / OmniVoice 语音设计），characters.voice_id 指向此表
 CREATE TABLE IF NOT EXISTS voice_library (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL DEFAULT '',
