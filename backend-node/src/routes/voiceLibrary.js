@@ -74,6 +74,7 @@ function routes(db, cfg, log) {
           if (out.error === 'in_use') {
             return response.error(res, 409, 'IN_USE', `该语音正被 ${out.usageCount} 个角色使用，确认要删除吗？`, { usage_count: out.usageCount });
           }
+          return response.internalError(res, `删除失败: ${out.error}`);
         }
         response.success(res, { message: '删除成功' });
       } catch (err) {
