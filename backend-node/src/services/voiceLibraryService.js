@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { randomUUID } = require('crypto');
+const { spawnSync } = require('child_process');
+const { getFfmpegPath } = require('../utils/ffmpegPath');
 const omnivoiceService = require('./omnivoiceService');
 const elevenlabsService = require('./elevenlabsService');
 
@@ -106,6 +108,78 @@ function voiceLibraryTmpDir(storageBase) {
   const dir = path.join(storageBase, 'voice_library', 'tmp');
   ensureDir(dir);
   return dir;
+}
+
+function voiceLibraryMp3CacheDir(storageBase) {
+  const dir = path.join(storageBase, 'voice_library', 'mp3-cache');
+  ensureDir(dir);
+  return dir;
+}
+
+// Returns absolute path to an MP3 version of the voice's ref_audio.
+// If ref_audio is already .mp3 → just returns the original.
+// Otherwise runs ffmpeg to encode a 128kbps MP3, caches on disk keyed by mtime.
+function ensureMp3(db, log, storageBase, voiceId) {
+  const voice = getVoice(db, voiceId);
+  if (!voice) throw new Error('语音不存在');
+  const srcAbs = path.join(storageBase, voice.ref_audio_path);
+  if (!fs.existsSync(srcAbs)) throw new Error('参考音频文件不存在');
+  if (/\.mp3$/i.test(srcAbs)) {
+    return { path: srcAbs, filename: `${sanitizeName(voice.name)}.mp3`, contentType: 'audio/mpeg' };
+  }
+  const st = fs.statSync(srcAbs);
+  const cacheKey = `${voice.id}_${st.mtimeMs.toString(36)}`;
+  const cacheAbs = path.join(voiceLibraryMp3CacheDir(storageBase), `${cacheKey}.mp3`);
+  if (!fs.existsSync(cacheAbs)) {
+    const bin = getFfmpegPath();
+    const r = spawnSync(
+      bin,
+      ['-y', '-loglevel', 'error', '-i', srcAbs, '-vn', '-codec:a', 'libmp3lame', '-b:a', '128k', cacheAbs],
+      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }
+    );
+    if (r.status !== 0) {
+      const err = (r.stderr || '').trim().split('\n').slice(-3).join(' | ') || `ffmpeg exit ${r.status}`;
+      throw new Error(`MP3 转码失败：${err}`);
+    }
+    log.info('voice-library MP3 encoded', { voice_id: voice.id, src: voice.ref_audio_path, cache: path.basename(cacheAbs) });
+  }
+  return { path: cacheAbs, filename: `${sanitizeName(voice.name)}.mp3`, contentType: 'audio/mpeg' };
+}
+
+// Same idea but for an ad-hoc file inside data/storage (e.g. tmp preview from test bench).
+// Path must be relative to storageBase and inside voice_library/ to avoid arbitrary reads.
+function ensureMp3FromRelativePath(log, storageBase, relPath, baseName) {
+  if (!relPath) throw new Error('relative path 不能为空');
+  const normalized = relPath.replace(/\\/g, '/').replace(/^\/+/, '');
+  const scopeRoot = path.resolve(storageBase, 'voice_library');
+  const srcAbs = path.resolve(storageBase, normalized);
+  if (!srcAbs.startsWith(scopeRoot + path.sep)) throw new Error('路径越界');
+  if (!fs.existsSync(srcAbs)) throw new Error('音频文件不存在');
+  if (/\.mp3$/i.test(srcAbs)) {
+    return { path: srcAbs, filename: `${sanitizeName(baseName || 'voice')}.mp3`, contentType: 'audio/mpeg' };
+  }
+  const st = fs.statSync(srcAbs);
+  const hashLike = path.basename(srcAbs, path.extname(srcAbs));
+  const cacheKey = `adhoc_${hashLike}_${st.mtimeMs.toString(36)}`;
+  const cacheAbs = path.join(voiceLibraryMp3CacheDir(storageBase), `${cacheKey}.mp3`);
+  if (!fs.existsSync(cacheAbs)) {
+    const bin = getFfmpegPath();
+    const r = spawnSync(
+      bin,
+      ['-y', '-loglevel', 'error', '-i', srcAbs, '-vn', '-codec:a', 'libmp3lame', '-b:a', '128k', cacheAbs],
+      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }
+    );
+    if (r.status !== 0) {
+      const err = (r.stderr || '').trim().split('\n').slice(-3).join(' | ') || `ffmpeg exit ${r.status}`;
+      throw new Error(`MP3 转码失败：${err}`);
+    }
+    log.info('voice-library MP3 encoded (adhoc)', { src: normalized, cache: path.basename(cacheAbs) });
+  }
+  return { path: cacheAbs, filename: `${sanitizeName(baseName || 'voice')}.mp3`, contentType: 'audio/mpeg' };
+}
+
+function sanitizeName(s) {
+  return String(s || 'voice').replace(/[^\w一-龥.-]+/g, '_').slice(0, 80) || 'voice';
 }
 
 function insertVoice(db, log, fields) {
@@ -232,5 +306,7 @@ module.exports = {
   getDefaultNarrationVoice,
   setDefaultNarrationVoice,
   clearDefaultNarrationVoice,
+  ensureMp3,
+  ensureMp3FromRelativePath,
   DEFAULT_DESIGN_SAMPLE_TEXT,
 };

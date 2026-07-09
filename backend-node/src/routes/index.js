@@ -306,10 +306,12 @@ function setupRouter(cfg, db, log) {
   r.get('/voice-library', voiceLibrary.list);
   r.get('/voice-library/default-narration', voiceLibrary.getDefaultNarration);
   r.put('/voice-library/default-narration', voiceLibrary.setDefaultNarration);
+  r.get('/voice-library/download-mp3', voiceLibrary.downloadMp3Adhoc);
   r.post('/voice-library/import-elevenlabs', voiceLibrary.importElevenLabs);
   r.post('/voice-library/design/preview', voiceLibrary.designPreview);
   r.post('/voice-library/design/save', voiceLibrary.designSave);
   r.post('/voice-library/:id/test', voiceLibrary.test);
+  r.get('/voice-library/:id/download-mp3', voiceLibrary.downloadMp3);
   r.delete('/voice-library/:id', voiceLibrary.delete);
 
   // ---------- voice-recommend ----------

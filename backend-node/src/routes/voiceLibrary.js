@@ -65,6 +65,30 @@ function routes(db, cfg, log) {
         response.badRequest(res, err.message);
       }
     },
+    downloadMp3: (req, res) => {
+      try {
+        const info = voiceLibraryService.ensureMp3(db, log, getStoragePath(), req.params.id);
+        res.download(info.path, info.filename, (err) => {
+          if (err) log.warn('voice-library download-mp3 stream', { error: err.message });
+        });
+      } catch (err) {
+        log.error('voice-library download-mp3', { error: err.message });
+        response.badRequest(res, err.message);
+      }
+    },
+    downloadMp3Adhoc: (req, res) => {
+      try {
+        const relPath = req.query.path || '';
+        const baseName = req.query.name || 'voice';
+        const info = voiceLibraryService.ensureMp3FromRelativePath(log, getStoragePath(), relPath, baseName);
+        res.download(info.path, info.filename, (err) => {
+          if (err) log.warn('voice-library download-mp3-adhoc stream', { error: err.message });
+        });
+      } catch (err) {
+        log.error('voice-library download-mp3-adhoc', { error: err.message });
+        response.badRequest(res, err.message);
+      }
+    },
     getDefaultNarration: (req, res) => {
       try {
         const voice = voiceLibraryService.getDefaultNarrationVoice(db);

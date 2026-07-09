@@ -40,8 +40,8 @@
               <el-button size="small" @click="playAudio(v.sample_url)">
                 <el-icon><VideoPlay /></el-icon>试听
               </el-button>
-              <el-button size="small" @click="downloadAudio(v.sample_url, v.name)">
-                <el-icon><Download /></el-icon>下载
+              <el-button size="small" @click="downloadVoiceMp3(v)">
+                <el-icon><Download /></el-icon>下载 MP3
               </el-button>
               <el-button
                 size="small"
@@ -96,8 +96,8 @@
           <template v-if="designPreview">
             <el-form-item label="试听结果">
               <el-button @click="playAudio(designPreview.sample_url)"><el-icon><VideoPlay /></el-icon>播放</el-button>
-              <el-button @click="downloadAudio(designPreview.sample_url, designForm.name || 'design_preview')">
-                <el-icon><Download /></el-icon>下载
+              <el-button @click="downloadAdhocMp3(designPreview.sample_url, designForm.name || 'design_preview')">
+                <el-icon><Download /></el-icon>下载 MP3
               </el-button>
             </el-form-item>
             <el-form-item label="名称"><el-input v-model="designForm.name" placeholder="展示名" /></el-form-item>
@@ -216,19 +216,26 @@ function sanitizeFilename(s) {
   return String(s || 'voice').replace(/[^\w一-龥.-]+/g, '_').slice(0, 80) || 'voice'
 }
 
-async function downloadAudio(url, filename) {
-  if (!url) { ElMessage.warning('无音频可下载'); return }
+// Downloads a URL as MP3 through the browser. `apiUrl` MUST hit a backend
+// endpoint that returns real MP3 bytes (ffmpeg-transcoded server-side) so the
+// file plays on any device — no client-side ext renaming.
+async function downloadMp3FromApi(apiUrl, filename) {
+  if (!apiUrl) { ElMessage.warning('无音频可下载'); return }
   try {
-    const resp = await fetch(url)
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    const resp = await fetch(apiUrl)
+    if (!resp.ok) {
+      let msg = `HTTP ${resp.status}`
+      try {
+        const errBody = await resp.json()
+        msg = errBody?.error?.message || errBody?.message || msg
+      } catch (_) {}
+      throw new Error(msg)
+    }
     const blob = await resp.blob()
-    // Original file may be .wav (OmniVoice) or .mp3 (ElevenLabs sample); infer from URL.
-    const m = /\.(mp3|wav|m4a|ogg|flac)(?:\?|$)/i.exec(url)
-    const ext = m ? m[1].toLowerCase() : 'mp3'
     const objUrl = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = objUrl
-    a.download = `${sanitizeFilename(filename)}.${ext}`
+    a.download = `${sanitizeFilename(filename)}.mp3`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -236,6 +243,18 @@ async function downloadAudio(url, filename) {
   } catch (e) {
     ElMessage.error(e.message || '下载失败')
   }
+}
+
+function downloadVoiceMp3(voice) {
+  return downloadMp3FromApi(voiceLibraryAPI.downloadLibraryMp3Url(voice.id), voice.name)
+}
+
+function downloadAdhocMp3(sampleUrl, filename) {
+  if (!sampleUrl) { ElMessage.warning('无音频可下载'); return Promise.resolve() }
+  // sample_url looks like "/static/voice_library/tmp/preview_xxxxx.wav"; extract the path after /static/.
+  const m = /\/static\/(.+)$/i.exec(sampleUrl)
+  const relPath = m ? m[1] : sampleUrl.replace(/^\/+/, '')
+  return downloadMp3FromApi(voiceLibraryAPI.downloadAdhocMp3Url(relPath, filename), filename)
 }
 
 async function confirmDeleteVoice(voice) {
@@ -370,7 +389,7 @@ async function downloadTestSample() {
     const voice = voices.value.find((v) => v.id === testVoiceId.value)
     const voiceLabel = voice ? voice.name : `voice-${testVoiceId.value}`
     const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
-    await downloadAudio(testSampleUrl.value, `${voiceLabel}_${stamp}`)
+    await downloadAdhocMp3(testSampleUrl.value, `${voiceLabel}_${stamp}`)
   } finally {
     downloading.value = false
   }
