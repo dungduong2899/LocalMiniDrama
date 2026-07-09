@@ -14,7 +14,7 @@ function apply() {
   localStorage.setItem(STORAGE_KEY, isDark.value ? 'dark' : 'light')
 }
 
-// 初始立即应用一次
+// Apply ngay một lần khi khởi tạo
 apply()
 
 watchEffect(apply)

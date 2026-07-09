@@ -1,29 +1,29 @@
-/** 分镜表导出列：每镜头一行，每个元素类型一列 */
+/** Cột xuất bảng storyboard: mỗi shot một dòng, mỗi loại phần tử một cột */
 const COLUMNS = [
-  '镜头序号',
-  '镜号',
-  '镜头标题',
-  '段幕',
-  '时长(秒)',
-  '景别',
-  '运镜',
-  '场景',
-  '角色',
-  '道具',
-  '地点',
-  '时间',
-  '镜头描述',
-  '对白',
-  '解说旁白',
-  '动作',
-  '结果',
-  '氛围',
-  '布局描述',
-  '首帧提示词',
-  '尾帧提示词',
-  '图片提示词',
-  '视频提示词',
-  '全能片段',
+  'STT shot',
+  'Số shot',
+  'Tiêu đề shot',
+  'Phân đoạn',
+  'Thời lượng (giây)',
+  'Cỡ cảnh',
+  'Chuyển máy',
+  'Scene',
+  'Nhân vật',
+  'Đạo cụ',
+  'Địa điểm',
+  'Thời gian',
+  'Mô tả shot',
+  'Lời thoại',
+  'Narration',
+  'Hành động',
+  'Kết quả',
+  'Không khí',
+  'Mô tả layout',
+  'Prompt frame đầu',
+  'Prompt frame cuối',
+  'Prompt ảnh',
+  'Prompt video',
+  'Universal segment',
 ]
 
 function cellText(v) {
@@ -46,32 +46,32 @@ function escapeCsvCell(s) {
 }
 
 function charBlock(char) {
-  const name = cellText(char.name) || '未命名'
+  const name = cellText(char.name) || 'Chưa đặt tên'
   const parts = [
-    char.appearance && `外貌：${char.appearance}`,
-    char.personality && `性格：${char.personality}`,
-    char.description && `描述：${char.description}`,
-    char.polished_prompt && `提示词：${char.polished_prompt}`,
+    char.appearance && `Ngoại hình: ${char.appearance}`,
+    char.personality && `Tính cách: ${char.personality}`,
+    char.description && `Mô tả: ${char.description}`,
+    char.polished_prompt && `Prompt: ${char.polished_prompt}`,
   ].filter(Boolean)
   return parts.length ? `${name}\n${parts.join('\n')}` : name
 }
 
 function sceneBlock(scene) {
-  const head = cellText(scene.location) || '未命名场景'
+  const head = cellText(scene.location) || 'Scene chưa đặt tên'
   const parts = [
-    scene.time && `时间：${scene.time}`,
-    scene.prompt && `提示词：${scene.prompt}`,
-    scene.polished_prompt && `润色：${scene.polished_prompt}`,
+    scene.time && `Thời gian: ${scene.time}`,
+    scene.prompt && `Prompt: ${scene.prompt}`,
+    scene.polished_prompt && `Đã tinh chỉnh: ${scene.polished_prompt}`,
   ].filter(Boolean)
   return parts.length ? `${head}\n${parts.join('\n')}` : head
 }
 
 function propBlock(prop) {
-  const name = cellText(prop.name) || '未命名'
+  const name = cellText(prop.name) || 'Chưa đặt tên'
   const parts = [
-    prop.type && `类型：${prop.type}`,
-    prop.description && `描述：${prop.description}`,
-    prop.prompt && `提示词：${prop.prompt}`,
+    prop.type && `Loại: ${prop.type}`,
+    prop.description && `Mô tả: ${prop.description}`,
+    prop.prompt && `Prompt: ${prop.prompt}`,
   ].filter(Boolean)
   return parts.length ? `${name}\n${parts.join('\n')}` : name
 }
@@ -97,7 +97,7 @@ function field(getField, sb, key) {
  * @param {Function} [ctx.getFirstFramePrompt] - (sbId) => string
  * @param {Function} [ctx.getLastFramePrompt] - (sbId) => string
  */
-/** 构建分镜表数据：严格一行对应一个分镜 */
+/** Build dữ liệu bảng storyboard: mỗi storyboard đúng một dòng */
 export function buildStoryboardSheetRows(ctx) {
   const {
     storyboards = [],
@@ -117,8 +117,8 @@ export function buildStoryboardSheetRows(ctx) {
     const segmentTitle = cellText(sb.segment_title)
     const segmentIndex = sb.segment_index != null ? Number(sb.segment_index) + 1 : ''
     const segment = segmentTitle
-      ? (segmentIndex ? `第${segmentIndex}幕·${segmentTitle}` : segmentTitle)
-      : (segmentIndex ? `第${segmentIndex}幕` : '')
+      ? (segmentIndex ? `Phân đoạn ${segmentIndex} · ${segmentTitle}` : segmentTitle)
+      : (segmentIndex ? `Phân đoạn ${segmentIndex}` : '')
 
     const scene = getScene?.(sbId)
     const chars = getCharacters?.(sbId) || []
@@ -127,7 +127,7 @@ export function buildStoryboardSheetRows(ctx) {
     rows.push([
       i + 1,
       sb.storyboard_number ?? i + 1,
-      cellText(field(getField, sb, 'title')) || `镜头${i + 1}`,
+      cellText(field(getField, sb, 'title')) || `Shot ${i + 1}`,
       segment,
       field(getField, sb, 'duration') || sb.duration || '',
       field(getField, sb, 'shot_type'),
@@ -155,11 +155,11 @@ export function buildStoryboardSheetRows(ctx) {
 }
 
 function formatExcelCellContent(s) {
-  // Excel 识别 &#10; 为单元格内换行，避免 <br/> 在部分软件里被拆成多行
+  // Excel hiểu &#10; là xuống dòng trong cell, tránh <br/> bị vài phần mềm tách thành nhiều dòng
   return escapeHtml(s).replace(/\n/g, '&#10;')
 }
 
-/** 导出为 Excel 可打开的 HTML 表格（.xls，无需额外依赖） */
+/** Xuất ra bảng HTML mà Excel mở được (.xls, không cần thư viện) */
 export function downloadStoryboardExcel(rows, filename) {
   const tdStyle = 'style="white-space:normal;vertical-align:top;mso-data-placement:same-cell;"'
   const header = COLUMNS.map((c) => `<th>${escapeHtml(c)}</th>`).join('')
@@ -171,7 +171,7 @@ export function downloadStoryboardExcel(rows, filename) {
   const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-<x:Name>分镜表</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<x:Name>Bảng storyboard</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
 <body><table border="1"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></body></html>`
 
   const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' })
@@ -182,7 +182,7 @@ export function downloadStoryboardExcel(rows, filename) {
   URL.revokeObjectURL(a.href)
 }
 
-/** CSV 备选（部分环境 .xls 受限时使用） */
+/** Fallback CSV (khi một số môi trường bị hạn chế .xls) */
 export function downloadStoryboardCsv(rows, filename) {
   const lines = [
     COLUMNS.map(escapeCsvCell).join(','),

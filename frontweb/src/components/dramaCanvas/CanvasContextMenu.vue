@@ -7,13 +7,13 @@
       @mousedown.stop
       @contextmenu.prevent
     >
-      <div class="ctx-title">在此添加</div>
-      <button type="button" class="ctx-item" @click="pick('storyboard')">分镜</button>
-      <button type="button" class="ctx-item" @click="pick('character')">角色</button>
-      <button type="button" class="ctx-item" @click="pick('scene')">场景</button>
-      <button type="button" class="ctx-item" @click="pick('prop')">道具</button>
+      <div class="ctx-title">Thêm tại đây</div>
+      <button type="button" class="ctx-item" @click="pick('storyboard')">Storyboard</button>
+      <button type="button" class="ctx-item" @click="pick('character')">Nhân vật</button>
+      <button type="button" class="ctx-item" @click="pick('scene')">Scene</button>
+      <button type="button" class="ctx-item" @click="pick('prop')">Đạo cụ</button>
       <div class="ctx-divider" />
-      <button type="button" class="ctx-item" @click="pick('episode')">新集</button>
+      <button type="button" class="ctx-item" @click="pick('episode')">Tập mới</button>
     </div>
     <div v-if="visible" class="canvas-context-backdrop" @mousedown="close" @contextmenu.prevent="close" />
   </Teleport>

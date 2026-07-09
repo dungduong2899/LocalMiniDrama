@@ -1,36 +1,36 @@
 <template>
   <div class="ai-config-content">
     <el-tabs v-model="activeTab" class="config-tabs">
-      <el-tab-pane label="AI 配置" name="configs">
+      <el-tab-pane label="Cấu hình AI" name="configs">
         <div class="tab-content">
-          <!-- 普通模式操作栏 -->
+          <!-- Chế độ thường -->
           <div v-if="!vendorLock.enabled" class="content-actions">
             <div class="actions-left">
               <el-button type="primary" @click="openAdd">
                 <el-icon><Plus /></el-icon>
-                添加配置
+                Thêm cấu hình
               </el-button>
               <el-button plain @click="exportConfigs">
                 <el-icon><Download /></el-icon>
-                导出配置
+                Xuất cấu hình
               </el-button>
               <el-button plain @click="triggerImport">
                 <el-icon><Upload /></el-icon>
-                导入配置
+                Nhập cấu hình
               </el-button>
               <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importConfigs" />
               <el-button type="success" plain @click="openOneKeyVolc">
                 <el-icon><MagicStick /></el-icon>
-                一键配置火山
+                Cấu hình nhanh Volcengine
               </el-button>
               <el-button type="success" plain @click="openOneKeyAgnes">
                 <el-icon><MagicStick /></el-icon>
-                一键配置 Agnes
+                Cấu hình nhanh Agnes
               </el-button>
               <el-button type="info" plain @click="openOneKeyTongyi">
                 <el-icon><MagicStick /></el-icon>
-                一键配置通义
-                <span class="one-key-not-recommended">不推荐</span>
+                Cấu hình nhanh Tongyi
+                <span class="one-key-not-recommended">Không khuyến nghị</span>
               </el-button>
             </div>
             <div class="actions-right">
@@ -42,12 +42,12 @@
                   @click="onBatchDelete"
                 >
                   <el-icon><Delete /></el-icon>
-                  删除选中 ({{ selectedRows.length }})
+                  Xoá đã chọn ({{ selectedRows.length }})
                 </el-button>
               </transition>
             </div>
           </div>
-          <!-- 锁定模式提示栏 -->
+          <!-- Chế độ khoá provider -->
           <div v-else class="vendor-lock-bar">
             <el-alert
               type="info"
@@ -55,15 +55,15 @@
               class="vendor-lock-tip"
             >
               <template #title>
-                <span>🔒 当前为厂商锁定模式，AI 服务由管理员统一配置。你只能修改 <b>API Key</b> 和 <b>默认模型</b>。</span>
+                <span>🔒 Đang ở chế độ khoá provider, dịch vụ AI do admin cấu hình chung. Bạn chỉ có thể sửa <b>API Key</b> và <b>model mặc định</b>.</span>
               </template>
             </el-alert>
             <el-button type="primary" size="small" class="vendor-bulk-key-btn" @click="openBulkKey">
               <el-icon><Key /></el-icon>
-              一键换Key
+              Đổi Key hàng loạt
             </el-button>
           </div>
-          <p class="default-tip">每种服务类型仅有一个默认配置：文本用于生成故事；文本生成图片用于角色/场景/道具图；分镜图片生成用于分镜图（支持参考图）；视频用于生成视频；语音合成 TTS 用于分镜配音；即梦2角色认证用于创作页 SD2 认证（网关 Token）；SD2 资产库用于官方 ModelArk 私有资产（在未配置即梦2角色认证时供 SD2 认证使用）。</p>
+          <p class="default-tip">Mỗi loại dịch vụ chỉ có một cấu hình mặc định: text dùng để tạo kịch bản; text-to-image dùng cho ảnh nhân vật/scene/đạo cụ; storyboard image dùng cho ảnh storyboard (hỗ trợ ảnh tham chiếu); video dùng để tạo video; TTS dùng cho lồng tiếng storyboard; Jimeng2 character auth dùng cho SD2 auth ở trang sáng tạo (gateway Token); SD2 asset dùng cho tài sản riêng của ModelArk chính thức (dùng cho SD2 auth khi chưa cấu hình Jimeng2 character auth).</p>
           <el-table
             v-loading="loading"
             :data="list"
@@ -72,15 +72,15 @@
             @selection-change="onSelectionChange"
           >
             <el-table-column v-if="!vendorLock.enabled" type="selection" width="46" />
-            <el-table-column prop="name" label="名称" min-width="130" />
-            <el-table-column prop="provider" label="提供商" width="96" />
+            <el-table-column prop="name" label="Tên" min-width="130" />
+            <el-table-column prop="provider" label="Provider" width="96" />
             <el-table-column prop="base_url" label="Base URL" min-width="170" show-overflow-tooltip />
-            <el-table-column prop="default_model" label="默认模型" min-width="130" show-overflow-tooltip>
+            <el-table-column prop="default_model" label="Model mặc định" min-width="130" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.default_model || (Array.isArray(row.model) && row.model[0]) || '—' }}
               </template>
             </el-table-column>
-            <el-table-column prop="service_type" label="类型" width="148">
+            <el-table-column prop="service_type" label="Loại" width="148">
               <template #default="{ row }">
                 <span :class="['type-badge', 'type-' + row.service_type]">
                   <el-icon class="type-icon">
@@ -96,77 +96,77 @@
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="is_default" label="默认" width="60">
+            <el-table-column prop="is_default" label="Mặc định" width="60">
               <template #default="{ row }">
                 <el-tag v-if="row.is_default" type="success" size="small">✓</el-tag>
                 <span v-else class="no-default">—</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="180" fixed="right">
+            <el-table-column label="Thao tác" width="180" fixed="right">
               <template #default="{ row }">
-                <el-button link type="primary" size="small" @click="openTest(row)">测试</el-button>
-                <el-button link type="primary" size="small" @click="onRowEdit(row)">{{ vendorLock.enabled ? '修改Key' : '编辑' }}</el-button>
-                <el-button v-if="!vendorLock.enabled" link type="danger" size="small" @click="onDelete(row)">删除</el-button>
+                <el-button link type="primary" size="small" @click="openTest(row)">Test</el-button>
+                <el-button link type="primary" size="small" @click="onRowEdit(row)">{{ vendorLock.enabled ? 'Sửa Key' : 'Sửa' }}</el-button>
+                <el-button v-if="!vendorLock.enabled" link type="danger" size="small" @click="onDelete(row)">Xoá</el-button>
               </template>
             </el-table-column>
           </el-table>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="高级设置（提示词）" name="prompts">
+      <el-tab-pane label="Cài đặt nâng cao (Prompt)" name="prompts">
         <div class="tab-content">
           <PromptEditor />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="高级设置（业务场景）" name="sceneModelMap">
+      <el-tab-pane label="Cài đặt nâng cao (Scene nghiệp vụ)" name="sceneModelMap">
         <div class="tab-content">
           <SceneModelMap />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="生成设置" name="generation">
+      <el-tab-pane label="Cài đặt generate" name="generation">
         <div class="tab-content generation-settings">
-          <div class="gs-section-title">⚡ 一键生成并发设置</div>
-          <p class="gs-desc">控制「一键生成视频」和「补全并生成」流水线中，各类任务同时并行生成的数量。并发数越高速度越快，但过高可能触发 API 限流（429 错误）。建议根据你的 API 额度选择。</p>
+          <div class="gs-section-title">⚡ Cài đặt concurrency generate</div>
+          <p class="gs-desc">Điều khiển số lượng task chạy song song trong pipeline "Tạo video nhanh" và "Bổ sung và tạo". Concurrency càng cao càng nhanh, nhưng quá cao có thể trigger rate limit của API (lỗi 429). Chọn theo quota API của bạn.</p>
 
           <div class="gs-row">
-            <span class="gs-label">图片并发数</span>
+            <span class="gs-label">Concurrency ảnh</span>
             <el-select
               v-model="genConcurrencyInput"
               filterable
               allow-create
               default-first-option
-              placeholder="选择或输入并发数"
+              placeholder="Chọn hoặc nhập concurrency"
               style="width: 180px"
               @change="onConcurrencyChange"
             >
-              <el-option label="1（串行，最稳定）" :value="1" />
+              <el-option label="1 (tuần tự, ổn định nhất)" :value="1" />
               <el-option label="2" :value="2" />
-              <el-option label="3（默认）" :value="3" />
+              <el-option label="3 (mặc định)" :value="3" />
               <el-option label="5" :value="5" />
               <el-option label="8" :value="8" />
               <el-option label="10" :value="10" />
             </el-select>
-            <span class="gs-unit">个任务同时生成</span>
+            <span class="gs-unit">task chạy đồng thời</span>
           </div>
 
           <div class="gs-row" style="margin-top: 10px">
-            <span class="gs-label">视频并发数</span>
+            <span class="gs-label">Concurrency video</span>
             <el-select
               v-model="genVideoConcurrencyInput"
               filterable
               allow-create
               default-first-option
-              placeholder="选择或输入并发数"
+              placeholder="Chọn hoặc nhập concurrency"
               style="width: 180px"
               @change="onVideoConcurrencyChange"
             >
-              <el-option label="1（串行，最稳定）" :value="1" />
+              <el-option label="1 (tuần tự, ổn định nhất)" :value="1" />
               <el-option label="2" :value="2" />
-              <el-option label="3（默认）" :value="3" />
+              <el-option label="3 (mặc định)" :value="3" />
               <el-option label="5" :value="5" />
               <el-option label="8" :value="8" />
               <el-option label="10" :value="10" />
             </el-select>
-            <span class="gs-unit">个任务同时生成</span>
+            <span class="gs-unit">task chạy đồng thời</span>
           </div>
 
           <div style="margin-top: 14px">
@@ -175,72 +175,72 @@
               size="small"
               :loading="genSettingSaving"
               @click="saveGenerationSettings"
-            >保存</el-button>
+            >Lưu</el-button>
           </div>
           <el-alert
             v-if="genSettingSaved"
             type="success"
-            title="已保存"
+            title="Đã lưu"
             :closable="false"
             show-icon
             style="margin-top: 12px; width: fit-content"
           />
           <div class="gs-tip-box">
-            <div class="gs-tip-title">📌 适用范围</div>
+            <div class="gs-tip-title">📌 Phạm vi áp dụng</div>
             <ul class="gs-tip-list">
-              <li>图片并发：步骤 2 角色图、步骤 4 场景图、步骤 6 分镜图</li>
-              <li>视频并发：步骤 7 分镜视频</li>
+              <li>Concurrency ảnh: bước 2 ảnh nhân vật, bước 4 ảnh scene, bước 6 ảnh storyboard</li>
+              <li>Concurrency video: bước 7 video storyboard</li>
             </ul>
           </div>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="SD2 资产管理" name="sd2_assets">
+      <el-tab-pane label="Quản lý SD2 asset" name="sd2_assets">
         <div class="tab-content">
           <Sd2AssetManagement :configs="list" @saved="loadList" />
         </div>
       </el-tab-pane>
     </el-tabs>
 
-    <!-- 添加/编辑 -->
+    <!-- Thêm/Sửa -->
     <el-dialog
       v-model="dialogVisible"
-      :title="vendorLock.enabled ? '修改 API Key / 默认模型' : (editingId ? '编辑配置' : '添加配置')"
+      :title="vendorLock.enabled ? 'Sửa API Key / Model mặc định' : (editingId ? 'Sửa cấu hình' : 'Thêm cấu hình')"
       width="520px"
       :close-on-click-modal="false"
       @closed="resetForm"
     >
-      <!-- 锁定模式：只展示 api_key 和 default_model -->
+      <!-- Chế độ khoá: chỉ hiển thị api_key và default_model -->
       <template v-if="vendorLock.enabled">
         <el-descriptions :column="1" border style="margin-bottom: 16px">
-          <el-descriptions-item label="名称">{{ form.name }}</el-descriptions-item>
-          <el-descriptions-item label="类型">{{ serviceTypeLabel(form.service_type) }}</el-descriptions-item>
-          <el-descriptions-item label="厂商">{{ form.provider }}</el-descriptions-item>
+          <el-descriptions-item label="Tên">{{ form.name }}</el-descriptions-item>
+          <el-descriptions-item label="Loại">{{ serviceTypeLabel(form.service_type) }}</el-descriptions-item>
+          <el-descriptions-item label="Provider">{{ form.provider }}</el-descriptions-item>
         </el-descriptions>
         <el-form ref="formRef" :model="form" label-width="100px">
-          <el-form-item prop="api_key" :rules="[{ required: true, message: '请输入 API Key', trigger: 'blur' }]">
+          <el-form-item prop="api_key" :rules="[{ required: true, message: 'Vui lòng nhập API Key', trigger: 'blur' }]">
             <template #label><span class="form-label-tip">API Key</span></template>
             <el-input
               v-model="form.api_key"
               type="password"
-              :placeholder="form.provider === 'jimeng_ai_api' ? '即梦 Session，多个用英文逗号分隔' : '输入你的 API 密钥'"
+              :placeholder="form.provider === 'jimeng_ai_api' ? 'Jimeng Session, nhiều account phân cách bằng dấu phẩy' : 'Nhập API key của bạn'"
               show-password
             />
           </el-form-item>
           <el-form-item>
-            <template #label><span class="form-label-tip">默认模型</span></template>
+            <template #label><span class="form-label-tip">Model mặc định</span></template>
             <el-select v-model="form.default_model" clearable style="width: 100%">
               <el-option v-for="m in formModelList" :key="m" :label="m" :value="m" />
             </el-select>
-            <p class="field-tip">实际调用时使用的模型，可从预设列表中选择。</p>
+            <p class="field-tip">Model dùng khi gọi thực tế, có thể chọn từ danh sách preset.</p>
           </el-form-item>
           <el-form-item>
             <template #label>
-              <span class="form-label-tip">设为默认
+              <span class="form-label-tip">Đặt làm mặc định
                 <el-tooltip placement="top" popper-class="cfg-tip-popper">
                   <template #content>
                     <div class="cfg-tip-content">
-                      每种服务类型只有一个「默认」配置。<br>
-                      生成时系统会优先使用默认配置，建议每类至少设一个默认。
+                      Mỗi loại dịch vụ chỉ có một cấu hình "mặc định".<br>
+                      Khi generate, hệ thống ưu tiên dùng cấu hình mặc định, nên set ít nhất một cấu hình mặc định cho mỗi loại.
                     </div>
                   </template>
                   <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -252,44 +252,44 @@
         </el-form>
       </template>
 
-      <!-- 普通模式：完整表单 -->
+      <!-- Chế độ thường: form đầy đủ -->
       <el-form v-else ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item prop="service_type">
           <template #label>
-            <span class="form-label-tip">服务类型
+            <span class="form-label-tip">Loại dịch vụ
               <el-tooltip placement="top" :show-arrow="true" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
-                    <b>文本/对话</b>：用于 AI 生成故事剧本<br>
-                    <b>文本生成图片</b>：角色、场景、道具的图片生成（不支持参考图）<br>
-                    <b>分镜图片生成</b>：生成分镜图片，支持传入角色参考图<br>
-                    <b>视频生成</b>：根据分镜图生成视频片段<br>
-                    <b>语音合成 TTS</b>：为分镜对白自动合成语音（点分镜配音按钮时使用）<br>
-                    <b>即梦2角色认证</b>：将角色主图登记到即梦业务素材库（SD2 认证），仅填网关 URL 与 Token
+                    <b>Text/Chat</b>: dùng cho AI tạo kịch bản<br>
+                    <b>Text to image</b>: tạo ảnh nhân vật, scene, đạo cụ (không hỗ trợ ảnh tham chiếu)<br>
+                    <b>Storyboard image</b>: tạo ảnh storyboard, hỗ trợ ảnh tham chiếu nhân vật<br>
+                    <b>Video generation</b>: tạo video clip từ ảnh storyboard<br>
+                    <b>TTS</b>: tự động tạo voice cho lời thoại storyboard (dùng khi bấm nút lồng tiếng storyboard)<br>
+                    <b>Jimeng2 character auth</b>: đăng ký ảnh chính của nhân vật vào thư viện tư liệu Jimeng (SD2 auth), chỉ điền gateway URL và Token
                   </div>
                 </template>
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
               </el-tooltip>
             </span>
           </template>
-          <el-select v-model="form.service_type" placeholder="选择类型" style="width: 100%" @change="onServiceTypeChange">
-            <el-option label="文本/对话" value="text" />
-            <el-option label="文本生成图片" value="image" />
-            <el-option label="分镜图片生成" value="storyboard_image" />
-            <el-option label="视频生成" value="video" />
-            <el-option label="语音合成 TTS" value="tts" />
-            <el-option label="即梦2角色认证" value="jimeng2_character_auth" />
+          <el-select v-model="form.service_type" placeholder="Chọn loại" style="width: 100%" @change="onServiceTypeChange">
+            <el-option label="Text/Chat" value="text" />
+            <el-option label="Text to image" value="image" />
+            <el-option label="Storyboard image" value="storyboard_image" />
+            <el-option label="Video generation" value="video" />
+            <el-option label="TTS" value="tts" />
+            <el-option label="Jimeng2 character auth" value="jimeng2_character_auth" />
           </el-select>
         </el-form-item>
         <el-form-item prop="provider">
           <template #label>
-            <span class="form-label-tip">厂商
+            <span class="form-label-tip">Provider
               <el-tooltip placement="top" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
-                    从下拉选择预设厂商，会自动填入 Base URL 和模型列表。<br>
-                    也可直接输入自定义厂商名（需手动填写其他字段）。<br>
-                    <b>推荐</b>：通义千问 / 火山引擎，国内访问稳定。
+                    Chọn provider preset từ dropdown, Base URL và danh sách model sẽ tự điền.<br>
+                    Hoặc nhập tên provider tuỳ chỉnh (cần điền thủ công các field khác).<br>
+                    <b>Khuyến nghị</b>: Tongyi Qianwen / Volcengine, truy cập ổn định ở Trung Quốc.
                   </div>
                 </template>
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -298,7 +298,7 @@
           </template>
           <el-select
             v-model="form.provider"
-            placeholder="选择预设厂商（自动填充 URL 和模型）"
+            placeholder="Chọn provider preset (tự động điền URL và model)"
             clearable
             filterable
             allow-create
@@ -315,72 +315,72 @@
             />
           </el-select>
         </el-form-item>
-        <!-- 接口规范：仅图片/分镜/视频类型显示，预设厂商自动填充；自定义厂商必选 -->
+        <!-- API protocol: chỉ hiển thị cho image/storyboard/video, provider preset sẽ auto-fill; provider tuỳ chỉnh bắt buộc chọn -->
         <el-form-item v-if="form.service_type !== 'text' && form.service_type !== 'tts' && form.service_type !== 'jimeng2_character_auth'">
           <template #label>
-            <span class="form-label-tip">接口规范
+            <span class="form-label-tip">API protocol
               <el-icon class="tip-icon" style="cursor:pointer;color:#409eff" @click="showProtocolHelp = true"><QuestionFilled /></el-icon>
             </span>
           </template>
-          <el-select v-model="form.api_protocol" style="width: 100%" placeholder="选择接口规范（自定义厂商必选）" clearable>
-            <el-option label="OpenAI 兼容（大多数中转站默认）" value="openai" />
-            <el-option label="火山引擎（豆包 Seedream / Seedance）" value="volcengine" />
-            <el-option label="火山即梦 Seedance 全能（方舟多图参考，Seedance 2.0 等）" value="volcengine_omni" />
-            <el-option label="通义万象 DashScope" value="dashscope" />
-            <el-option label="Google Gemini（图片 / Veo 视频）" value="gemini" />
-            <el-option label="Sora 中转站（multipart/form-data，seconds+size）" value="sora" />
-            <el-option label="Veo3 兼容（JSON，images+enhance_prompt，自动翻译英文）" value="veo3" />
-            <el-option label="Vidu 视频" value="vidu" />
-            <el-option label="可灵 Omni-Video（官方 api-beijing / ffir 中转，O1 全能）" value="kling_omni" />
-            <el-option label="xAI Grok Imagine（官方 prompt + aspect_ratio，/v1/videos/generations）" value="xai" />
+          <el-select v-model="form.api_protocol" style="width: 100%" placeholder="Chọn API protocol (provider tuỳ chỉnh bắt buộc)" clearable>
+            <el-option label="OpenAI compatible (mặc định của hầu hết proxy)" value="openai" />
+            <el-option label="Volcengine (Doubao Seedream / Seedance)" value="volcengine" />
+            <el-option label="Volcengine Jimeng Seedance Omni (Ark multi-ref, Seedance 2.0...)" value="volcengine_omni" />
+            <el-option label="Tongyi Wanxiang DashScope" value="dashscope" />
+            <el-option label="Google Gemini (ảnh / Veo video)" value="gemini" />
+            <el-option label="Sora proxy (multipart/form-data, seconds+size)" value="sora" />
+            <el-option label="Veo3 compatible (JSON, images+enhance_prompt, auto dịch English)" value="veo3" />
+            <el-option label="Vidu video" value="vidu" />
+            <el-option label="Kling Omni-Video (chính thức api-beijing / ffir proxy, O1 omni)" value="kling_omni" />
+            <el-option label="xAI Grok Imagine (chính thức prompt + aspect_ratio, /v1/videos/generations)" value="xai" />
             <el-option label="NanoBanana" value="nano_banana" />
           </el-select>
         </el-form-item>
 
-        <!-- 接口规范帮助 Dialog -->
-        <el-dialog v-model="showProtocolHelp" title="接口规范说明" width="700px" top="5vh">
+        <!-- Dialog trợ giúp API protocol -->
+        <el-dialog v-model="showProtocolHelp" title="Giải thích API protocol" width="700px" top="5vh">
           <div class="protocol-help">
-            <div class="ph-section-title">🖼 图片 / 分镜图 协议</div>
+            <div class="ph-section-title">🖼 Protocol ảnh / storyboard</div>
             <el-collapse accordion>
               <el-collapse-item name="openai-img">
-                <template #title><span class="ph-tag ph-tag-img">图片</span> OpenAI 兼容 — 绝大多数中转站默认</template>
+                <template #title><span class="ph-tag ph-tag-img">Ảnh</span> OpenAI compatible — mặc định của hầu hết proxy</template>
                 <div class="ph-body">
-                  <b>适用场景：</b>OpenAI 官方、各类中转/代理站（ChatFire、硅基流动等）<br>
-                  <b>Endpoint：</b><code>POST /v1/images/generations</code><br>
+                  <b>Áp dụng cho:</b> OpenAI chính thức, các loại proxy (ChatFire, SiliconFlow...)<br>
+                  <b>Endpoint:</b> <code>POST /v1/images/generations</code><br>
                   <pre>{ "model": "dall-e-3", "prompt": "...", "n": 1, "size": "1024x1024" }</pre>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="volcengine-img">
-                <template #title><span class="ph-tag ph-tag-img">图片</span> 火山引擎 — 豆包 Seedream</template>
+                <template #title><span class="ph-tag ph-tag-img">Ảnh</span> Volcengine — Doubao Seedream</template>
                 <div class="ph-body">
-                  <b>Endpoint：</b><code>POST /api/v3/images/generations</code><br>
-                  <b>Base URL：</b><code>https://ark.cn-beijing.volces.com/api/v3</code><br>
+                  <b>Endpoint:</b> <code>POST /api/v3/images/generations</code><br>
+                  <b>Base URL:</b> <code>https://ark.cn-beijing.volces.com/api/v3</code><br>
                   <pre>{ "model": "doubao-seedream-4-5-251128", "prompt": "...", "size": "1024x1024" }</pre>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="dashscope-img">
-                <template #title><span class="ph-tag ph-tag-img">图片</span> 通义万象 DashScope</template>
+                <template #title><span class="ph-tag ph-tag-img">Ảnh</span> Tongyi Wanxiang DashScope</template>
                 <div class="ph-body">
-                  <b>Base URL：</b><code>https://dashscope.aliyuncs.com</code><br>
-                  <b>Endpoint：</b><code>POST /api/v1/services/aigc/text2image/image-synthesis</code>
+                  <b>Base URL:</b> <code>https://dashscope.aliyuncs.com</code><br>
+                  <b>Endpoint:</b> <code>POST /api/v1/services/aigc/text2image/image-synthesis</code>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="gemini-img">
-                <template #title><span class="ph-tag ph-tag-img">图片</span> Google Gemini</template>
+                <template #title><span class="ph-tag ph-tag-img">Ảnh</span> Google Gemini</template>
                 <div class="ph-body">
-                  <b>认证：</b>URL 参数 <code>?key=API_KEY</code><br>
-                  <b>Endpoint：</b><code>POST /v1beta/models/{model}:generateContent</code>
+                  <b>Xác thực:</b> URL param <code>?key=API_KEY</code><br>
+                  <b>Endpoint:</b> <code>POST /v1beta/models/{model}:generateContent</code>
                 </div>
               </el-collapse-item>
             </el-collapse>
 
-            <div class="ph-section-title" style="margin-top:16px">🎬 视频 协议</div>
+            <div class="ph-section-title" style="margin-top:16px">🎬 Protocol video</div>
             <el-collapse accordion>
               <el-collapse-item name="openai-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> OpenAI 兼容 — content 数组格式</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> OpenAI compatible — định dạng mảng content</template>
                 <div class="ph-body">
-                  <b>适用场景：</b>各类中转站视频接口（ChatFire 等）<br>
-                  <b>Endpoint：</b>自定义，如 <code>POST /v1/video/create</code><br>
+                  <b>Áp dụng cho:</b> các loại proxy video (ChatFire...)<br>
+                  <b>Endpoint:</b> tuỳ chỉnh, ví dụ <code>POST /v1/video/create</code><br>
                   <pre>{ "model": "sora-2-pro",
   "content": [
     { "type": "text", "text": "..." },
@@ -390,39 +390,39 @@
                 </div>
               </el-collapse-item>
               <el-collapse-item name="sora-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> Sora 中转站 — multipart/form-data</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Sora proxy — multipart/form-data</template>
                 <div class="ph-body">
-                  <b>适用场景：</b>Sora API 格式的中转站<br>
-                  <b>默认 Endpoint：</b><code>POST /v1/videos</code>（创建），<code>GET /v1/videos/{taskId}</code>（查询）<br>
-                  <b>请求格式：</b>multipart/form-data（非 JSON）<br>
+                  <b>Áp dụng cho:</b> proxy dùng format Sora API<br>
+                  <b>Endpoint mặc định:</b> <code>POST /v1/videos</code> (create), <code>GET /v1/videos/{taskId}</code> (query)<br>
+                  <b>Định dạng request:</b> multipart/form-data (không phải JSON)<br>
                   <pre>model       = "sora-2"
 prompt      = "..."
 seconds     = "4" | "8" | "12"
 size        = "720x1280" | "1280x720" | "1024x1792" | "1792x1024"
 watermark   = "false"
 private     = "false"
-input_reference = (图片文件，可选)</pre>
-                  <b>注意：</b>参考图会自动 resize 到与 size 一致后上传。
+input_reference = (file ảnh, tuỳ chọn)</pre>
+                  <b>Lưu ý:</b> ảnh tham chiếu sẽ tự động resize khớp với size trước khi upload.
                 </div>
               </el-collapse-item>
               <el-collapse-item name="veo3-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> Veo3 兼容 — images + enhance_prompt</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Veo3 compatible — images + enhance_prompt</template>
                 <div class="ph-body">
-                  <b>适用场景：</b>Veo3 系列模型的 JSON 格式接口<br>
-                  <b>默认 Endpoint：</b><code>POST /v1/video/create</code>（创建），<code>GET /v1/video/query?id={taskId}</code>（查询）<br>
+                  <b>Áp dụng cho:</b> API JSON của các model dòng Veo3<br>
+                  <b>Endpoint mặc định:</b> <code>POST /v1/video/create</code> (create), <code>GET /v1/video/query?id={taskId}</code> (query)<br>
                   <pre>{ "model": "veo3.1",
   "prompt": "...",
   "enhance_prompt": true,
   "images": ["data:image/jpeg;base64,..."]
 }</pre>
-                  <b>注意：</b><code>enhance_prompt: true</code> 会让接口自动将提示词翻译为英文。localhost 图片会自动转为 base64 内嵌。
+                  <b>Lưu ý:</b> <code>enhance_prompt: true</code> sẽ tự động dịch prompt sang tiếng Anh. Ảnh localhost sẽ tự động convert sang base64 inline.
                 </div>
               </el-collapse-item>
               <el-collapse-item name="volcengine-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> 火山引擎 — 豆包 Seedance</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Volcengine — Doubao Seedance</template>
                 <div class="ph-body">
-                  <b>Endpoint：</b><code>POST …/contents/generations/tasks</code>（与后端一致）<br>
-                  <b>Base URL：</b><code>https://ark.cn-beijing.volces.com/api/v3</code><br>
+                  <b>Endpoint:</b> <code>POST …/contents/generations/tasks</code> (khớp với backend)<br>
+                  <b>Base URL:</b> <code>https://ark.cn-beijing.volces.com/api/v3</code><br>
                   <pre>{ "model": "doubao-seedance-1-5-pro-251215",
   "content": [{ "type": "text", "text": "..." }],
   "ratio": "9:16", "duration": 5,
@@ -430,45 +430,45 @@ input_reference = (图片文件，可选)</pre>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="volcengine-omni-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> 火山即梦 Seedance 全能（多图参考）</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Volcengine Jimeng Seedance Omni (multi-ref)</template>
                 <div class="ph-body">
-                  <b>适用：</b>方舟 Seedance 2.0 等支持多参考图的全能链路；与「全能模式」分镜、<code>@图片1</code>… 提示词配合使用。<br>
-                  <b>Endpoint：</b><code>POST {base}/contents/generations/tasks</code>，轮询 <code>GET {base}/contents/generations/tasks/{taskId}</code><br>
-                  <b>厂商：</b>仍选「火山引擎」，<b>接口规范</b>选本项；模型填控制台接入点（如 <code>doubao-seedance-2-0-260128</code>，以控制台为准）。<br>
+                  <b>Áp dụng:</b> Ark Seedance 2.0... hỗ trợ pipeline omni với nhiều ảnh tham chiếu; dùng cùng storyboard "chế độ Omni", prompt <code>@image1</code>…<br>
+                  <b>Endpoint:</b> <code>POST {base}/contents/generations/tasks</code>, poll <code>GET {base}/contents/generations/tasks/{taskId}</code><br>
+                  <b>Provider:</b> vẫn chọn "Volcengine", <b>API protocol</b> chọn mục này; model điền endpoint console (ví dụ <code>doubao-seedance-2-0-260128</code>, dựa theo console).<br>
                   <pre>{ "model": "doubao-seedance-2-0-260128",
   "task_type": "i2v",
   "content": [
-    { "type": "text", "text": "… @图片1 … @图片2 …" },
+    { "type": "text", "text": "… @image1 … @image2 …" },
     { "type": "image_url", "image_url": { "url": "https://..." } },
     { "type": "image_url", "image_url": { "url": "https://..." }, "role": "reference_image" }
   ],
   "ratio": "9:16", "duration": 8, "watermark": false }</pre>
-                  <b>说明：</b>全能模式下列均为参考图（场景、角色…），每张均 <code>role: reference_image</code>；最多 9 张，时长 Seedance 2.x 按 4–15 秒吸附。
+                  <b>Ghi chú:</b> ở chế độ Omni tất cả đều là ảnh tham chiếu (scene, nhân vật...), mỗi ảnh đều có <code>role: reference_image</code>; tối đa 9 ảnh, duration của Seedance 2.x snap 4-15 giây.
                 </div>
               </el-collapse-item>
               <el-collapse-item name="dashscope-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> 通义万象 DashScope</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Tongyi Wanxiang DashScope</template>
                 <div class="ph-body">
-                  <b>Base URL：</b><code>https://dashscope.aliyuncs.com</code><br>
-                  <b>Endpoint：</b><code>POST /api/v1/services/aigc/video-generation/video-synthesis</code><br>
+                  <b>Base URL:</b> <code>https://dashscope.aliyuncs.com</code><br>
+                  <b>Endpoint:</b> <code>POST /api/v1/services/aigc/video-generation/video-synthesis</code><br>
                   <pre>{ "model": "wan2.2-kf2v-flash",
   "input": { "prompt": "...", "img_url": "https://..." },
   "parameters": { "size": "1280*720", "duration": 5 } }</pre>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="gemini-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> Google Gemini — Veo 视频</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Google Gemini — Veo video</template>
                 <div class="ph-body">
-                  <b>认证：</b>URL 参数 <code>?key=API_KEY</code><br>
-                  <b>Endpoint：</b><code>POST /v1beta/models/{model}:generateVideo</code>
+                  <b>Xác thực:</b> URL param <code>?key=API_KEY</code><br>
+                  <b>Endpoint:</b> <code>POST /v1beta/models/{model}:generateVideo</code>
                 </div>
               </el-collapse-item>
               <el-collapse-item name="vidu-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> Vidu</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Vidu</template>
                 <div class="ph-body">
-                  <b>适用场景：</b>Vidu 官方及兼容接口<br>
-                  <b>认证：</b><code>Authorization: Token {api_key}</code>（非 Bearer）<br>
-                  <b>默认 Endpoint：</b><code>POST /ent/v2/img2video</code>（创建），<code>GET /ent/v2/tasks/{taskId}/creations</code>（查询）<br>
+                  <b>Áp dụng cho:</b> Vidu chính thức và các API tương thích<br>
+                  <b>Xác thực:</b> <code>Authorization: Token {api_key}</code> (không phải Bearer)<br>
+                  <b>Endpoint mặc định:</b> <code>POST /ent/v2/img2video</code> (create), <code>GET /ent/v2/tasks/{taskId}/creations</code> (query)<br>
                   <pre>{ "model": "viduq3-pro",
   "images": ["https://..."],
   "prompt": "...",
@@ -478,46 +478,46 @@ input_reference = (图片文件，可选)</pre>
   "audio": false,
   "watermark": false
 }</pre>
-                  <b>注意：</b>官方 api.vidu.cn 用 <code>Token</code> 认证，中转站用 <code>Bearer</code>，系统自动识别。localhost 图片自动上传图床。
+                  <b>Lưu ý:</b> api.vidu.cn chính thức dùng <code>Token</code>, proxy dùng <code>Bearer</code>, hệ thống tự nhận diện. Ảnh localhost tự upload lên image host.
                 </div>
               </el-collapse-item>
               <el-collapse-item name="jimeng-ai-api-vid">
-                <template #title><span class="ph-tag ph-tag-vid">视频</span> Jimeng AI API（自建服务）</template>
+                <template #title><span class="ph-tag ph-tag-vid">Video</span> Jimeng AI API (self-hosted)</template>
                 <div class="ph-body">
-                  <b>说明：</b>需自行部署 <code>jimeng-free-api-all</code> 等即梦 OpenAI 兼容服务并启动（如 <code>http://127.0.0.1:8000</code>）。本系统仅作为客户端转发请求。<br>
-                  <b>Base URL：</b>填你的服务根地址，无尾斜杠。<br>
-                  <b>API Key：</b>填即梦网页 <b>Session</b>；多个账号用<b>英文逗号</b>分隔，由对方服务轮询使用。<br>
-                  <b>默认路径：</b><code>POST /v1/videos/generations</code>（可在「Endpoint」覆盖）。Seedance 多图需分镜参考图；响应为同步 <code>data[0].url</code>。
+                  <b>Giải thích:</b> cần tự deploy <code>jimeng-free-api-all</code> hoặc dịch vụ Jimeng OpenAI-compatible tương tự (ví dụ <code>http://127.0.0.1:8000</code>). Hệ thống chỉ đóng vai trò client forward request.<br>
+                  <b>Base URL:</b> điền địa chỉ root của dịch vụ, không kèm slash cuối.<br>
+                  <b>API Key:</b> điền <b>Session</b> của Jimeng web; nhiều account phân cách bằng <b>dấu phẩy</b>, dịch vụ đối tác sẽ luân phiên dùng.<br>
+                  <b>Path mặc định:</b> <code>POST /v1/videos/generations</code> (có thể override ở "Endpoint"). Seedance multi-image cần ảnh tham chiếu storyboard; response đồng bộ <code>data[0].url</code>.
                 </div>
               </el-collapse-item>
             </el-collapse>
           </div>
           <template #footer>
-            <el-button @click="showProtocolHelp = false">关闭</el-button>
+            <el-button @click="showProtocolHelp = false">Đóng</el-button>
           </template>
         </el-dialog>
         <el-form-item prop="name">
           <template #label>
-            <span class="form-label-tip">名称
-              <el-tooltip content="配置的显示名，用于在列表中区分不同配置，选择厂商后可自动生成。" placement="top" popper-class="cfg-tip-popper">
+            <span class="form-label-tip">Tên
+              <el-tooltip content="Tên hiển thị của cấu hình, dùng để phân biệt các cấu hình trong danh sách, có thể tự tạo sau khi chọn provider." placement="top" popper-class="cfg-tip-popper">
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
               </el-tooltip>
             </span>
           </template>
-          <el-input v-model="form.name" placeholder="如：OpenAI 图文，可自动生成" />
+          <el-input v-model="form.name" placeholder="Ví dụ: OpenAI text-image, có thể tự tạo" />
         </el-form-item>
         <el-form-item prop="base_url">
           <template #label>
-            <span class="form-label-tip">{{ form.service_type === 'jimeng2_character_auth' ? '网关 URL' : 'Base URL' }}
+            <span class="form-label-tip">{{ form.service_type === 'jimeng2_character_auth' ? 'Gateway URL' : 'Base URL' }}
               <el-tooltip placement="top" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
                     <template v-if="form.service_type === 'jimeng2_character_auth'">
-                      即梦业务素材库网关的<b>根地址</b>（不含 <code>/api/business/v1</code> 路径）。须与素材库实际部署一致。
+                      <b>Địa chỉ root</b> của gateway thư viện tư liệu Jimeng (không kèm path <code>/api/business/v1</code>). Phải khớp với deployment thực tế của thư viện tư liệu.
                     </template>
                     <template v-else>
-                      API 接口地址，选择预设厂商后自动填入，一般无需修改。<br>
-                      示例：https://dashscope.aliyuncs.com
+                      Địa chỉ API endpoint, tự động điền sau khi chọn provider preset, thường không cần sửa.<br>
+                      Ví dụ: https://dashscope.aliyuncs.com
                     </template>
                   </div>
                 </template>
@@ -527,7 +527,7 @@ input_reference = (图片文件，可选)</pre>
           </template>
           <el-input
             v-model="form.base_url"
-            :placeholder="form.service_type === 'jimeng2_character_auth' ? '如 https://your-gateway.com' : '选择预设厂商后自动填充，可修改'"
+            :placeholder="form.service_type === 'jimeng2_character_auth' ? 'Ví dụ https://your-gateway.com' : 'Tự động điền sau khi chọn provider preset, có thể sửa'"
           />
         </el-form-item>
         <el-form-item prop="api_key">
@@ -537,12 +537,12 @@ input_reference = (图片文件，可选)</pre>
                 <template #content>
                   <div class="cfg-tip-content">
                     <template v-if="form.service_type === 'jimeng2_character_auth'">
-                      素材库要求的 <code>Authorization: Bearer …</code> Token，由网关或即梦侧签发。
+                      Token <code>Authorization: Bearer …</code> theo yêu cầu của thư viện tư liệu, được gateway hoặc Jimeng cấp.
                     </template>
                     <template v-else>
-                      在对应 AI 平台申请的密钥，用于身份验证。<br>
-                      通义：<b>dashscope.aliyuncs.com</b><br>
-                      火山：<b>console.volcengine.com/ark</b>
+                      API key đăng ký ở platform AI tương ứng, dùng để xác thực.<br>
+                      Tongyi: <b>dashscope.aliyuncs.com</b><br>
+                      Volcengine: <b>console.volcengine.com/ark</b>
                     </template>
                   </div>
                 </template>
@@ -553,22 +553,22 @@ input_reference = (图片文件，可选)</pre>
           <el-input
             v-model="form.api_key"
             type="password"
-            :placeholder="form.service_type === 'jimeng2_character_auth' ? 'Bearer Token' : (form.provider === 'jimeng_ai_api' ? '即梦 Session，多个用英文逗号分隔' : 'API 密钥')"
+            :placeholder="form.service_type === 'jimeng2_character_auth' ? 'Bearer Token' : (form.provider === 'jimeng_ai_api' ? 'Jimeng Session, nhiều account phân cách bằng dấu phẩy' : 'API key')"
             show-password
           />
         </el-form-item>
         <el-form-item v-if="form.service_type === 'jimeng2_character_auth'">
-          <template #label><span class="form-label-tip">素材列表</span></template>
+          <template #label><span class="form-label-tip">Danh sách tư liệu</span></template>
           <div class="jimeng2-assets-actions">
             <el-button type="primary" plain :loading="jimeng2AssetsLoading" @click="openJimeng2MaterialAssetsDialog">
-              列出素材
+              Liệt kê tư liệu
             </el-button>
             <span class="field-tip jimeng2-assets-tip">
-              调用网关
+              Gọi gateway
               <code>GET /api/business/v1/assets</code>
-              ，与
-              <a href="https://83zi.com/sd2realperson.html" target="_blank" rel="noopener noreferrer">素材管理 API 文档</a>
-              一致（使用当前表单中的网关 URL 与 Token，无需先保存）。
+              , khớp với
+              <a href="https://83zi.com/sd2realperson.html" target="_blank" rel="noopener noreferrer">tài liệu API quản lý tư liệu</a>
+              (dùng gateway URL và Token trong form hiện tại, không cần lưu trước).
             </span>
           </div>
         </el-form-item>
@@ -578,8 +578,8 @@ input_reference = (图片文件，可选)</pre>
           :closable="false"
           show-icon
           style="margin-bottom: 12px"
-          title="用于创作页「角色生成 → SD2认证」"
-          description="保存后，系统从此处读取网关与 Token 调用 POST /api/business/v1/assets 登记角色图；可用「列出素材」核对素材状态。角色主图需为外网可访问的 http(s) 地址（图床或本服务 storage.base_url）。"
+          title="Dùng cho trang sáng tạo 'Tạo nhân vật → SD2 auth'"
+          description="Sau khi lưu, hệ thống đọc gateway và Token từ đây, gọi POST /api/business/v1/assets để đăng ký ảnh nhân vật; có thể dùng 'Liệt kê tư liệu' để kiểm tra trạng thái tư liệu. Ảnh chính của nhân vật cần là địa chỉ http(s) truy cập được từ internet (image host hoặc storage.base_url của service này)."
         />
         <template v-if="form.service_type === 'video' && form.api_protocol === 'kling_omni'">
           <el-form-item>
@@ -588,16 +588,16 @@ input_reference = (图片文件，可选)</pre>
               v-model="form.kling_access_key"
               type="password"
               show-password
-              placeholder="可灵开放平台 AccessKey（与 SecretKey 成对，可不填上方 API Key）"
+              placeholder="AccessKey của Kling open platform (đi cặp với SecretKey, có thể bỏ trống API Key phía trên)"
               autocomplete="off"
             />
             <p class="field-tip">
-              官方 JWT 规则见
+              Quy tắc JWT chính thức xem tại
               <a href="https://klingai.com/document-api/apiReference/commonInfo" target="_blank" rel="noopener noreferrer">commonInfo</a>
-              （<a href="https://app.klingai.com/cn/dev/document-api/apiReference/commonInfo" target="_blank" rel="noopener noreferrer">中文版</a>）。
-              后端使用与官方示例一致的 HS256（<code>iss</code>=AccessKey，<code>exp</code>、<code>nbf</code>）生成 Token。
-              若接口返回 <code>1000 Authorization signature is invalid</code>：请确认 AccessKey/SecretKey 未填反、无多余空格；并尝试勾选下方「SecretKey 为 Base64」；
-              Base URL 区域（<code>api-beijing.klingai.com</code> / <code>api-singapore.klingai.com</code>）须与密钥所属区域一致。
+              (<a href="https://app.klingai.com/cn/dev/document-api/apiReference/commonInfo" target="_blank" rel="noopener noreferrer">bản tiếng Trung</a>).
+              Backend dùng HS256 (<code>iss</code>=AccessKey, <code>exp</code>, <code>nbf</code>) khớp với ví dụ chính thức để tạo Token.
+              Nếu API trả về <code>1000 Authorization signature is invalid</code>: kiểm tra AccessKey/SecretKey không bị đảo, không có khoảng trắng thừa; và thử tick "SecretKey là Base64" bên dưới;
+              region của Base URL (<code>api-beijing.klingai.com</code> / <code>api-singapore.klingai.com</code>) phải khớp với region của key.
             </p>
           </el-form-item>
           <el-form-item>
@@ -606,34 +606,34 @@ input_reference = (图片文件，可选)</pre>
               v-model="form.kling_secret_key"
               type="password"
               show-password
-              placeholder="可灵开放平台 SecretKey"
+              placeholder="SecretKey của Kling open platform"
               autocomplete="off"
             />
             <el-checkbox v-model="form.kling_secret_key_base64" style="margin-top: 8px; display: block">
-              SecretKey 为 Base64 字符串（解码后的二进制再用于签名；若仍报签名无效可切换此项重试）
+              SecretKey là chuỗi Base64 (decode ra binary rồi mới dùng để sign; nếu vẫn báo signature invalid thì toggle mục này thử lại)
             </el-checkbox>
             <p class="field-tip">
-              官方域名：<code>POST {base}/v1/videos/omni-video</code>，轮询
-              <code>GET {base}/v1/videos/omni-video/{taskId}</code>；飞儿等中转仍为
-              <code>/kling/v1/videos/omni-video</code> 与
-              <code>/kling/v1/images/omni-image/{taskId}</code>。详见
-              <a href="https://klingai.com/document-api/apiReference/model/OmniVideo" target="_blank" rel="noopener noreferrer">OmniVideo</a>。
+              Domain chính thức: <code>POST {base}/v1/videos/omni-video</code>, poll
+              <code>GET {base}/v1/videos/omni-video/{taskId}</code>; proxy như Feier vẫn là
+              <code>/kling/v1/videos/omni-video</code> và
+              <code>/kling/v1/images/omni-image/{taskId}</code>. Chi tiết xem
+              <a href="https://klingai.com/document-api/apiReference/model/OmniVideo" target="_blank" rel="noopener noreferrer">OmniVideo</a>.
             </p>
           </el-form-item>
         </template>
-        <!-- TTS 专属字段：声音 ID 和 MiniMax Group ID -->
+        <!-- Field riêng của TTS: voice ID và MiniMax Group ID -->
         <template v-if="form.service_type === 'tts'">
           <el-form-item>
             <template #label>
-              <span class="form-label-tip">声音 ID
+              <span class="form-label-tip">Voice ID
                 <el-tooltip placement="top" popper-class="cfg-tip-popper">
                   <template #content>
                     <div class="cfg-tip-content">
-                      TTS 合成使用的音色 ID。<br>
-                      <b>MiniMax 常用音色：</b><br>
-                      female-shaonv（少女）、female-chengshu（成熟）<br>
-                      male-qingxin（清新男）、male-zhicheng（知城男）<br>
-                      audiobook_female_2（有声书女）、audiobook_male_1（有声书男）
+                      Voice ID dùng cho TTS.<br>
+                      <b>Voice phổ biến của MiniMax:</b><br>
+                      female-shaonv (thiếu nữ), female-chengshu (trưởng thành)<br>
+                      male-qingxin (nam thanh thoát), male-zhicheng (nam trầm)<br>
+                      audiobook_female_2 (audiobook nữ), audiobook_male_1 (audiobook nam)
                     </div>
                   </template>
                   <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -645,22 +645,22 @@ input_reference = (图片文件，可选)</pre>
               filterable
               allow-create
               default-first-option
-              placeholder="选择或输入声音 ID"
+              placeholder="Chọn hoặc nhập voice ID"
               style="width: 100%"
             >
-              <el-option-group label="MiniMax 女声">
-                <el-option label="female-shaonv（少女）" value="female-shaonv" />
-                <el-option label="female-chengshu（成熟）" value="female-chengshu" />
-                <el-option label="female-tianmei（甜美）" value="female-tianmei" />
-                <el-option label="audiobook_female_2（有声书）" value="audiobook_female_2" />
+              <el-option-group label="MiniMax giọng nữ">
+                <el-option label="female-shaonv (thiếu nữ)" value="female-shaonv" />
+                <el-option label="female-chengshu (trưởng thành)" value="female-chengshu" />
+                <el-option label="female-tianmei (ngọt ngào)" value="female-tianmei" />
+                <el-option label="audiobook_female_2 (audiobook)" value="audiobook_female_2" />
               </el-option-group>
-              <el-option-group label="MiniMax 男声">
-                <el-option label="male-qingxin（清新）" value="male-qingxin" />
-                <el-option label="male-zhicheng（知城）" value="male-zhicheng" />
-                <el-option label="audiobook_male_1（有声书）" value="audiobook_male_1" />
+              <el-option-group label="MiniMax giọng nam">
+                <el-option label="male-qingxin (thanh thoát)" value="male-qingxin" />
+                <el-option label="male-zhicheng (trầm)" value="male-zhicheng" />
+                <el-option label="audiobook_male_1 (audiobook)" value="audiobook_male_1" />
               </el-option-group>
             </el-select>
-            <p class="field-tip">MiniMax 必填；不填默认 female-shaonv。</p>
+            <p class="field-tip">MiniMax bắt buộc điền; nếu bỏ trống mặc định female-shaonv.</p>
           </el-form-item>
           <el-form-item>
             <template #label>
@@ -668,91 +668,91 @@ input_reference = (图片文件，可选)</pre>
                 <el-tooltip placement="top" popper-class="cfg-tip-popper">
                   <template #content>
                     <div class="cfg-tip-content">
-                      MiniMax 账号的 GroupId，调用 T2A v2 接口时附在 URL 参数里。<br>
-                      登录 <b>platform.minimaxi.com</b> → 账户设置 → 即可查看 GroupId。
+                      GroupId của account MiniMax, được đính kèm trong URL param khi gọi API T2A v2.<br>
+                      Đăng nhập <b>platform.minimaxi.com</b> → Account settings → xem GroupId.
                     </div>
                   </template>
                   <el-icon class="tip-icon"><QuestionFilled /></el-icon>
                 </el-tooltip>
               </span>
             </template>
-            <el-input v-model="form.group_id" placeholder="MiniMax GroupId，如 1234567890" />
-            <p class="field-tip">仅 MiniMax T2A 需要此字段。</p>
+            <el-input v-model="form.group_id" placeholder="MiniMax GroupId, ví dụ 1234567890" />
+            <p class="field-tip">Chỉ MiniMax T2A cần field này.</p>
           </el-form-item>
         </template>
 
-        <!-- 端点配置：视频必填（自定义厂商）；图片/分镜在使用代理或特殊厂商时填写 -->
+        <!-- Cấu hình endpoint: video bắt buộc (provider tuỳ chỉnh); image/storyboard chỉ điền khi dùng proxy hoặc provider đặc biệt -->
         <template v-if="form.service_type !== 'text' && form.service_type !== 'tts' && form.service_type !== 'jimeng2_character_auth'">
           <el-form-item>
             <template #label>
-              <span class="form-label-tip">提交端点
+              <span class="form-label-tip">Submit endpoint
                 <el-tooltip placement="top" popper-class="cfg-tip-popper">
                   <template #content>
                     <div class="cfg-tip-content">
-                      接口路径，追加在 Base URL 之后。<br>
-                      <b>预设厂商</b>（火山 / 通义 / NanoBanana）留空，系统自动推断。<br>
-                      <b>视频自定义厂商</b>必须填写，如 /v1/videos/generations<br>
-                      <b>NanoBanana 代理</b>填写代理路径，如 /fal-ai/nano-banana
+                      Path API, được nối vào sau Base URL.<br>
+                      <b>Provider preset</b> (Volcengine / Tongyi / NanoBanana) để trống, hệ thống tự suy luận.<br>
+                      <b>Video provider tuỳ chỉnh</b> bắt buộc điền, ví dụ /v1/videos/generations<br>
+                      <b>NanoBanana proxy</b> điền path proxy, ví dụ /fal-ai/nano-banana
                     </div>
                   </template>
                   <el-icon class="tip-icon"><QuestionFilled /></el-icon>
                 </el-tooltip>
               </span>
             </template>
-            <el-input v-model="form.endpoint" :placeholder="form.service_type === 'video' ? '自定义视频厂商必填，如 /v1/videos/generations；预设厂商留空' : '代理或特殊厂商时填写，如 /fal-ai/nano-banana；预设厂商留空'" />
+            <el-input v-model="form.endpoint" :placeholder="form.service_type === 'video' ? 'Video provider tuỳ chỉnh bắt buộc, ví dụ /v1/videos/generations; preset để trống' : 'Điền khi dùng proxy hoặc provider đặc biệt, ví dụ /fal-ai/nano-banana; preset để trống'" />
           </el-form-item>
           <el-form-item>
             <template #label>
-              <span class="form-label-tip">查询端点
+              <span class="form-label-tip">Query endpoint
                 <el-tooltip placement="top" popper-class="cfg-tip-popper">
                   <template #content>
                     <div class="cfg-tip-content">
-                      查询任务状态的接口路径，{taskId} 会被替换为实际任务 ID。<br>
-                      <b>预设厂商</b>留空即可，由系统自动推断。<br>
-                      <b>视频自定义厂商</b>必须填写，如 /v1/video/tasks/{taskId}<br>
-                      <b>图片/NanoBanana</b> 代理若不支持轮询可留空
+                      Path API để query trạng thái task, {taskId} sẽ được thay thế bằng task ID thực tế.<br>
+                      <b>Provider preset</b> để trống, hệ thống tự suy luận.<br>
+                      <b>Video provider tuỳ chỉnh</b> bắt buộc điền, ví dụ /v1/video/tasks/{taskId}<br>
+                      <b>Image/NanoBanana</b> proxy nếu không hỗ trợ polling có thể để trống
                     </div>
                   </template>
                   <el-icon class="tip-icon"><QuestionFilled /></el-icon>
                 </el-tooltip>
               </span>
             </template>
-            <el-input v-model="form.query_endpoint" placeholder="自定义视频厂商必填，如 /v1/video/tasks/{taskId}；预设厂商留空" />
+            <el-input v-model="form.query_endpoint" placeholder="Video provider tuỳ chỉnh bắt buộc, ví dụ /v1/video/tasks/{taskId}; preset để trống" />
           </el-form-item>
         </template>
 
-        <!-- 接口地址预览：选择厂商/协议后自动展示，帮助用户核对 -->
+        <!-- Xem trước địa chỉ API: tự động hiển thị sau khi chọn provider/protocol, giúp người dùng kiểm tra -->
         <div v-if="endpointPreviewInfo" class="endpoint-preview-box" :class="{ 'ep-box-gemini': endpointPreviewInfo.isGemini }">
           <div class="ep-preview-header">
-            <span>📌 系统将使用以下接口地址</span>
-            <span v-if="endpointPreviewInfo.isGemini" class="ep-auto-badge ep-badge-gemini">Gemini 固定模式</span>
-            <span v-else-if="endpointPreviewInfo.isJimeng2Auth" class="ep-auto-badge">即梦2角色认证</span>
-            <span v-else-if="endpointPreviewInfo.isAuto && form.service_type !== 'text'" class="ep-auto-badge">自动推断</span>
+            <span>📌 Hệ thống sẽ dùng các địa chỉ API sau</span>
+            <span v-if="endpointPreviewInfo.isGemini" class="ep-auto-badge ep-badge-gemini">Gemini cố định</span>
+            <span v-else-if="endpointPreviewInfo.isJimeng2Auth" class="ep-auto-badge">Jimeng2 character auth</span>
+            <span v-else-if="endpointPreviewInfo.isAuto && form.service_type !== 'text'" class="ep-auto-badge">Tự suy luận</span>
           </div>
           <div class="ep-row">
-            <span class="ep-label">提交地址：</span>
+            <span class="ep-label">Submit URL:</span>
             <code class="ep-url">{{ endpointPreviewInfo.submit }}</code>
           </div>
           <div v-if="endpointPreviewInfo.query" class="ep-row">
-            <span class="ep-label">查询地址：</span>
+            <span class="ep-label">Query URL:</span>
             <code class="ep-url">{{ endpointPreviewInfo.query }}</code>
           </div>
           <p v-if="endpointPreviewInfo.isGemini" class="ep-tip ep-tip-warn">
-            ⚠️ Gemini 端点由系统根据模型名固定生成，上方「提交端点」和「查询端点」字段对 Gemini 无效，填了也不生效。
+            ⚠️ Endpoint Gemini được hệ thống sinh cố định theo tên model, các field "Submit endpoint" và "Query endpoint" phía trên không có hiệu lực với Gemini, dù điền cũng không dùng.
           </p>
-          <p v-else-if="endpointPreviewInfo.isJimeng2Auth" class="ep-tip">角色「SD2认证」将调用上述地址注册素材（POST 创建、GET 查询状态）。</p>
-          <p v-else class="ep-tip">以上为系统推断的实际调用地址（可手动填写上方端点字段来覆盖）</p>
+          <p v-else-if="endpointPreviewInfo.isJimeng2Auth" class="ep-tip">"SD2 auth" của nhân vật sẽ gọi các URL này để đăng ký tư liệu (POST tạo, GET query trạng thái).</p>
+          <p v-else class="ep-tip">Đây là địa chỉ gọi thực tế hệ thống suy luận (có thể điền thủ công các field endpoint phía trên để override)</p>
         </div>
 
         <template v-if="form.service_type !== 'jimeng2_character_auth'">
         <el-form-item>
           <template #label>
-            <span class="form-label-tip">模型列表
+            <span class="form-label-tip">Danh sách model
               <el-tooltip placement="top" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
-                    该厂商下可用的模型，多个用逗号或换行分隔。<br>
-                    可从上方「追加预设模型」下拉快速添加，也可手动输入。
+                    Danh sách model available của provider này, nhiều model phân cách bằng dấu phẩy hoặc xuống dòng.<br>
+                    Có thể chọn nhanh từ dropdown "Thêm model preset" phía trên, hoặc nhập thủ công.
                   </div>
                 </template>
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -762,7 +762,7 @@ input_reference = (图片文件，可选)</pre>
           <div class="model-row">
             <el-select
               v-model="presetModelPick"
-              placeholder="追加预设模型"
+              placeholder="Thêm model preset"
               clearable
               filterable
               style="width: 220px; margin-bottom: 8px"
@@ -771,34 +771,34 @@ input_reference = (图片文件，可选)</pre>
               <el-option v-for="m in availableModels" :key="m" :label="m" :value="m" />
             </el-select>
           </div>
-          <el-input v-model="form.modelText" type="textarea" :rows="2" placeholder="选择预设厂商后自动填入，可编辑；多个用逗号或换行分隔" />
+          <el-input v-model="form.modelText" type="textarea" :rows="2" placeholder="Tự động điền sau khi chọn provider preset, có thể sửa; nhiều model phân cách bằng dấu phẩy hoặc xuống dòng" />
         </el-form-item>
         <el-form-item>
           <template #label>
-            <span class="form-label-tip">默认模型
-              <el-tooltip content="有多个模型时，实际调用哪个进行生成。建议选响应快、效果好的那个。" placement="top" popper-class="cfg-tip-popper">
+            <span class="form-label-tip">Model mặc định
+              <el-tooltip content="Khi có nhiều model, chọn model nào sẽ được gọi thực tế để generate. Nên chọn model phản hồi nhanh, chất lượng tốt." placement="top" popper-class="cfg-tip-popper">
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
               </el-tooltip>
             </span>
           </template>
           <el-select
             v-model="form.default_model"
-            :placeholder="formModelList.length ? '从上面模型列表中选一个作为生成时使用的默认' : '请先填写上方模型列表'"
+            :placeholder="formModelList.length ? 'Chọn một model từ danh sách phía trên làm mặc định khi generate' : 'Vui lòng điền danh sách model phía trên trước'"
             clearable
             style="width: 100%"
           >
             <el-option v-for="m in formModelList" :key="m" :label="m" :value="m" />
           </el-select>
-          <p class="field-tip">该配置被选为「默认」时，生成故事/图片/视频将使用此处指定的模型。</p>
+          <p class="field-tip">Khi cấu hình này được chọn làm "mặc định", việc tạo kịch bản/ảnh/video sẽ dùng model chỉ định ở đây.</p>
         </el-form-item>
         <el-form-item v-if="isDeepSeekOfficialForm">
           <template #label>
-            <span class="form-label-tip">思考模式
+            <span class="form-label-tip">Chế độ thinking
               <el-tooltip placement="top" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
-                    DeepSeek V4 官方模型用 thinking 参数控制思考模式。<br>
-                    关闭思考对应旧 deepseek-chat；开启思考对应旧 deepseek-reasoner。
+                    Model chính thức DeepSeek V4 dùng param thinking để điều khiển chế độ thinking.<br>
+                    Tắt thinking tương ứng với deepseek-chat cũ; bật thinking tương ứng với deepseek-reasoner cũ.
                   </div>
                 </template>
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -807,8 +807,8 @@ input_reference = (图片文件，可选)</pre>
           </template>
           <div class="deepseek-settings">
             <el-radio-group v-model="form.deepseek_thinking">
-              <el-radio-button label="disabled">关闭思考</el-radio-button>
-              <el-radio-button label="enabled">开启思考</el-radio-button>
+              <el-radio-button label="disabled">Tắt thinking</el-radio-button>
+              <el-radio-button label="enabled">Bật thinking</el-radio-button>
             </el-radio-group>
             <el-select
               v-if="form.deepseek_thinking === 'enabled'"
@@ -819,13 +819,13 @@ input_reference = (图片文件，可选)</pre>
               <el-option label="max" value="max" />
             </el-select>
           </div>
-          <p class="field-tip">官方旧模型名将在 2026-07-24 废弃；新配置建议使用 deepseek-v4-flash 或 deepseek-v4-pro。</p>
+          <p class="field-tip">Tên model cũ chính thức sẽ deprecate vào 2026-07-24; cấu hình mới nên dùng deepseek-v4-flash hoặc deepseek-v4-pro.</p>
         </el-form-item>
         </template>
         <el-form-item>
           <template #label>
-            <span class="form-label-tip">优先级
-              <el-tooltip content="同一服务类型有多个配置时，数字越大越优先被调用。默认 0，一般设为 10 即可。" placement="top" popper-class="cfg-tip-popper">
+            <span class="form-label-tip">Priority
+              <el-tooltip content="Khi cùng một loại dịch vụ có nhiều cấu hình, số càng lớn thì càng được ưu tiên gọi. Mặc định 0, thường set 10 là được." placement="top" popper-class="cfg-tip-popper">
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
               </el-tooltip>
             </span>
@@ -834,12 +834,12 @@ input_reference = (图片文件，可选)</pre>
         </el-form-item>
         <el-form-item>
           <template #label>
-            <span class="form-label-tip">设为默认
+            <span class="form-label-tip">Đặt làm mặc định
               <el-tooltip placement="top" popper-class="cfg-tip-popper">
                 <template #content>
                   <div class="cfg-tip-content">
-                    每种服务类型只有一个「默认」配置。<br>
-                    生成时系统会优先使用默认配置，建议每类至少设一个默认。
+                    Mỗi loại dịch vụ chỉ có một cấu hình "mặc định".<br>
+                    Khi generate, hệ thống ưu tiên dùng cấu hình mặc định, nên set ít nhất một cấu hình mặc định cho mỗi loại.
                   </div>
                 </template>
                 <el-icon class="tip-icon"><QuestionFilled /></el-icon>
@@ -850,39 +850,39 @@ input_reference = (图片文件，可选)</pre>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">确定</el-button>
+        <el-button @click="dialogVisible = false">Huỷ</el-button>
+        <el-button type="primary" :loading="saving" @click="submit">Xác nhận</el-button>
       </template>
     </el-dialog>
 
-    <!-- 一键配置通义 -->
+    <!-- Cấu hình nhanh Tongyi -->
     <el-dialog
       v-model="oneKeyTongyiVisible"
-      title="一键配置通义千问 / 万象（不推荐）"
+      title="Cấu hình nhanh Tongyi Qianwen / Wanxiang (không khuyến nghị)"
       width="520px"
       :close-on-click-modal="false"
       @closed="oneKeyTongyiKey = ''"
     >
       <div class="one-key-help">
         <div class="one-key-section">
-          <div class="one-key-section-title">📋 将自动创建以下配置</div>
+          <div class="one-key-section-title">📋 Sẽ tự động tạo các cấu hình sau</div>
           <ul class="one-key-list">
-            <li><b>文本/对话</b>：通义千问（qwen-plus）— 生成故事剧本</li>
-            <li><b>文本生成图片</b>：通义万象（wan2.6-image）— 角色/场景/道具图</li>
-            <li><b>文本生成图片</b>：通义千问图像（qwen-image-max）— 角色/场景图备选</li>
-            <li><b>分镜图片生成</b>：通义万象（wan2.6-image）— 支持角色参考图</li>
-            <li><b>视频生成</b>：通义万相（wan2.2-kf2v-flash）— 生成视频片段</li>
+            <li><b>Text/Chat</b>: Tongyi Qianwen (qwen-plus) — tạo kịch bản</li>
+            <li><b>Text to image</b>: Tongyi Wanxiang (wan2.6-image) — ảnh nhân vật/scene/đạo cụ</li>
+            <li><b>Text to image</b>: Tongyi Qianwen Image (qwen-image-max) — tuỳ chọn thay thế cho ảnh nhân vật/scene</li>
+            <li><b>Storyboard image</b>: Tongyi Wanxiang (wan2.6-image) — hỗ trợ ảnh tham chiếu nhân vật</li>
+            <li><b>Video generation</b>: Tongyi Wanxiang (wan2.2-kf2v-flash) — tạo video clip</li>
           </ul>
         </div>
         <div class="one-key-section">
-          <div class="one-key-section-title">🔑 如何申请 API Key</div>
+          <div class="one-key-section-title">🔑 Cách đăng ký API Key</div>
           <ol class="one-key-list">
-            <li>前往阿里云百炼控制台：<a href="https://bailian.console.aliyun.com/" target="_blank" class="one-key-link">bailian.console.aliyun.com</a></li>
-            <li>注册/登录阿里云账号，开通「百炼」服务（新用户有免费额度）</li>
-            <li>左侧菜单点击「API Key」→「创建 API Key」</li>
-            <li>复制生成的 Key（格式：<code>sk-xxxxxxxx</code>）填入下方</li>
+            <li>Truy cập Alibaba Cloud Bailian console: <a href="https://bailian.console.aliyun.com/" target="_blank" class="one-key-link">bailian.console.aliyun.com</a></li>
+            <li>Đăng ký/đăng nhập tài khoản Alibaba Cloud, kích hoạt dịch vụ "Bailian" (user mới có free quota)</li>
+            <li>Menu bên trái bấm "API Key" → "Create API Key"</li>
+            <li>Copy Key vừa tạo (format: <code>sk-xxxxxxxx</code>) và dán vào ô dưới</li>
           </ol>
-          <p class="one-key-note">💡 通义一个 Key 同时支持文本、图片、视频等所有服务</p>
+          <p class="one-key-note">💡 Một Key Tongyi đồng thời hỗ trợ text, image, video và tất cả dịch vụ khác</p>
         </div>
       </div>
       <el-form label-width="0" style="margin-top: 8px">
@@ -890,48 +890,48 @@ input_reference = (图片文件，可选)</pre>
           <el-input
             v-model="oneKeyTongyiKey"
             type="password"
-            placeholder="请输入通义（DashScope）API Key，格式：sk-xxxxxxxx"
+            placeholder="Vui lòng nhập Tongyi (DashScope) API Key, format: sk-xxxxxxxx"
             show-password-on="click"
             clearable
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="oneKeyTongyiVisible = false">取消</el-button>
+        <el-button @click="oneKeyTongyiVisible = false">Huỷ</el-button>
         <el-button type="success" :loading="oneKeyTongyiSaving" :disabled="!oneKeyTongyiKey.trim()" @click="submitOneKeyTongyi">
-          确定，一键创建配置
+          Xác nhận, tạo cấu hình nhanh
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 一键配置火山 -->
+    <!-- Cấu hình nhanh Volcengine -->
     <el-dialog
       v-model="oneKeyVolcVisible"
-      title="一键配置火山引擎（方舟）"
+      title="Cấu hình nhanh Volcengine (Ark)"
       width="520px"
       :close-on-click-modal="false"
       @closed="oneKeyVolcKey = ''"
     >
       <div class="one-key-help">
         <div class="one-key-section">
-          <div class="one-key-section-title">📋 将自动创建以下配置</div>
+          <div class="one-key-section-title">📋 Sẽ tự động tạo các cấu hình sau</div>
           <ul class="one-key-list">
-            <li><b>文本/对话</b>：DeepSeek V3（deepseek-v3-2-251201）— 生成故事剧本</li>
-            <li><b>文本生成图片</b>：即梦 4.5（doubao-seedream-4-5-251128）— 角色/场景/道具图</li>
-            <li><b>分镜图片生成</b>：即梦 4.5（doubao-seedream-4-5-251128）— 支持角色参考图</li>
-            <li><b>视频生成</b>：即梦 Seedance 1.5 Pro — 生成视频片段</li>
+            <li><b>Text/Chat</b>: DeepSeek V3 (deepseek-v3-2-251201) — tạo kịch bản</li>
+            <li><b>Text to image</b>: Jimeng 4.5 (doubao-seedream-4-5-251128) — ảnh nhân vật/scene/đạo cụ</li>
+            <li><b>Storyboard image</b>: Jimeng 4.5 (doubao-seedream-4-5-251128) — hỗ trợ ảnh tham chiếu nhân vật</li>
+            <li><b>Video generation</b>: Jimeng Seedance 1.5 Pro — tạo video clip</li>
           </ul>
         </div>
         <div class="one-key-section">
-          <div class="one-key-section-title">🔑 如何申请 API Key</div>
+          <div class="one-key-section-title">🔑 Cách đăng ký API Key</div>
           <ol class="one-key-list">
-            <li>前往火山引擎方舟控制台：<a href="https://console.volcengine.com/ark" target="_blank" class="one-key-link">console.volcengine.com/ark</a></li>
-            <li>注册/登录字节跳动火山引擎账号（新用户有免费 token 额度）</li>
-            <li>左侧菜单点击「API Key 管理」→「创建 API Key」</li>
-            <li>复制生成的 Key 填入下方</li>
+            <li>Truy cập Volcengine Ark console: <a href="https://console.volcengine.com/ark" target="_blank" class="one-key-link">console.volcengine.com/ark</a></li>
+            <li>Đăng ký/đăng nhập tài khoản ByteDance Volcengine (user mới có free token quota)</li>
+            <li>Menu bên trái bấm "API Key management" → "Create API Key"</li>
+            <li>Copy Key vừa tạo và dán vào ô dưới</li>
           </ol>
-          <p class="one-key-note">💡 方舟平台一个 Key 同时支持豆包文本、即梦图片与视频等所有服务</p>
-          <p class="one-key-note">⚠️ 视频生成需在控制台「开通」对应模型（即梦 Seedance）后方可使用</p>
+          <p class="one-key-note">💡 Một Key của Ark platform đồng thời hỗ trợ Doubao text, Jimeng image và video và tất cả dịch vụ khác</p>
+          <p class="one-key-note">⚠️ Video generation cần "kích hoạt" model tương ứng (Jimeng Seedance) trên console trước khi dùng</p>
         </div>
       </div>
       <el-form label-width="0" style="margin-top: 8px">
@@ -939,47 +939,47 @@ input_reference = (图片文件，可选)</pre>
           <el-input
             v-model="oneKeyVolcKey"
             type="password"
-            placeholder="请输入火山引擎（方舟）API Key"
+            placeholder="Vui lòng nhập Volcengine (Ark) API Key"
             show-password-on="click"
             clearable
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="oneKeyVolcVisible = false">取消</el-button>
+        <el-button @click="oneKeyVolcVisible = false">Huỷ</el-button>
         <el-button type="success" :loading="oneKeyVolcSaving" :disabled="!oneKeyVolcKey.trim()" @click="submitOneKeyVolc">
-          确定，一键创建配置
+          Xác nhận, tạo cấu hình nhanh
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 一键配置 Agnes -->
+    <!-- Cấu hình nhanh Agnes -->
     <el-dialog
       v-model="oneKeyAgnesVisible"
-      title="一键配置 Agnes AI"
+      title="Cấu hình nhanh Agnes AI"
       width="520px"
       :close-on-click-modal="false"
       @closed="oneKeyAgnesKey = ''"
     >
       <div class="one-key-help">
         <div class="one-key-section">
-          <div class="one-key-section-title">📋 将自动创建以下配置</div>
+          <div class="one-key-section-title">📋 Sẽ tự động tạo các cấu hình sau</div>
           <ul class="one-key-list">
-            <li><b>文本/对话</b>：Agnes 2.0 Flash（agnes-2.0-flash）— 生成故事剧本</li>
-            <li><b>文本生成图片</b>：Agnes Image 2.1 Flash — 角色/场景/道具图</li>
-            <li><b>分镜图片生成</b>：Agnes Image 2.1 Flash — 支持参考图编辑</li>
-            <li><b>视频生成</b>：Agnes Video V2.0（agnes-video-v2.0）— 生成视频片段</li>
+            <li><b>Text/Chat</b>: Agnes 2.0 Flash (agnes-2.0-flash) — tạo kịch bản</li>
+            <li><b>Text to image</b>: Agnes Image 2.1 Flash — ảnh nhân vật/scene/đạo cụ</li>
+            <li><b>Storyboard image</b>: Agnes Image 2.1 Flash — hỗ trợ sửa với ảnh tham chiếu</li>
+            <li><b>Video generation</b>: Agnes Video V2.0 (agnes-video-v2.0) — tạo video clip</li>
           </ul>
         </div>
         <div class="one-key-section">
-          <div class="one-key-section-title">🔑 如何申请 API Key</div>
+          <div class="one-key-section-title">🔑 Cách đăng ký API Key</div>
           <ol class="one-key-list">
-            <li>前往 Agnes 平台：<a href="https://platform.agnes-ai.com/settings/apiKeys" target="_blank" class="one-key-link">platform.agnes-ai.com/settings/apiKeys</a></li>
-            <li>注册/登录账号，进入 Settings → API Keys</li>
-            <li>点击「Create new secret key」创建密钥</li>
-            <li>复制 Key 填入下方</li>
+            <li>Truy cập Agnes platform: <a href="https://platform.agnes-ai.com/settings/apiKeys" target="_blank" class="one-key-link">platform.agnes-ai.com/settings/apiKeys</a></li>
+            <li>Đăng ký/đăng nhập tài khoản, vào Settings → API Keys</li>
+            <li>Bấm "Create new secret key" để tạo key</li>
+            <li>Copy Key và dán vào ô dưới</li>
           </ol>
-          <p class="one-key-note">💡 一个 Key 同时支持文本、图片、视频；接口文档见 <a href="https://agnes-ai.com/doc/agnes-20-flash" target="_blank" class="one-key-link">agnes-ai.com/doc</a></p>
+          <p class="one-key-note">💡 Một Key đồng thời hỗ trợ text, image, video; tài liệu API xem tại <a href="https://agnes-ai.com/doc/agnes-20-flash" target="_blank" class="one-key-link">agnes-ai.com/doc</a></p>
         </div>
       </div>
       <el-form label-width="0" style="margin-top: 8px">
@@ -987,39 +987,39 @@ input_reference = (图片文件，可选)</pre>
           <el-input
             v-model="oneKeyAgnesKey"
             type="password"
-            placeholder="请输入 Agnes API Key"
+            placeholder="Vui lòng nhập Agnes API Key"
             show-password-on="click"
             clearable
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="oneKeyAgnesVisible = false">取消</el-button>
+        <el-button @click="oneKeyAgnesVisible = false">Huỷ</el-button>
         <el-button type="success" :loading="oneKeyAgnesSaving" :disabled="!oneKeyAgnesKey.trim()" @click="submitOneKeyAgnes">
-          确定，一键创建配置
+          Xác nhận, tạo cấu hình nhanh
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 即梦2角色认证：素材列表 -->
+    <!-- Jimeng2 character auth: danh sách tư liệu -->
     <el-dialog
       v-model="jimeng2AssetsDialogVisible"
-      title="素材库列表（GET /api/business/v1/assets）"
+      title="Danh sách thư viện tư liệu (GET /api/business/v1/assets)"
       width="720px"
       class="jimeng2-assets-dialog"
       destroy-on-close
       @closed="onJimeng2AssetsDialogClosed"
     >
       <p class="field-tip" style="margin-top: 0">
-        文档：
-        <a href="https://83zi.com/sd2realperson.html" target="_blank" rel="noopener noreferrer">SilvaMux 素材管理 API</a>
-        ；仅 <code>status=active</code> 的素材可用于 Seedance 2.0 视频引用。
+        Tài liệu:
+        <a href="https://83zi.com/sd2realperson.html" target="_blank" rel="noopener noreferrer">SilvaMux Material Management API</a>
+        ; chỉ tư liệu có <code>status=active</code> mới có thể dùng cho reference của Seedance 2.0 video.
       </p>
-      <el-table v-loading="jimeng2AssetsLoading" :data="jimeng2AssetsRows" stripe max-height="420" empty-text="暂无数据或未加载">
-        <el-table-column prop="id" label="素材 ID" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="name" label="名称" width="100" show-overflow-tooltip />
-        <el-table-column prop="asset_type" label="类型" width="88" />
-        <el-table-column prop="status" label="状态" width="96">
+      <el-table v-loading="jimeng2AssetsLoading" :data="jimeng2AssetsRows" stripe max-height="420" empty-text="Chưa có dữ liệu hoặc chưa load">
+        <el-table-column prop="id" label="Asset ID" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="name" label="Tên" width="100" show-overflow-tooltip />
+        <el-table-column prop="asset_type" label="Loại" width="88" />
+        <el-table-column prop="status" label="Trạng thái" width="96">
           <template #default="{ row }">
             <el-tag :type="row.status === 'active' ? 'success' : row.status === 'failed' ? 'danger' : 'info'" size="small">
               {{ row.status || '—' }}
@@ -1027,67 +1027,67 @@ input_reference = (图片文件，可选)</pre>
           </template>
         </el-table-column>
         <el-table-column prop="asset_url" label="asset_url" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="url" label="原始 URL" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="created_at" label="创建时间" width="160" show-overflow-tooltip />
+        <el-table-column prop="url" label="URL gốc" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="created_at" label="Thời gian tạo" width="160" show-overflow-tooltip />
       </el-table>
       <div v-if="jimeng2AssetsHasMore" style="margin-top: 12px; text-align: center">
-        <el-button :loading="jimeng2AssetsLoading" @click="loadMoreJimeng2MaterialAssets">加载更多</el-button>
+        <el-button :loading="jimeng2AssetsLoading" @click="loadMoreJimeng2MaterialAssets">Tải thêm</el-button>
       </div>
       <template #footer>
-        <el-button @click="jimeng2AssetsDialogVisible = false">关闭</el-button>
+        <el-button @click="jimeng2AssetsDialogVisible = false">Đóng</el-button>
       </template>
     </el-dialog>
 
-    <!-- 测试连接 -->
-    <el-dialog v-model="testVisible" title="测试连接" width="420px">
-      <p v-if="testResult === null">正在测试…</p>
+    <!-- Test kết nối -->
+    <el-dialog v-model="testVisible" title="Test kết nối" width="420px">
+      <p v-if="testResult === null">Đang test...</p>
       <template v-else-if="testResult">
         <el-alert
           v-if="testServiceType === 'image' || testServiceType === 'storyboard_image' || testServiceType === 'video'"
           type="success"
-          title="连接成功"
-          description="API Key 有效，网络已连通。提示：测试仅验证 Key 合法性，不实际生成图片/视频，模型名填错、账号未开通该功能或配额不足时实际生成仍可能报错。"
+          title="Kết nối thành công"
+          description="API Key hợp lệ, mạng đã kết nối. Lưu ý: test chỉ xác thực tính hợp lệ của Key, không thực sự tạo ảnh/video, khi tên model sai, account chưa kích hoạt tính năng đó hoặc quota không đủ thì việc tạo thực tế vẫn có thể lỗi."
           show-icon
           :closable="false"
         />
         <el-alert
           v-else
           type="success"
-          title="连接成功"
-          description="文本生成接口已正常响应。"
+          title="Kết nối thành công"
+          description="API text generation đã phản hồi bình thường."
           show-icon
           :closable="false"
         />
       </template>
-      <el-alert v-else type="error" :title="testError || '连接失败'" show-icon :closable="false" />
+      <el-alert v-else type="error" :title="testError || 'Kết nối thất bại'" show-icon :closable="false" />
       <template #footer>
-        <el-button @click="testVisible = false">关闭</el-button>
+        <el-button @click="testVisible = false">Đóng</el-button>
       </template>
     </el-dialog>
 
-    <!-- 一键换Key（锁定模式） -->
-    <el-dialog v-model="bulkKeyVisible" title="一键换Key" width="440px" :close-on-click-modal="false">
+    <!-- Đổi Key hàng loạt (chế độ khoá) -->
+    <el-dialog v-model="bulkKeyVisible" title="Đổi Key hàng loạt" width="440px" :close-on-click-modal="false">
       <el-alert
         type="warning"
         :closable="false"
         style="margin-bottom: 16px"
-        title="此操作将替换所有配置的 API Key，请确认新 Key 可用后再提交。"
+        title="Thao tác này sẽ thay thế API Key của tất cả cấu hình, vui lòng xác nhận Key mới khả dụng trước khi submit."
         show-icon
       />
       <el-form label-width="80px">
-        <el-form-item label="新 API Key">
+        <el-form-item label="API Key mới">
           <el-input
             v-model="bulkKeyInput"
             type="password"
             show-password
-            placeholder="粘贴新的 API Key"
+            placeholder="Dán API Key mới"
             clearable
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="bulkKeyVisible = false">取消</el-button>
-        <el-button type="primary" :loading="bulkKeySaving" :disabled="!bulkKeyInput.trim()" @click="submitBulkKey">确认替换</el-button>
+        <el-button @click="bulkKeyVisible = false">Huỷ</el-button>
+        <el-button type="primary" :loading="bulkKeySaving" :disabled="!bulkKeyInput.trim()" @click="submitBulkKey">Xác nhận thay thế</el-button>
       </template>
     </el-dialog>
   </div>
@@ -1106,7 +1106,7 @@ import Sd2AssetManagement from '@/components/Sd2AssetManagement.vue'
 const activeTab = ref('configs')
 const importFileRef = ref(null)
 
-// ---- 生成设置 ----
+// ---- Cài đặt generate ----
 const genConcurrencyInput = ref(3)
 const genVideoConcurrencyInput = ref(3)
 const genSettingSaving = ref(false)
@@ -1134,11 +1134,11 @@ async function saveGenerationSettings() {
   const n = Number(genConcurrencyInput.value)
   const nv = Number(genVideoConcurrencyInput.value)
   if (isNaN(n) || n < 1 || n > 20) {
-    ElMessage.warning('图片并发数请填写 1-20 之间的整数')
+    ElMessage.warning('Concurrency ảnh vui lòng nhập số nguyên trong khoảng 1-20')
     return
   }
   if (isNaN(nv) || nv < 1 || nv > 20) {
-    ElMessage.warning('视频并发数请填写 1-20 之间的整数')
+    ElMessage.warning('Concurrency video vui lòng nhập số nguyên trong khoảng 1-20')
     return
   }
   genSettingSaving.value = true
@@ -1148,7 +1148,7 @@ async function saveGenerationSettings() {
     genSettingSaved.value = true
     setTimeout(() => { genSettingSaved.value = false }, 2000)
   } catch (e) {
-    ElMessage.error('保存失败：' + (e?.message || ''))
+    ElMessage.error('Lưu thất bại: ' + (e?.message || ''))
   } finally {
     genSettingSaving.value = false
   }
@@ -1186,11 +1186,11 @@ const form = ref({
   deepseek_reasoning_effort: 'high',
   priority: 0,
   is_default: false,
-  // 可灵 Omni 官方 AK/SK（存 settings，后端生成 JWT）
+  // Kling Omni chính thức AK/SK (lưu ở settings, backend tạo JWT)
   kling_access_key: '',
   kling_secret_key: '',
   kling_secret_key_base64: false,
-  // TTS 专属字段
+  // Field riêng của TTS
   voice_id: '',
   group_id: '',
 })
@@ -1198,7 +1198,7 @@ const presetModelPick = ref('')
 
 const formModelList = computed(() => parseModelText(form.value.modelText))
 
-// 保证「生成时默认使用」下拉有可选且选中值在列表内，否则会不显示或修改无效
+// Đảm bảo dropdown "Model mặc định khi generate" có option để chọn và giá trị đã chọn nằm trong list, nếu không sẽ không hiển thị hoặc thay đổi không hiệu lực
 watch(
   () => [formModelList.value, form.value.default_model],
   () => {
@@ -1229,7 +1229,7 @@ function onServiceTypeChange() {
       form.value.api_protocol = ''
     }
     if (!editingId.value && !form.value.name?.trim()) {
-      form.value.name = '即梦2角色认证'
+      form.value.name = 'Jimeng2 character auth'
     }
     return
   }
@@ -1255,24 +1255,24 @@ function onPresetModelSelect(value) {
   presetModelPick.value = ''
 }
 const rules = computed(() => ({
-  service_type: [{ required: true, message: '请选择服务类型', trigger: 'change' }],
-  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  provider: [{ required: true, message: '请选择或输入厂商', trigger: 'change' }],
-  base_url: [{ required: true, message: '请输入 Base URL', trigger: 'blur' }],
+  service_type: [{ required: true, message: 'Vui lòng chọn loại dịch vụ', trigger: 'change' }],
+  name: [{ required: true, message: 'Vui lòng nhập tên', trigger: 'blur' }],
+  provider: [{ required: true, message: 'Vui lòng chọn hoặc nhập provider', trigger: 'change' }],
+  base_url: [{ required: true, message: 'Vui lòng nhập Base URL', trigger: 'blur' }],
   api_key: [
     {
       validator: (_rule, v, cb) => {
         const st = form.value.service_type
         if (st === 'jimeng2_character_auth') {
           if (v != null && String(v).trim()) return cb()
-          return cb(new Error('请填写 Token'))
+          return cb(new Error('Vui lòng nhập Token'))
         }
         const proto = form.value.api_protocol
         const ak = (form.value.kling_access_key || '').trim()
         const sk = (form.value.kling_secret_key || '').trim()
         if (st === 'video' && proto === 'kling_omni' && ak && sk) return cb()
         if (v != null && String(v).trim()) return cb()
-        cb(new Error('请输入 API Key，或使用官方 AccessKey + SecretKey（可不填 API Key）'))
+        cb(new Error('Vui lòng nhập API Key, hoặc dùng AccessKey + SecretKey chính thức (có thể bỏ trống API Key)'))
       },
       trigger: 'blur',
     },
@@ -1292,32 +1292,32 @@ const oneKeyAgnesVisible = ref(false)
 const oneKeyAgnesKey = ref('')
 const oneKeyAgnesSaving = ref(false)
 
-/** 预设厂商与模型（与参考前端一致） */
+/** Provider và model preset (khớp với frontend tham chiếu) */
 const providerConfigs = {
   text: [
     { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'] },
-    { id: 'volcengine', name: '火山引擎', models: ['deepseek-v3-2-251201', 'doubao-1-5-pro-32k-250115', 'kimi-k2-thinking-251104'] },
+    { id: 'volcengine', name: 'Volcengine', models: ['deepseek-v3-2-251201', 'doubao-1-5-pro-32k-250115', 'kimi-k2-thinking-251104'] },
     // { id: 'chatfire', name: 'Chatfire', models: ['gemini-3-flash-preview', 'claude-sonnet-4-5-20250929', 'doubao-seed-1-8-251228'] },
     { id: 'gemini', name: 'Google Gemini', models: ['gemini-2.5-pro', 'gemini-3-flash-preview'] },
     { id: 'deepseek', name: 'DeepSeek', models: ['deepseek-v4-flash', 'deepseek-v4-pro'] },
-    { id: 'qwen', name: '通义千问', models: ['qwen3-max', 'qwen-plus', 'qwen-flash'] },
+    { id: 'qwen', name: 'Tongyi Qianwen', models: ['qwen3-max', 'qwen-plus', 'qwen-flash'] },
     { id: 'agnes', name: 'Agnes AI', models: ['agnes-2.0-flash'] }
   ],
   image: [
-    { id: 'volcengine', name: '火山引擎', models: ['doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828'] },
-    { id: 'kling', name: '可灵 Kling', models: ['kling-image', 'kling-omni-image'] },
+    { id: 'volcengine', name: 'Volcengine', models: ['doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828'] },
+    { id: 'kling', name: 'Kling', models: ['kling-image', 'kling-omni-image'] },
     { id: 'nano_banana', name: 'NanoBanana', models: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'] },
     // { id: 'chatfire', name: 'Chatfire', models: ['nano-banana-pro', 'doubao-seedream-4-5-251128', 'qwen-image'] },
     { id: 'gemini', name: 'Google Gemini', models: ['gemini-2.5-flash-image', 'gemini-2.5-flash-image-preview', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview'] },
     { id: 'openai', name: 'OpenAI', models: ['dall-e-3', 'dall-e-2'] },
-    { id: 'dashscope', name: '通义万象', models: ['wan2.6-image', 'qwen-image-edit-plus-2026-01-09', 'qwen-image-edit-plus', 'qwen-image-edit-max'] },
-    { id: 'qwen_image', name: '通义千问', models: ['qwen-image-max', 'qwen-image-plus', 'qwen-image'] },
+    { id: 'dashscope', name: 'Tongyi Wanxiang', models: ['wan2.6-image', 'qwen-image-edit-plus-2026-01-09', 'qwen-image-edit-plus', 'qwen-image-edit-max'] },
+    { id: 'qwen_image', name: 'Tongyi Qianwen', models: ['qwen-image-max', 'qwen-image-plus', 'qwen-image'] },
     { id: 'agnes', name: 'Agnes AI', models: ['agnes-image-2.1-flash', 'agnes-image-2.0-flash'] }
   ],
   storyboard_image: [
-    { id: 'dashscope', name: '通义万象', models: ['wan2.6-image', 'qwen-image-edit-plus-2026-01-09', 'qwen-image-edit-plus', 'qwen-image-edit-max'] },
-    { id: 'volcengine', name: '火山引擎', models: ['doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828'] },
-    { id: 'kling', name: '可灵 Kling', models: ['kling-image', 'kling-omni-image'] },
+    { id: 'dashscope', name: 'Tongyi Wanxiang', models: ['wan2.6-image', 'qwen-image-edit-plus-2026-01-09', 'qwen-image-edit-plus', 'qwen-image-edit-max'] },
+    { id: 'volcengine', name: 'Volcengine', models: ['doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828'] },
+    { id: 'kling', name: 'Kling', models: ['kling-image', 'kling-omni-image'] },
     { id: 'nano_banana', name: 'NanoBanana', models: ['nano-banana-2', 'nano-banana-pro', 'nano-banana'] },
     // { id: 'chatfire', name: 'Chatfire', models: ['nano-banana-pro', 'doubao-seedream-4-5-251128', 'qwen-image'] },
     { id: 'gemini', name: 'Google Gemini', models: ['gemini-2.5-flash-image', 'gemini-2.5-flash-image-preview', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview'] },
@@ -1325,18 +1325,18 @@ const providerConfigs = {
     { id: 'agnes', name: 'Agnes AI', models: ['agnes-image-2.1-flash', 'agnes-image-2.0-flash'] }
   ],
   video: [
-    { id: 'klingai', name: '可灵官方 Omni (api-beijing.klingai.com)', models: ['kling-video-o1', 'kling-v3-omni'] },
-    { id: 'ffir', name: '飞儿API / 可灵 Omni-Video (ffir.cn)', models: ['kling-video-o1', 'kling-v3-omni'] },
-    { id: 'kling', name: '可灵 Kling', models: ['kling-omni-video', 'kling-video', 'kling-motion-control'] },
+    { id: 'klingai', name: 'Kling chính thức Omni (api-beijing.klingai.com)', models: ['kling-video-o1', 'kling-v3-omni'] },
+    { id: 'ffir', name: 'Feier API / Kling Omni-Video (ffir.cn)', models: ['kling-video-o1', 'kling-v3-omni'] },
+    { id: 'kling', name: 'Kling', models: ['kling-omni-video', 'kling-video', 'kling-motion-control'] },
     { id: 'vidu', name: 'Vidu', models: ['viduq2', 'viduq2-pro', 'viduq2-turbo', 'viduq3-pro'] },
-    { id: 'volces', name: '火山引擎', models: ['doubao-seedance-2-0-260128', 'doubao-seedance-2-0-fast-260128', 'doubao-seedance-1-5-pro-251215', 'doubao-seedance-1-0-lite-i2v-250428', 'doubao-seedance-1-0-lite-t2v-250428', 'doubao-seedance-1-0-pro-250528', 'doubao-seedance-1-0-pro-fast-251015'] },
+    { id: 'volces', name: 'Volcengine', models: ['doubao-seedance-2-0-260128', 'doubao-seedance-2-0-fast-260128', 'doubao-seedance-1-5-pro-251215', 'doubao-seedance-1-0-lite-i2v-250428', 'doubao-seedance-1-0-lite-t2v-250428', 'doubao-seedance-1-0-pro-250528', 'doubao-seedance-1-0-pro-fast-251015'] },
     // { id: 'chatfire', name: 'Chatfire', models: ['doubao-seedance-1-5-pro-251215', 'doubao-seedance-1-0-lite-i2v-250428', 'doubao-seedance-1-0-lite-t2v-250428', 'doubao-seedance-1-0-pro-250528', 'doubao-seedance-1-0-pro-fast-251015', 'sora-2', 'sora-2-pro'] },
-    { id: 'minimax', name: 'MiniMax 海螺', models: ['MiniMax-Hailuo-2.3', 'MiniMax-Hailuo-2.3-Fast', 'MiniMax-Hailuo-02'] },
+    { id: 'minimax', name: 'MiniMax Hailuo', models: ['MiniMax-Hailuo-2.3', 'MiniMax-Hailuo-2.3-Fast', 'MiniMax-Hailuo-02'] },
     { id: 'gemini', name: 'Google Gemini (Veo)', models: ['veo-3.1-generate-preview', 'veo-3.0-generate-preview', 'veo-3.0-fast-generate-preview'] },
-    { id: 'dashscope', name: '通义万相', models: ['wan2.6-r2v-flash', 'wan2.6-t2v', 'wan2.2-kf2v-flash', 'wan2.6-i2v-flash', 'wanx2.1-vace-plus'] },
+    { id: 'dashscope', name: 'Tongyi Wanxiang', models: ['wan2.6-r2v-flash', 'wan2.6-t2v', 'wan2.2-kf2v-flash', 'wan2.6-i2v-flash', 'wanx2.1-vace-plus'] },
     {
       id: 'jimeng_ai_api',
-      name: 'Jimeng AI API（自建即梦免费 API）',
+      name: 'Jimeng AI API (Jimeng free API self-hosted)',
       models: [
         'jimeng-video-seedance-2.0',
         'seedance-2.0',
@@ -1352,15 +1352,15 @@ const providerConfigs = {
   ],
   tts: [
     { id: 'minimax', name: 'MiniMax T2A', models: ['speech-02-hd', 'speech-02-turbo'] },
-    { id: 'omnivoice', name: 'OmniVoice（本地）', models: ['omnivoice'] },
-    { id: 'elevenlabs', name: 'ElevenLabs（仅用于取样克隆）', models: ['eleven_multilingual_v2'] },
+    { id: 'omnivoice', name: 'OmniVoice (local)', models: ['omnivoice'] },
+    { id: 'elevenlabs', name: 'ElevenLabs (chỉ dùng cho voice cloning từ mẫu)', models: ['eleven_multilingual_v2'] },
   ],
   jimeng2_character_auth: [
-    { id: 'jimeng_material_api', name: '即梦业务素材 API（/api/business/v1）', models: ['-'] },
+    { id: 'jimeng_material_api', name: 'Jimeng Business Material API (/api/business/v1)', models: ['-'] },
   ],
 }
 
-/** 厂商 id → 默认接口规范（api_protocol） */
+/** Provider id → API protocol mặc định */
 const providerProtocolMap = {
   // image / storyboard_image
   volcengine: 'volcengine',
@@ -1388,7 +1388,7 @@ const providerProtocolMap = {
   jimeng_material_api: '',
 }
 
-/** 厂商 id → 默认 Base URL（与参考前端 AIConfigDialog 757-775 一致） */
+/** Provider id → Base URL mặc định (khớp với frontend tham chiếu AIConfigDialog 757-775) */
 function getBaseUrlForProvider(provider) {
   if (!provider) return ''
   const p = String(provider).toLowerCase()
@@ -1452,20 +1452,20 @@ const isDeepSeekOfficialForm = computed(() => (
   && isDeepSeekOfficial(form.value.provider, form.value.base_url)
 ))
 
-/** 当前服务类型下的预设厂商列表（编辑时若当前 provider 不在列表则补一项；末尾始终附一项自定义入口） */
+/** Danh sách provider preset cho loại dịch vụ hiện tại (khi edit nếu provider hiện tại không có trong list thì bổ sung; luôn thêm entry tuỳ chỉnh ở cuối) */
 const availableProviderOptions = computed(() => {
   const st = form.value.service_type || 'text'
   const listByType = providerConfigs[st] || []
   const current = form.value.provider
   let result = [...listByType]
   if (editingId.value && current && current !== CUSTOM_PROVIDER_SENTINEL && !listByType.some((p) => p.id === current)) {
-    result = [{ id: current, name: current + ' (当前)', models: [] }, ...result]
+    result = [{ id: current, name: current + ' (hiện tại)', models: [] }, ...result]
   }
-  result.push({ id: CUSTOM_PROVIDER_SENTINEL, name: '✏️ 自定义（直接输入厂商名）', models: [] })
+  result.push({ id: CUSTOM_PROVIDER_SENTINEL, name: '✏️ Tuỳ chỉnh (nhập trực tiếp tên provider)', models: [] })
   return result
 })
 
-/** 当前厂商的预设模型列表（用于追加预设模型） */
+/** Danh sách model preset của provider hiện tại (dùng cho việc thêm model preset) */
 const availableModels = computed(() => {
   const st = form.value.service_type
   const provider = form.value.provider
@@ -1474,7 +1474,7 @@ const availableModels = computed(() => {
   return p?.models || []
 })
 
-/** 根据当前厂商/协议/base_url 推算实际将使用的接口地址，供用户核对 */
+/** Suy luận địa chỉ API sẽ dùng thực tế dựa trên provider/protocol/base_url hiện tại, để user kiểm tra */
 const endpointPreviewInfo = computed(() => {
   const { provider, api_protocol, base_url, service_type, endpoint, query_endpoint } = form.value
   const p = String(provider || '').toLowerCase()
@@ -1482,7 +1482,7 @@ const endpointPreviewInfo = computed(() => {
   const base = (base_url || '').replace(/\/$/, '')
 
   if (service_type === 'jimeng2_character_auth') {
-    const root = base || '(请填写网关 URL)'
+    const root = base || '(Vui lòng điền Gateway URL)'
     const hasReal = !root.startsWith('(')
     return {
       submit: `${root}/api/business/v1/assets`,
@@ -1512,15 +1512,15 @@ const endpointPreviewInfo = computed(() => {
     } else if (proto === 'dashscope' || p === 'dashscope' || p === 'qwen_image') {
       submitPath = '/api/v1/services/aigc/multimodal-generation/generation'
     } else if (proto === 'gemini' || p === 'gemini') {
-      const m = form.value.default_model || '{模型名}'
+      const m = form.value.default_model || '{model_name}'
       submitPath = `/v1beta/models/${m}:generateContent?key=***`
       return { submit: base + submitPath, query: null, isAuto: true, isGemini: true }
     } else if (proto === 'nano_banana' || p === 'nano_banana') {
-      submitPath = '/v1/images/generations'  // nano_banana base_url 无 /v1
+      submitPath = '/v1/images/generations'  // nano_banana base_url không có /v1
     } else if (proto === 'kling' || p === 'kling' || p === 'klingai') {
       submitPath = '/v1/images/generations'
     } else {
-      submitPath = '/images/generations'  // openai 兼容：base_url 已含 /v1
+      submitPath = '/images/generations'  // openai compatible: base_url đã có /v1
     }
     } else if (service_type === 'video') {
     if (endpoint) {
@@ -1532,10 +1532,10 @@ const endpointPreviewInfo = computed(() => {
     } else if (proto === 'dashscope' || p === 'dashscope') {
       submitPath = '/api/v1/services/aigc/video-generation/video-synthesis'
     } else if (proto === 'gemini' || p === 'gemini') {
-      const m = form.value.default_model || '{模型名}'
+      const m = form.value.default_model || '{model_name}'
       return {
-        submit: `${base}/v1beta/models/${m}:predictLongRunning  （API Key 放 header: x-goog-api-key）`,
-        query: `${base}/v1beta/{operationName}  （operationName 由提交响应返回）`,
+        submit: `${base}/v1beta/models/${m}:predictLongRunning  (API Key đặt ở header: x-goog-api-key)`,
+        query: `${base}/v1beta/{operationName}  (operationName được trả về từ response submit)`,
         isAuto: true,
         isGemini: true
       }
@@ -1552,7 +1552,7 @@ const endpointPreviewInfo = computed(() => {
     } else if (proto === 'jimeng_ai_api' || p === 'jimeng_ai_api') {
       submitPath = endpoint || '/v1/videos/generations'
       return {
-        submit: (base || '(请填 Base URL)') + submitPath + '  （Bearer 为即梦 Session，可多账号英文逗号分隔；同步返回 data[0].url）',
+        submit: (base || '(Vui lòng điền Base URL)') + submitPath + '  (Bearer là Jimeng Session, có thể nhiều account phân cách bằng dấu phẩy; response đồng bộ data[0].url)',
         query: null,
         isAuto: true,
       }
@@ -1561,9 +1561,9 @@ const endpointPreviewInfo = computed(() => {
       const omniKlingOfficial = p === 'klingai' || /api(-beijing|-singapore)?\.klingai\.com/i.test(base)
       submitPath = omniFfir ? '/kling/v1/videos/omni-video' : omniKlingOfficial ? '/v1/videos/omni-video' : '/kling/v1/videos/omni-video'
     } else if (proto === 'kling' || p === 'kling' || p === 'klingai') {
-      submitPath = '/v1/videos/text2video (T2V) 或 /v1/videos/image2video (I2V)'
+      submitPath = '/v1/videos/text2video (T2V) hoặc /v1/videos/image2video (I2V)'
     } else if (p === 'minimax') {
-      submitPath = '/video_generation'  // minimax base_url 已含 /v1
+      submitPath = '/video_generation'  // minimax base_url đã có /v1
     } else {
       submitPath = '/v1/video/create'
     }
@@ -1595,22 +1595,22 @@ const endpointPreviewInfo = computed(() => {
           ? '/v1/videos/omni-video/{taskId}'
           : '/kling/v1/images/omni-image/{taskId}'
     } else if (proto === 'kling' || p === 'kling' || p === 'klingai') {
-      queryPath = '/v1/videos/{videoType}/{taskId}（自动按任务类型选择）'
+      queryPath = '/v1/videos/{videoType}/{taskId} (tự chọn theo loại task)'
     } else if (p === 'minimax') {
-      queryPath = '/query/video_generation?task_id={taskId}'  // minimax base_url 已含 /v1
+      queryPath = '/query/video_generation?task_id={taskId}'  // minimax base_url đã có /v1
     } else if (proto !== 'gemini' && p !== 'gemini') {
       queryPath = '/v1/video/query?id={taskId}'
     }
   }
 
-  const submitUrl = base ? (base + submitPath) : ('(未填 Base URL)' + submitPath)
-  const queryUrl = queryPath ? (base ? base + queryPath : '(未填 Base URL)' + queryPath) : null
+  const submitUrl = base ? (base + submitPath) : ('(Chưa điền Base URL)' + submitPath)
+  const queryUrl = queryPath ? (base ? base + queryPath : '(Chưa điền Base URL)' + queryPath) : null
 
   if (!submitPath) return null
   return {
     submit: submitUrl,
     query: queryUrl,
-    isAuto: !endpoint  // 端点是自动推断的（非用户手填）
+    isAuto: !endpoint  // Endpoint được tự suy luận (không phải user tự điền)
   }
 })
 
@@ -1638,7 +1638,7 @@ function onProviderChange(providerId) {
     form.value.deepseek_thinking = 'disabled'
     form.value.deepseek_reasoning_effort = 'high'
   }
-  // 自动填充接口规范
+  // Tự động điền API protocol
   form.value.api_protocol = providerProtocolMap[providerId] || (st === 'text' ? '' : 'openai')
   if (st === 'video' && providerId === 'jimeng_ai_api') {
     form.value.endpoint = ''
@@ -1663,40 +1663,40 @@ function onProviderChange(providerId) {
   }
 }
 
-/** 通义一键配置用 */
+/** Preset dùng cho cấu hình nhanh Tongyi */
 const TONGYI_CONFIGS = [
-  { service_type: 'text', name: '通义千问', base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', provider: 'qwen', model: ['qwen-plus'] },
-  { service_type: 'image', name: '通义万象 文本生图', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.6-image'] },
-  { service_type: 'image', name: '通义千问 文本生图', base_url: 'https://dashscope.aliyuncs.com', provider: 'qwen_image', model: ['qwen-image-max', 'qwen-image-plus', 'qwen-image'] },
-  { service_type: 'storyboard_image', name: '通义万象 分镜图', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.6-image'] },
-  { service_type: 'video', name: '通义万相', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.2-kf2v-flash'] }
+  { service_type: 'text', name: 'Tongyi Qianwen', base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', provider: 'qwen', model: ['qwen-plus'] },
+  { service_type: 'image', name: 'Tongyi Wanxiang text-to-image', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.6-image'] },
+  { service_type: 'image', name: 'Tongyi Qianwen text-to-image', base_url: 'https://dashscope.aliyuncs.com', provider: 'qwen_image', model: ['qwen-image-max', 'qwen-image-plus', 'qwen-image'] },
+  { service_type: 'storyboard_image', name: 'Tongyi Wanxiang storyboard image', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.6-image'] },
+  { service_type: 'video', name: 'Tongyi Wanxiang', base_url: 'https://dashscope.aliyuncs.com', provider: 'dashscope', model: ['wan2.2-kf2v-flash'] }
 ]
 
-/** 火山引擎一键配置用 */
+/** Preset dùng cho cấu hình nhanh Volcengine */
 const VOLCENGINE_CONFIGS = [
-  { service_type: 'text', name: '火山引擎 文本', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['deepseek-v3-2-251201', 'doubao-1-5-pro-32k-250115', 'kimi-k2-thinking-251104'] },
-  { service_type: 'image', name: '火山引擎 即梦 文本生图', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['doubao-seedream-4-5-251128'] },
-  { service_type: 'storyboard_image', name: '火山引擎 即梦 分镜图', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['doubao-seedream-4-5-251128'] },
-  { service_type: 'video', name: '火山引擎 即梦 视频', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volces', model: ['doubao-seedance-1-5-pro-251215'] }
+  { service_type: 'text', name: 'Volcengine text', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['deepseek-v3-2-251201', 'doubao-1-5-pro-32k-250115', 'kimi-k2-thinking-251104'] },
+  { service_type: 'image', name: 'Volcengine Jimeng text-to-image', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['doubao-seedream-4-5-251128'] },
+  { service_type: 'storyboard_image', name: 'Volcengine Jimeng storyboard image', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volcengine', model: ['doubao-seedream-4-5-251128'] },
+  { service_type: 'video', name: 'Volcengine Jimeng video', base_url: 'https://ark.cn-beijing.volces.com/api/v3', provider: 'volces', model: ['doubao-seedance-1-5-pro-251215'] }
 ]
 
-/** Agnes 一键配置用 */
+/** Preset dùng cho cấu hình nhanh Agnes */
 const AGNES_CONFIGS = [
-  { service_type: 'text', name: 'Agnes 文本', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-2.0-flash'] },
-  { service_type: 'image', name: 'Agnes 文本生图', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-image-2.1-flash'] },
-  { service_type: 'storyboard_image', name: 'Agnes 分镜图', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-image-2.1-flash'] },
-  { service_type: 'video', name: 'Agnes 视频', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'agnes', endpoint: '/videos', query_endpoint: '/videos/{taskId}', model: ['agnes-video-v2.0'] },
+  { service_type: 'text', name: 'Agnes text', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-2.0-flash'] },
+  { service_type: 'image', name: 'Agnes text-to-image', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-image-2.1-flash'] },
+  { service_type: 'storyboard_image', name: 'Agnes storyboard image', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'openai', model: ['agnes-image-2.1-flash'] },
+  { service_type: 'video', name: 'Agnes video', base_url: 'https://apihub.agnes-ai.com/v1', provider: 'agnes', api_protocol: 'agnes', endpoint: '/videos', query_endpoint: '/videos/{taskId}', model: ['agnes-video-v2.0'] },
 ]
 
 function serviceTypeLabel(t) {
   const map = {
-    text: '文本',
-    image: '文本生成图片',
-    storyboard_image: '分镜图片生成',
-    video: '视频',
-    tts: '语音合成 TTS',
-    jimeng2_character_auth: '即梦2角色认证',
-    model_ark_asset: 'SD2 资产库',
+    text: 'Text',
+    image: 'Text to image',
+    storyboard_image: 'Storyboard image',
+    video: 'Video',
+    tts: 'TTS',
+    jimeng2_character_auth: 'Jimeng2 character auth',
+    model_ark_asset: 'SD2 asset',
   }
   return map[t] || t
 }
@@ -1704,7 +1704,7 @@ function serviceTypeLabel(t) {
 function onRowEdit(row) {
   if (row.service_type === 'model_ark_asset') {
     activeTab.value = 'sd2_assets'
-    ElMessage.info('请在「SD2 资产管理」标签页编辑此配置')
+    ElMessage.info('Vui lòng sửa cấu hình này trong tab "Quản lý SD2 asset"')
     return
   }
   openEdit(row)
@@ -1746,7 +1746,7 @@ function resetForm() {
     deepseek_thinking: 'disabled',
     deepseek_reasoning_effort: 'high',
     priority: 0,
-    is_default: true,  // 新增时默认勾选「设为默认」，便于理解当前会使用哪条配置
+    is_default: true,  // Khi tạo mới, mặc định tick "Đặt làm mặc định", giúp dễ hiểu cấu hình nào đang được dùng
     voice_id: '',
     group_id: '',
     kling_access_key: '',
@@ -1766,7 +1766,7 @@ function openEdit(row) {
   const model = Array.isArray(row.model) ? row.model : (row.model ? [row.model] : [])
   const modelList = model.map((m) => String(m).trim()).filter(Boolean)
   const defaultInList = row.default_model && modelList.includes(row.default_model)
-  // TTS / 可灵 Omni 等从 settings 解析
+  // TTS / Kling Omni... parse từ settings
   let voice_id = row.voice_id || ''
   let group_id = row.group_id || ''
   let kling_access_key = ''
@@ -1822,7 +1822,7 @@ async function submit() {
     const defaultModel = form.value.default_model && modelList.includes(form.value.default_model)
       ? form.value.default_model
       : modelList[0] || null
-    // TTS / 可灵 Omni 官方 AKSK / DeepSeek V4 参数打包进 settings
+    // TTS / Kling Omni chính thức AKSK / DeepSeek V4 param được đóng gói vào settings
     let settings = undefined
     if (form.value.service_type === 'tts') {
       const s = {}
@@ -1874,15 +1874,15 @@ async function submit() {
     }
     if (editingId.value) {
       await aiAPI.update(editingId.value, payload)
-      ElMessage.success('保存成功')
+      ElMessage.success('Đã lưu')
     } else {
       await aiAPI.create(payload)
-      ElMessage.success('添加成功')
+      ElMessage.success('Đã thêm')
     }
     dialogVisible.value = false
     await loadList()
   } catch (e) {
-    // request 已统一报错
+    // request đã xử lý lỗi thống nhất
   } finally {
     saving.value = false
   }
@@ -1899,7 +1899,7 @@ async function submitBulkKey() {
   bulkKeySaving.value = true
   try {
     const res = await aiAPI.bulkUpdateKey(key)
-    ElMessage.success(res?.message || '所有配置的 API Key 已更新')
+    ElMessage.success(res?.message || 'API Key của tất cả cấu hình đã được cập nhật')
     bulkKeyVisible.value = false
     await loadList()
   } catch (_) {
@@ -1916,7 +1916,7 @@ function onJimeng2AssetsDialogClosed() {
 
 async function fetchJimeng2MaterialAssets(firstPage) {
   if (!form.value.base_url?.trim() || !form.value.api_key?.trim()) {
-    ElMessage.warning('请先填写网关 URL 与 Token')
+    ElMessage.warning('Vui lòng điền Gateway URL và Token trước')
     return
   }
   if (firstPage) {
@@ -1942,7 +1942,7 @@ async function fetchJimeng2MaterialAssets(firstPage) {
     jimeng2AssetsNextCursor.value = data?.next_cursor ?? null
     jimeng2AssetsHasMore.value = !!data?.has_more
   } catch (_) {
-    /* request 拦截器已 ElMessage */
+    /* request interceptor đã ElMessage */
   } finally {
     jimeng2AssetsLoading.value = false
   }
@@ -1959,11 +1959,11 @@ function loadMoreJimeng2MaterialAssets() {
 
 async function openTest(row) {
   if (row.service_type === 'jimeng2_character_auth') {
-    ElMessage.info('即梦2角色认证无需在此联调；保存后请在创作页「角色生成」中点击「SD2认证」验证。')
+    ElMessage.info('Jimeng2 character auth không cần test tại đây; sau khi lưu vui lòng bấm "SD2 auth" trong "Tạo nhân vật" ở trang sáng tạo để xác minh.')
     return
   }
   if (row.service_type === 'model_ark_asset') {
-    ElMessage.info('SD2 资产库请在「SD2 资产管理」标签页使用「刷新列表」验证连接。')
+    ElMessage.info('SD2 asset vui lòng vào tab "Quản lý SD2 asset" dùng "Làm mới danh sách" để xác minh kết nối.')
     return
   }
   testVisible.value = true
@@ -1983,17 +1983,17 @@ async function openTest(row) {
     testResult.value = true
   } catch (e) {
     testResult.value = false
-    testError.value = e?.message || '请求失败'
+    testError.value = e?.message || 'Request thất bại'
   }
 }
 
 async function onDelete(row) {
-  await ElMessageBox.confirm(`确定删除配置「${row.name}」？`, '删除确认', {
+  await ElMessageBox.confirm(`Bạn có chắc muốn xoá cấu hình "${row.name}"?`, 'Xác nhận xoá', {
     type: 'warning'
   })
   try {
     await aiAPI.delete(row.id)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     await loadList()
   } catch (_) {}
 }
@@ -2005,9 +2005,9 @@ function onSelectionChange(rows) {
 async function onBatchDelete() {
   if (!selectedRows.value.length) return
   await ElMessageBox.confirm(
-    `确定删除选中的 ${selectedRows.value.length} 条配置？此操作不可恢复。`,
-    '批量删除确认',
-    { type: 'warning', confirmButtonText: '确定删除', confirmButtonClass: 'el-button--danger' }
+    `Bạn có chắc muốn xoá ${selectedRows.value.length} cấu hình đã chọn? Thao tác này không thể khôi phục.`,
+    'Xác nhận xoá hàng loạt',
+    { type: 'warning', confirmButtonText: 'Xác nhận xoá', confirmButtonClass: 'el-button--danger' }
   )
   batchDeleting.value = true
   let success = 0, failed = 0
@@ -2019,7 +2019,7 @@ async function onBatchDelete() {
   }
   batchDeleting.value = false
   selectedRows.value = []
-  ElMessage.success(`已删除 ${success} 条${failed ? `，${failed} 条失败` : ''}`)
+  ElMessage.success(`Đã xoá ${success} cấu hình${failed ? `, ${failed} thất bại` : ''}`)
   await loadList()
 }
 
@@ -2047,11 +2047,11 @@ async function submitOneKeyTongyi() {
         is_default: true
       })
     }
-    ElMessage.success('已创建通义文本、文本生图、分镜图、视频配置')
+    ElMessage.success('Đã tạo cấu hình Tongyi cho text, text-to-image, storyboard image, video')
     oneKeyTongyiVisible.value = false
     await loadList()
   } catch (_) {
-    // 错误已由 request 统一提示
+    // Lỗi đã được request xử lý thống nhất
   } finally {
     oneKeyTongyiSaving.value = false
   }
@@ -2081,11 +2081,11 @@ async function submitOneKeyVolc() {
         is_default: true
       })
     }
-    ElMessage.success('已创建火山引擎文本、文本生图、分镜图、视频配置')
+    ElMessage.success('Đã tạo cấu hình Volcengine cho text, text-to-image, storyboard image, video')
     oneKeyVolcVisible.value = false
     await loadList()
   } catch (_) {
-    // 错误已由 request 统一提示
+    // Lỗi đã được request xử lý thống nhất
   } finally {
     oneKeyVolcSaving.value = false
   }
@@ -2118,11 +2118,11 @@ async function submitOneKeyAgnes() {
         is_default: true
       })
     }
-    ElMessage.success('已创建 Agnes 文本、文本生图、分镜图、视频配置')
+    ElMessage.success('Đã tạo cấu hình Agnes cho text, text-to-image, storyboard image, video')
     oneKeyAgnesVisible.value = false
     await loadList()
   } catch (_) {
-    // 错误已由 request 统一提示
+    // Lỗi đã được request xử lý thống nhất
   } finally {
     oneKeyAgnesSaving.value = false
   }
@@ -2139,9 +2139,9 @@ async function exportConfigs() {
     a.download = `ai-configs-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-    ElMessage.success(`已导出 ${exportData.length} 条配置`)
+    ElMessage.success(`Đã xuất ${exportData.length} cấu hình`)
   } catch (e) {
-    ElMessage.error('导出失败')
+    ElMessage.error('Xuất thất bại')
   }
 }
 
@@ -2156,7 +2156,7 @@ async function importConfigs(event) {
     const text = await file.text()
     const configs = JSON.parse(text)
     if (!Array.isArray(configs)) {
-      ElMessage.error('文件格式不正确，需要 JSON 数组')
+      ElMessage.error('Định dạng file không đúng, cần JSON array')
       return
     }
     let success = 0
@@ -2184,10 +2184,10 @@ async function importConfigs(event) {
         failed++
       }
     }
-    ElMessage.success(`导入完成：${success} 条成功${failed ? `，${failed} 条失败` : ''}`)
+    ElMessage.success(`Nhập hoàn tất: ${success} thành công${failed ? `, ${failed} thất bại` : ''}`)
     await loadList()
   } catch (e) {
-    ElMessage.error('导入失败：' + (e.message || '文件解析错误'))
+    ElMessage.error('Nhập thất bại: ' + (e.message || 'Lỗi parse file'))
   } finally {
     event.target.value = ''
   }
@@ -2250,7 +2250,7 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* 过渡动画 */
+/* Transition animation */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: all 0.2s ease;
@@ -2261,7 +2261,7 @@ onMounted(() => {
   transform: translateX(8px);
 }
 
-/* 类型徽章 */
+/* Type badge */
 .type-badge {
   display: inline-flex;
   align-items: center;
@@ -2278,25 +2278,25 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* 文本/对话 — 蓝色 */
+/* Text/Chat — blue */
 .type-text {
   background: rgba(59, 130, 246, 0.12);
   color: #3b82f6;
   border-color: rgba(59, 130, 246, 0.25);
 }
-/* 文本生成图片 — 绿色 */
+/* Text to image — green */
 .type-image {
   background: rgba(16, 185, 129, 0.12);
   color: #10b981;
   border-color: rgba(16, 185, 129, 0.25);
 }
-/* 分镜图片生成 — 紫色 */
+/* Storyboard image — purple */
 .type-storyboard_image {
   background: rgba(139, 92, 246, 0.12);
   color: #8b5cf6;
   border-color: rgba(139, 92, 246, 0.25);
 }
-/* 视频 — 橙色 */
+/* Video — orange */
 .type-video {
   background: rgba(249, 115, 22, 0.12);
   color: #f97316;

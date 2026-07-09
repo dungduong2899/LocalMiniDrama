@@ -8,66 +8,66 @@
   >
     <el-form label-position="top" size="default" @submit.prevent="onSubmit">
       <template v-if="type === 'storyboard'">
-        <el-form-item label="分镜标题">
-          <el-input v-model="form.title" placeholder="留空则自动命名" />
+        <el-form-item label="Tiêu đề storyboard">
+          <el-input v-model="form.title" placeholder="Để trống sẽ tự đặt tên" />
         </el-form-item>
-        <el-form-item label="描述（可选）">
-          <el-input v-model="form.description" type="textarea" :rows="2" placeholder="简要描述" />
+        <el-form-item label="Mô tả (tuỳ chọn)">
+          <el-input v-model="form.description" type="textarea" :rows="2" placeholder="Mô tả ngắn gọn" />
         </el-form-item>
       </template>
 
       <template v-else-if="type === 'episode'">
-        <el-form-item label="集标题">
-          <el-input v-model="form.title" placeholder="留空则自动命名" />
+        <el-form-item label="Tiêu đề tập">
+          <el-input v-model="form.title" placeholder="Để trống sẽ tự đặt tên" />
         </el-form-item>
       </template>
 
       <template v-else-if="type === 'character'">
-        <el-form-item label="角色名称" required>
-          <el-input v-model="form.name" placeholder="必填" />
+        <el-form-item label="Tên nhân vật" required>
+          <el-input v-model="form.name" placeholder="Bắt buộc" />
         </el-form-item>
-        <el-form-item label="角色类型">
-          <el-select v-model="form.role" placeholder="可选" clearable style="width: 100%">
-            <el-option label="主角" value="main" />
-            <el-option label="配角" value="supporting" />
+        <el-form-item label="Loại nhân vật">
+          <el-select v-model="form.role" placeholder="Tuỳ chọn" clearable style="width: 100%">
+            <el-option label="Nhân vật chính" value="main" />
+            <el-option label="Nhân vật phụ" value="supporting" />
           </el-select>
         </el-form-item>
-        <el-form-item label="外貌描述">
+        <el-form-item label="Mô tả ngoại hình">
           <el-input v-model="form.appearance" type="textarea" :rows="2" />
         </el-form-item>
-        <el-form-item label="简介">
+        <el-form-item label="Mô tả">
           <el-input v-model="form.description" type="textarea" :rows="2" />
         </el-form-item>
       </template>
 
       <template v-else-if="type === 'scene'">
-        <el-form-item label="场景地点" required>
-          <el-input v-model="form.location" placeholder="必填，如：客厅" />
+        <el-form-item label="Địa điểm scene" required>
+          <el-input v-model="form.location" placeholder="Bắt buộc, ví dụ: phòng khách" />
         </el-form-item>
-        <el-form-item label="时间">
-          <el-input v-model="form.time" placeholder="如：白天、夜晚" />
+        <el-form-item label="Thời gian">
+          <el-input v-model="form.time" placeholder="Ví dụ: ban ngày, ban đêm" />
         </el-form-item>
-        <el-form-item label="场景描述">
+        <el-form-item label="Mô tả scene">
           <el-input v-model="form.prompt" type="textarea" :rows="3" />
         </el-form-item>
       </template>
 
       <template v-else-if="type === 'prop'">
-        <el-form-item label="道具名称" required>
-          <el-input v-model="form.name" placeholder="必填" />
+        <el-form-item label="Tên đạo cụ" required>
+          <el-input v-model="form.name" placeholder="Bắt buộc" />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item label="Mô tả">
           <el-input v-model="form.description" type="textarea" :rows="2" />
         </el-form-item>
-        <el-form-item label="提示词">
+        <el-form-item label="Prompt">
           <el-input v-model="form.prompt" type="textarea" :rows="2" />
         </el-form-item>
       </template>
     </el-form>
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" :loading="submitting" @click="onSubmit">创建</el-button>
+      <el-button @click="visible = false">Huỷ</el-button>
+      <el-button type="primary" :loading="submitting" @click="onSubmit">Tạo</el-button>
     </template>
   </el-dialog>
 </template>
@@ -103,13 +103,13 @@ const form = reactive({
 
 const dialogTitle = computed(() => {
   const map = {
-    storyboard: '新建分镜',
-    episode: '新建集',
-    character: '新建角色',
-    scene: '新建场景',
-    prop: '新建道具',
+    storyboard: 'Tạo storyboard',
+    episode: 'Tạo tập',
+    character: 'Tạo nhân vật',
+    scene: 'Tạo scene',
+    prop: 'Tạo đạo cụ',
   }
-  return map[props.type] || '新建'
+  return map[props.type] || 'Tạo mới'
 })
 
 function resetForm() {
@@ -129,12 +129,12 @@ watch(() => props.type, () => resetForm())
 function validate() {
   if (props.type === 'character' || props.type === 'prop') {
     if (!form.name.trim()) {
-      ElMessage.warning('请填写名称')
+      ElMessage.warning('Vui lòng nhập tên')
       return false
     }
   }
   if (props.type === 'scene' && !form.location.trim()) {
-    ElMessage.warning('请填写场景地点')
+    ElMessage.warning('Vui lòng nhập địa điểm scene')
     return false
   }
   return true

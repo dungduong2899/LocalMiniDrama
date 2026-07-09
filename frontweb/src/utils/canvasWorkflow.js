@@ -31,10 +31,10 @@ export function getStoryboardGroupMap(workflowGroups) {
 
 export function createWorkflowGroup(existingGroups, { title, storyboardIds, pipeline = DEFAULT_PIPELINE }) {
   const ids = [...new Set((storyboardIds || []).map(Number).filter(Number.isFinite))]
-  if (!ids.length) throw new Error('请至少选择一个分镜')
+  if (!ids.length) throw new Error('Vui lòng chọn ít nhất một storyboard')
   const group = {
     id: `wg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    title: title || `工作流 ${(existingGroups?.length || 0) + 1}`,
+    title: title || `Workflow ${(existingGroups?.length || 0) + 1}`,
     storyboard_ids: ids,
     pipeline: normalizePipeline(pipeline),
     created_at: new Date().toISOString(),

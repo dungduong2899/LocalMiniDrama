@@ -17,17 +17,17 @@ async function pollTask(taskId, onTick, maxAttempts = 450, interval = 2000) {
       const t = await taskAPI.get(taskId)
       if (t.status === 'completed') return { status: 'completed', result: t.result }
       if (t.status === 'failed') {
-        return { status: 'failed', error: t.error?.message || t.error || '任务失败' }
+        return { status: 'failed', error: t.error?.message || t.error || 'Task thất bại' }
       }
       onTick?.()
     } catch (e) {
-      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || '轮询失败' }
+      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || 'Polling thất bại' }
     }
   }
-  return { status: 'timeout', error: '任务超时' }
+  return { status: 'timeout', error: 'Task timeout' }
 }
 
-/** 画布模式：当前集 AI 生成分镜 + 批量生图/生视频 */
+/** Chế độ canvas: AI tạo storyboard cho tập hiện tại + tạo ảnh/tạo video hàng loạt */
 export function useCanvasEpisodeGenerate(deps) {
   const {
     drama,
@@ -98,20 +98,20 @@ export function useCanvasEpisodeGenerate(deps) {
   async function aiGenerateStoryboards() {
     const ep = getEpisode()
     if (!ep) {
-      ElMessage.warning('请先在顶栏选择某一集（AI 生成针对单集剧本）')
+      ElMessage.warning('Vui lòng chọn một tập ở thanh trên trước (AI tạo cho kịch bản của từng tập)')
       return
     }
     if (!(ep.script_content || '').trim()) {
-      ElMessage.warning('该集暂无剧本，请先在列表模式编写或导入剧本')
+      ElMessage.warning('Tập này chưa có kịch bản, vui lòng viết hoặc nhập kịch bản ở chế độ danh sách trước')
       return
     }
     const existing = getStoryboardsForEpisode()
     if (existing.length > 0) {
       try {
         await ElMessageBox.confirm(
-          `第 ${ep.episode_number || ''} 集已有 ${existing.length} 个分镜。重新生成可能追加或覆盖内容，是否继续？`,
-          'AI 生成分镜',
-          { type: 'warning', confirmButtonText: '继续生成' }
+          `Tập ${ep.episode_number || ''} đã có ${existing.length} storyboard. Tạo lại có thể thêm hoặc ghi đè nội dung, bạn có muốn tiếp tục?`,
+          'AI tạo storyboard',
+          { type: 'warning', confirmButtonText: 'Tiếp tục tạo' }
         )
       } catch {
         return
@@ -119,7 +119,7 @@ export function useCanvasEpisodeGenerate(deps) {
     }
 
     episodeGenerating.value = true
-    episodeGenProgress.value = 'AI 正在根据剧本解析分镜…'
+    episodeGenProgress.value = 'AI đang phân tích kịch bản để tạo storyboard…'
     for (const sb of existing) {
       setSbBusy(sb, 'generate_sb', CANVAS_NODE_STATUS_LABELS.generate_sb)
     }
@@ -130,18 +130,18 @@ export function useCanvasEpisodeGenerate(deps) {
       if (taskId) {
         const polled = await pollTask(taskId, () => refreshCanvas(true))
         if (polled.status !== 'completed') {
-          throw new Error(polled.error || '分镜生成失败')
+          throw new Error(polled.error || 'Tạo storyboard thất bại')
         }
         if (polled.result?.truncated) {
-          ElMessage.warning('AI 输出可能被截断，请检查分镜数量是否完整')
+          ElMessage.warning('Kết quả AI có thể bị cắt, vui lòng kiểm tra số lượng storyboard đã đủ chưa')
         }
       }
       await refreshCanvas(true)
       await storyboardsAPI.batchInferParams(ep.id, false).catch(() => {})
       const count = getStoryboardsForEpisode().length
-      ElMessage.success(`分镜生成完成，共 ${count} 镜`)
+      ElMessage.success(`Đã tạo xong storyboard, tổng ${count} cảnh`)
     } catch (e) {
-      ElMessage.error(e?.message || 'AI 生成分镜失败')
+      ElMessage.error(e?.message || 'AI tạo storyboard thất bại')
     } finally {
       clearInterval(refreshTimer)
       clearEpisodeSbBusy()
@@ -153,7 +153,7 @@ export function useCanvasEpisodeGenerate(deps) {
   async function batchGenerateImages() {
     const ep = getEpisode()
     if (!ep) {
-      ElMessage.warning('请先选择集数')
+      ElMessage.warning('Vui lòng chọn tập trước')
       return
     }
     const boards = getStoryboardsForEpisode()
@@ -161,14 +161,14 @@ export function useCanvasEpisodeGenerate(deps) {
       (sb) => sb.creation_mode !== 'universal' && !hasStoryboardImage(sb, imagesBySbId.value, drama.value)
     )
     if (!todo.length) {
-      ElMessage.info('当前集分镜均已有图片（全能模式分镜请直接生视频）')
+      ElMessage.info('Tất cả storyboard của tập hiện tại đã có ảnh (storyboard chế độ universal chuyển thẳng sang tạo video)')
       return
     }
     try {
       await ElMessageBox.confirm(
-        `将为 ${todo.length} 个分镜依次生图，耗时可能较长，是否继续？`,
-        '批量生成分镜图',
-        { type: 'info', confirmButtonText: '开始' }
+        `Sẽ lần lượt tạo ảnh cho ${todo.length} storyboard, có thể mất thời gian, bạn có muốn tiếp tục?`,
+        'Tạo ảnh storyboard hàng loạt',
+        { type: 'info', confirmButtonText: 'Bắt đầu' }
       )
     } catch {
       return
@@ -180,7 +180,7 @@ export function useCanvasEpisodeGenerate(deps) {
     try {
       for (let i = 0; i < todo.length; i++) {
         const sb = todo[i]
-        episodeGenProgress.value = `批量生图 ${i + 1}/${todo.length}：分镜 #${sb.storyboard_number ?? sb.id}`
+        episodeGenProgress.value = `Tạo ảnh hàng loạt ${i + 1}/${todo.length}: storyboard #${sb.storyboard_number ?? sb.id}`
         setSbBusy(sb, 'image', `${CANVAS_NODE_STATUS_LABELS.image} ${i + 1}/${todo.length}`)
         try {
           await runImageStep(drama.value, sb, getGenOpts())
@@ -188,13 +188,13 @@ export function useCanvasEpisodeGenerate(deps) {
           await refreshCanvas(true)
         } catch (e) {
           failed++
-          ElMessage.error(`分镜 #${sb.storyboard_number ?? sb.id} 生图失败：${e?.message || e}`)
+          ElMessage.error(`Storyboard #${sb.storyboard_number ?? sb.id} tạo ảnh thất bại: ${e?.message || e}`)
         } finally {
           clearSbBusy(sb)
         }
       }
-      if (failed === 0) ElMessage.success(`批量生图完成，共 ${ok} 镜`)
-      else ElMessage.warning(`完成 ${ok} 镜，失败 ${failed} 镜`)
+      if (failed === 0) ElMessage.success(`Đã tạo ảnh hàng loạt xong, tổng ${ok} cảnh`)
+      else ElMessage.warning(`Hoàn tất ${ok} cảnh, thất bại ${failed} cảnh`)
     } finally {
       episodeGenerating.value = false
       episodeGenProgress.value = ''
@@ -204,20 +204,20 @@ export function useCanvasEpisodeGenerate(deps) {
   async function batchGenerateVideos() {
     const ep = getEpisode()
     if (!ep) {
-      ElMessage.warning('请先选择集数')
+      ElMessage.warning('Vui lòng chọn tập trước')
       return
     }
     const boards = getStoryboardsForEpisode()
     const todo = boards.filter((sb) => !hasStoryboardVideo(sb, videosBySbId.value))
     if (!todo.length) {
-      ElMessage.info('当前集分镜均已有视频')
+      ElMessage.info('Tất cả storyboard của tập hiện tại đã có video')
       return
     }
     try {
       await ElMessageBox.confirm(
-        `将为 ${todo.length} 个分镜依次生视频，是否继续？`,
-        '批量生成分镜视频',
-        { type: 'info', confirmButtonText: '开始' }
+        `Sẽ lần lượt tạo video cho ${todo.length} storyboard, bạn có muốn tiếp tục?`,
+        'Tạo video storyboard hàng loạt',
+        { type: 'info', confirmButtonText: 'Bắt đầu' }
       )
     } catch {
       return
@@ -229,7 +229,7 @@ export function useCanvasEpisodeGenerate(deps) {
     try {
       for (let i = 0; i < todo.length; i++) {
         const sb = todo[i]
-        episodeGenProgress.value = `批量生视频 ${i + 1}/${todo.length}：分镜 #${sb.storyboard_number ?? sb.id}`
+        episodeGenProgress.value = `Tạo video hàng loạt ${i + 1}/${todo.length}: storyboard #${sb.storyboard_number ?? sb.id}`
         setSbBusy(sb, 'video', `${CANVAS_NODE_STATUS_LABELS.video} ${i + 1}/${todo.length}`)
         try {
           await runVideoStep(drama.value, sb, getGenOpts())
@@ -237,13 +237,13 @@ export function useCanvasEpisodeGenerate(deps) {
           await refreshCanvas(true)
         } catch (e) {
           failed++
-          ElMessage.error(`分镜 #${sb.storyboard_number ?? sb.id} 生视频失败：${e?.message || e}`)
+          ElMessage.error(`Storyboard #${sb.storyboard_number ?? sb.id} tạo video thất bại: ${e?.message || e}`)
         } finally {
           clearSbBusy(sb)
         }
       }
-      if (failed === 0) ElMessage.success(`批量生视频完成，共 ${ok} 镜`)
-      else ElMessage.warning(`完成 ${ok} 镜，失败 ${failed} 镜`)
+      if (failed === 0) ElMessage.success(`Đã tạo video hàng loạt xong, tổng ${ok} cảnh`)
+      else ElMessage.warning(`Hoàn tất ${ok} cảnh, thất bại ${failed} cảnh`)
     } finally {
       episodeGenerating.value = false
       episodeGenProgress.value = ''

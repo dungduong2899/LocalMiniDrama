@@ -1,5 +1,5 @@
 /**
- * 从剧本文本中按行首「第…集 / 章 / 节」拆分为多集（与小说导入规则一致，且支持同集标题后紧跟正文）。
+ * Tách kịch bản thành nhiều tập dựa vào dòng bắt đầu bằng 第…集 / 章 / 节 (đồng bộ luật import truyện, hỗ trợ nội dung ngay sau tiêu đề tập).
  * @param {string} text
  * @returns {{ split: boolean, episodes: Array<{ title: string, script_content: string }> }}
  */
@@ -13,7 +13,7 @@ export function parseScriptIntoEpisodes(text) {
   const markerRe =
     /^(第\s*(?:[零一二三四五六七八九十百千]|\d|[\uFF10-\uFF19])+\s*(?:集|章|节))\s*(.*)$/
 
-  /** 行首各类括号包住「第…集/章/节」时，先展平成「第一集 …」再匹配 markerRe */
+  /** Nếu 第…集/章/节 nằm trong các loại ngoặc ở đầu dòng, làm phẳng thành 第一集 … rồi mới match markerRe */
   const TITLE_IN_EP =
     '第\\s*(?:[零一二三四五六七八九十百千]|\\d|[\\uFF10-\\uFF19])+\\s*(?:集|章|节)'
   const EP_LINE_UNWRAPPERS = [
@@ -78,7 +78,7 @@ export function parseScriptIntoEpisodes(text) {
 }
 
 /**
- * 将分集列表拼成纯文本（每集「标题」与正文分行），便于再次保存时按行首标题拆分。
+ * Ghép danh sách tập thành plain text (tiêu đề và nội dung mỗi tập ở dòng riêng), tiện tách lại khi lưu.
  * @param {Array<{ title: string, script_content?: string }>} episodes
  */
 export function episodesListToPlainScript(episodes) {

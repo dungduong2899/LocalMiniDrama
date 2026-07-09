@@ -20,8 +20,8 @@ const props = defineProps({
 const ctx = useCanvasContext()
 
 const defaultLabel = computed(() => {
-  const map = { character: '新建角色', scene: '新建场景', prop: '新建道具', storyboard: '新建分镜' }
-  return map[props.data.assetType] || '新建'
+  const map = { character: 'Tạo nhân vật', scene: 'Tạo scene', prop: 'Tạo đạo cụ', storyboard: 'Tạo storyboard' }
+  return map[props.data.assetType] || 'Tạo mới'
 })
 
 function onClick() {

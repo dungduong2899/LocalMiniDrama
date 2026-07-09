@@ -1,4 +1,4 @@
-/** 统一媒体 URL：优先 local_path，其次 image_url / video_url */
+/** URL media thống nhất: ưu tiên local_path, sau đó image_url / video_url */
 export function assetImageUrl(item) {
   if (!item) return ''
   const lp = item.local_path && String(item.local_path).trim()

@@ -3,7 +3,7 @@
     <div v-if="loading" v-loading="true" class="loading-wrap" />
     <template v-else>
       <div class="editor-layout">
-        <!-- 左侧菜单 -->
+        <!-- Sidebar bên trái -->
         <div class="left-sidebar">
           <div class="sidebar-menu">
             <div
@@ -19,19 +19,18 @@
                   type="warning"
                   size="small"
                   class="menu-tag"
-                >已自定义</el-tag>
-                <el-tag v-else type="info" size="small" class="menu-tag">默认</el-tag>
+                >Đã tuỳ chỉnh</el-tag>
+                <el-tag v-else type="info" size="small" class="menu-tag">Mặc định</el-tag>
               </div>
               <div v-if="isDirty[p.key]" class="dirty-indicator" />
             </div>
           </div>
         </div>
 
-        <!-- 右侧编辑区 -->
+        <!-- Khu vực edit bên phải -->
         <div class="right-content">
           <p class="page-desc">
-            可自定义 AI 生成各阶段使用的提示词（System Prompt）。蓝色锁定区为 JSON
-            格式要求，不可修改以确保输出格式正确。
+            Có thể tuỳ chỉnh prompt (System Prompt) dùng cho các giai đoạn AI tạo nội dung. Vùng khoá màu xanh là yêu cầu định dạng JSON, không thể sửa để đảm bảo output đúng định dạng.
           </p>
 
           <div v-if="currentPrompt" class="prompt-card">
@@ -43,8 +42,8 @@
                   type="warning"
                   size="small"
                   class="custom-tag"
-                >已自定义</el-tag>
-                <el-tag v-else type="info" size="small" class="custom-tag">使用默认</el-tag>
+                >Đã tuỳ chỉnh</el-tag>
+                <el-tag v-else type="info" size="small" class="custom-tag">Đang dùng mặc định</el-tag>
               </div>
               <p class="prompt-desc">{{ currentPrompt.description }}</p>
             </div>
@@ -52,7 +51,7 @@
             <div class="prompt-edit-section">
               <div class="section-label">
                 <el-icon class="section-icon"><Edit /></el-icon>
-                <span>指令内容（可编辑）</span>
+                <span>Nội dung prompt (có thể sửa)</span>
               </div>
               <el-input
                 v-model="editState[currentPrompt.key]"
@@ -67,7 +66,7 @@
             <div v-if="currentPrompt.locked_suffix" class="prompt-locked-section">
               <div class="section-label section-label--locked">
                 <el-icon class="section-icon"><Lock /></el-icon>
-                <span>JSON 格式要求（锁定，不可修改）</span>
+                <span>Yêu cầu định dạng JSON (đã khoá, không thể sửa)</span>
               </div>
               <div class="locked-content">{{ currentPrompt.locked_suffix }}</div>
             </div>
@@ -80,7 +79,7 @@
                 :disabled="!isDirty[currentPrompt.key]"
                 @click="save(currentPrompt)"
               >
-                保存
+                Lưu
               </el-button>
               <el-button
                 size="small"
@@ -88,7 +87,7 @@
                 :disabled="!currentPrompt.is_customized && !isDirty[currentPrompt.key]"
                 @click="reset(currentPrompt)"
               >
-                恢复默认
+                Khôi phục mặc định
               </el-button>
             </div>
           </div>
@@ -124,12 +123,12 @@ async function load() {
     for (const p of prompts.value) {
       editState.value[p.key] = p.current_body || p.default_body
     }
-    // 默认选中第一个
+    // Mặc định chọn mục đầu tiên
     if (prompts.value.length > 0) {
       currentKey.value = prompts.value[0].key
     }
   } catch (_) {
-    ElMessage.error('加载提示词失败')
+    ElMessage.error('Tải prompt thất bại')
   } finally {
     loading.value = false
   }
@@ -149,7 +148,7 @@ function markDirty(key) {
 async function save(p) {
   const content = editState.value[p.key]
   if (!content?.trim()) {
-    ElMessage.warning('内容不能为空')
+    ElMessage.warning('Nội dung không được để trống')
     return
   }
   savingKey.value = p.key
@@ -158,7 +157,7 @@ async function save(p) {
     p.current_body = content.trim()
     p.is_customized = true
     isDirty.value[p.key] = false
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
   } catch (_) {
   } finally {
     savingKey.value = null
@@ -166,7 +165,7 @@ async function save(p) {
 }
 
 async function reset(p) {
-  await ElMessageBox.confirm(`确定将「${p.label}」恢复为系统默认提示词？`, '恢复默认', {
+  await ElMessageBox.confirm(`Bạn có chắc muốn khôi phục "${p.label}" về prompt mặc định của hệ thống?`, 'Khôi phục mặc định', {
     type: 'warning',
   })
   resettingKey.value = p.key
@@ -176,7 +175,7 @@ async function reset(p) {
     p.is_customized = false
     editState.value[p.key] = p.default_body
     isDirty.value[p.key] = false
-    ElMessage.success('已恢复默认')
+    ElMessage.success('Đã khôi phục mặc định')
   } catch (_) {
   } finally {
     resettingKey.value = null
@@ -195,14 +194,14 @@ onMounted(() => load())
   min-height: 200px;
 }
 
-/* 左右布局 */
+/* Layout hai cột */
 .editor-layout {
   display: flex;
   height: 100%;
   min-height: calc(100vh - 120px);
 }
 
-/* 左侧菜单 */
+/* Sidebar bên trái */
 .left-sidebar {
   width: 220px;
   flex-shrink: 0;
@@ -280,7 +279,7 @@ onMounted(() => load())
   border-radius: 50%;
 }
 
-/* 右侧内容区 */
+/* Khu vực nội dung bên phải */
 .right-content {
   flex: 1;
   padding: 20px;

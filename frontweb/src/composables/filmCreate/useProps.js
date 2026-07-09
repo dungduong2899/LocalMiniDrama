@@ -7,8 +7,8 @@ import { useGenerationTaskStore, GEN_RESOURCE } from '@/stores/generationTaskSto
 import { buildExtractTaskMeta, isEpisodeExtractRunning } from '@/composables/useGenerationTaskSync'
 
 /**
- * 道具管理 Composable
- * @param {object} deps - 共享依赖
+ * Composable quản lý đạo cụ
+ * @param {object} deps - Dependencies dùng chung
  * @param {object} deps.store - Pinia store
  * @param {import('vue').ComputedRef} deps.dramaId
  * @param {import('vue').ComputedRef} deps.currentEpisodeId
@@ -25,7 +25,7 @@ export function useProps(deps) {
   function buildPropImageMeta(prop) {
     const dramaTitle = store.drama?.title || ''
     const epNum = store.currentEpisode?.episode_number
-    const epLabel = dramaTitle ? `${dramaTitle} · 第${epNum ?? ''}集` : `第${epNum ?? ''}集`
+    const epLabel = dramaTitle ? `${dramaTitle} · Tập ${epNum ?? ''}` : `Tập ${epNum ?? ''}`
     return {
       dramaId: dramaId.value,
       episodeId: currentEpisodeId.value,
@@ -33,7 +33,7 @@ export function useProps(deps) {
       episodeNumber: epNum,
       resourceType: GEN_RESOURCE.PROP_IMAGE,
       resourceId: prop.id,
-      label: `${epLabel} 道具图: ${prop.name || prop.id}`,
+      label: `${epLabel} Ảnh đạo cụ: ${prop.name || prop.id}`,
     }
   }
 
@@ -47,7 +47,7 @@ export function useProps(deps) {
     return new File([u8arr], filename || 'reference.png', { type: mime })
   }
 
-  // ── 道具弹窗状态 ──────────────────────────────────────
+  // ── Trạng thái dialog đạo cụ ──────────────────────────────────────
   const showAddProp = ref(false)
   const addPropSaving = ref(false)
   const addPropForm = ref({ name: '', type: '', description: '', prompt: '' })
@@ -61,18 +61,18 @@ export function useProps(deps) {
   const addPropRefFileInput = ref(null)
   let editPropPollTimer = null
 
-  // 「添加道具」简单弹窗的独立参考图状态
+  // Trạng thái ảnh tham chiếu riêng cho dialog "Thêm đạo cụ" đơn giản
   const addPropAddRefImage = ref(null)
   const addPropAddRefFileInput = ref(null)
   const extractingPropAddDesc = ref(false)
 
-  // ── 道具生成状态 ──────────────────────────────────────
+  // ── Trạng thái tạo đạo cụ ──────────────────────────────────────
   const propsExtracting = computed(() =>
     isEpisodeExtractRunning(genStore, dramaId.value, currentEpisodeId.value, GEN_RESOURCE.EXTRACT_PROPS)
   )
   const generatingPropIds = reactive(new Set())
 
-  // ── 道具库状态 ────────────────────────────────────────
+  // ── Trạng thái thư viện đạo cụ ────────────────────────────────────────
   const showPropLibrary = ref(false)
   const propLibraryList = ref([])
   const propLibraryLoading = ref(false)
@@ -98,14 +98,14 @@ export function useProps(deps) {
   let dramaAllPropKeywordTimer = null
 
 
-  // ── 函数 ──────────────────────────────────────────────
+  // ── Hàm ──────────────────────────────────────────────
   async function onExtractProps() {
     if (!currentEpisodeId.value) {
-      ElMessage.warning('请先完成剧本并保存')
+      ElMessage.warning('Vui lòng hoàn tất và lưu kịch bản trước')
       return
     }
     const epId = currentEpisodeId.value
-    const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.EXTRACT_PROPS, '提取道具')
+    const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.EXTRACT_PROPS, 'Trích xuất đạo cụ')
     genStore.markRunning(meta)
     try {
       const res = await propAPI.extractFromScript(epId)
@@ -113,14 +113,14 @@ export function useProps(deps) {
       if (taskId) {
         const pollRes = await pollTask(taskId, () => loadDrama(), meta)
         if (pollRes?.status !== 'failed') {
-          ElMessage.success('道具提取完成')
+          ElMessage.success('Đã trích xuất đạo cụ xong')
         }
       } else {
         await loadDrama()
-        ElMessage.success('道具提取任务已提交')
+        ElMessage.success('Đã gửi task trích xuất đạo cụ')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败')
+      ElMessage.error(e.message || 'Trích xuất thất bại')
     } finally {
       genStore.markDone(meta)
     }
@@ -175,11 +175,11 @@ export function useProps(deps) {
       const res = await propAPI.generatePrompt(form.id)
       if (res?.prompt) {
         form.prompt = res.prompt
-        ElMessage.success('提示词已生成')
+        ElMessage.success('Đã tạo prompt')
         await loadDrama()
       }
     } catch (e) {
-      ElMessage.error(e.message || '生成提示词失败')
+      ElMessage.error(e.message || 'Tạo prompt thất bại')
     } finally {
       editPropPromptGenerating.value = false
     }
@@ -194,7 +194,7 @@ export function useProps(deps) {
       const refPath = uploadRes.local_path || uploadRes.url || ''
       await propAPI.putRefImage(propId, refPath)
     } catch (e) {
-      console.warn('[savePropRefImage] 保存参考图失败:', e.message)
+      console.warn('[savePropRefImage] failed to save reference image:', e.message)
     }
   }
 
@@ -204,9 +204,9 @@ export function useProps(deps) {
     try {
       await propAPI.putRefImage(form.id, null)
       form.ref_image = ''
-      ElMessage.success('参考图已移除')
+      ElMessage.success('Đã xoá ảnh tham chiếu')
     } catch (e) {
-      ElMessage.error('移除失败')
+      ElMessage.error('Xoá thất bại')
     }
   }
 
@@ -218,10 +218,10 @@ export function useProps(deps) {
       const res = await propAPI.extractFromImage(form.id)
       if (res?.description) {
         form.description = res.description
-        ElMessage.success('已从图片提取道具描述')
+        ElMessage.success('Đã trích xuất mô tả đạo cụ từ ảnh')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查道具是否已上传参考图片')
+      ElMessage.error(e.message || 'Trích xuất thất bại, vui lòng kiểm tra xem đạo cụ đã có ảnh tham chiếu chưa')
     } finally {
       extractingPropDesc.value = false
     }
@@ -240,9 +240,9 @@ export function useProps(deps) {
       await savePropRefImageIfAny(editPropForm.value.id)
       await loadDrama()
       showEditProp.value = false
-      ElMessage.success('道具已保存')
+      ElMessage.success('Đã lưu đạo cụ')
     } catch (e) {
-      ElMessage.error(e.message || '保存失败')
+      ElMessage.error(e.message || 'Lưu thất bại')
     } finally {
       editPropSaving.value = false
     }
@@ -263,9 +263,9 @@ export function useProps(deps) {
       })
       showAddProp.value = false
       await loadDrama()
-      ElMessage.success('道具已添加')
+      ElMessage.success('Đã thêm đạo cụ')
     } catch (e) {
-      ElMessage.error(e.message || '添加失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addPropSaving.value = false
     }
@@ -281,16 +281,16 @@ export function useProps(deps) {
   async function onDeleteProp(prop) {
     try {
       await ElMessageBox.confirm(
-        `确定要删除道具「${(prop.name || '未命名').slice(0, 20)}」吗？此操作不可恢复。`,
-        '删除确认',
-        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+        `Bạn có chắc muốn xoá đạo cụ "${(prop.name || 'Chưa đặt tên').slice(0, 20)}"? Thao tác này không thể hoàn tác.`,
+        'Xác nhận xoá',
+        { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }
       )
       await propAPI.delete(prop.id)
       await loadDrama()
-      ElMessage.success('道具已删除')
+      ElMessage.success('Đã xoá đạo cụ')
     } catch (e) {
       if (e === 'cancel') return
-      ElMessage.error(e.message || '删除失败')
+      ElMessage.error(e.message || 'Xoá thất bại')
     }
   }
 
@@ -306,9 +306,9 @@ export function useProps(deps) {
       if (taskId) {
         const pollRes = await pollTask(taskId, () => loadDrama(), meta)
         if (pollRes?.status === 'failed') {
-          prop.errorMsg = pollRes.error || '生成失败'
+          prop.errorMsg = pollRes.error || 'Tạo thất bại'
         } else {
-          ElMessage.success('道具图片已生成')
+          ElMessage.success('Đã tạo ảnh đạo cụ')
         }
       } else {
         await loadDrama()
@@ -317,19 +317,19 @@ export function useProps(deps) {
           const p = list.find((x) => Number(x.id) === Number(prop.id))
           return !!(p && (p.image_url || p.local_path))
         })
-        ElMessage.success('道具图片已生成')
+        ElMessage.success('Đã tạo ảnh đạo cụ')
       }
     } catch (e) {
       console.error(e)
-      prop.errorMsg = e.message || '生成失败'
-      ElMessage.error(e.message || '提交失败')
+      prop.errorMsg = e.message || 'Tạo thất bại'
+      ElMessage.error(e.message || 'Gửi thất bại')
     } finally {
       generatingPropIds.delete(prop.id)
       genStore.markDone(meta)
     }
   }
 
-  // ── 道具库函数 ────────────────────────────────────────
+  // ── Hàm thư viện đạo cụ ────────────────────────────────────────
   async function loadPropLibraryList() {
     propLibraryLoading.value = true
     try {
@@ -442,11 +442,11 @@ export function useProps(deps) {
         description: editPropLibraryForm.value.description || null,
         tags: editPropLibraryForm.value.tags || null
       })
-      ElMessage.success('已保存')
+      ElMessage.success('Đã lưu')
       showEditPropLibrary.value = false
       loadPropLibraryList()
     } catch (e) {
-      ElMessage.error(e.message || '保存失败')
+      ElMessage.error(e.message || 'Lưu thất bại')
     } finally {
       editPropLibrarySaving.value = false
     }
@@ -455,41 +455,41 @@ export function useProps(deps) {
   async function onDeletePropLibrary(item) {
     try {
       await ElMessageBox.confirm(
-        `确定删除公共道具「${(item.name || '未命名').slice(0, 20)}」吗？`,
-        '删除确认',
-        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+        `Bạn có chắc muốn xoá đạo cụ công khai "${(item.name || 'Chưa đặt tên').slice(0, 20)}"?`,
+        'Xác nhận xoá',
+        { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }
       )
       await propLibraryAPI.delete(item.id)
-      ElMessage.success('已删除')
+      ElMessage.success('Đã xoá')
       loadPropLibraryList()
     } catch (e) {
       if (e === 'cancel') return
-      ElMessage.error(e.message || '删除失败')
+      ElMessage.error(e.message || 'Xoá thất bại')
     }
   }
 
   async function onAddPropToLibrary(prop) {
-    if (!hasAssetImage(prop)) { ElMessage.warning('请先为该道具生成或上传图片'); return }
+    if (!hasAssetImage(prop)) { ElMessage.warning('Vui lòng tạo hoặc tải lên ảnh cho đạo cụ này trước'); return }
     addingPropToLibraryId.value = prop.id
     try {
       await propAPI.addToLibrary(prop.id, {})
-      ElMessage.success('已加入本剧道具库')
+      ElMessage.success('Đã thêm vào thư viện đạo cụ của phim')
       if (showPropLibrary.value) loadPropLibraryList()
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingPropToLibraryId.value = null
     }
   }
 
   async function onAddPropToMaterialLibrary(prop) {
-    if (!hasAssetImage(prop)) { ElMessage.warning('请先为该道具生成或上传图片'); return }
+    if (!hasAssetImage(prop)) { ElMessage.warning('Vui lòng tạo hoặc tải lên ảnh cho đạo cụ này trước'); return }
     addingPropToMaterialId.value = prop.id
     try {
       await propAPI.addToMaterialLibrary(prop.id)
-      ElMessage.success('已加入全局素材库')
+      ElMessage.success('Đã thêm vào thư viện tư liệu toàn cục')
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingPropToMaterialId.value = null
     }
@@ -497,7 +497,7 @@ export function useProps(deps) {
 
   async function addPropToEpisode(item, scope) {
     if (!store.dramaId || !currentEpisodeId.value) {
-      ElMessage.warning('请先选择本集')
+      ElMessage.warning('Vui lòng chọn tập hiện tại trước')
       return
     }
     const loadingKey = propAddToEpisodeLoadingKey(scope, item.id)
@@ -513,7 +513,7 @@ export function useProps(deps) {
           image_url: item.image_url || existingProp.image_url || undefined,
           local_path: item.local_path || existingProp.local_path || undefined,
         })
-        ElMessage.success(`「${item.name || '道具'}」已更新到本集`)
+        ElMessage.success(`Đã cập nhật "${item.name || 'đạo cụ'}" vào tập này`)
       } else {
         await propAPI.create({
           drama_id: store.dramaId,
@@ -525,11 +525,11 @@ export function useProps(deps) {
           image_url: item.image_url || undefined,
           local_path: item.local_path || undefined,
         })
-        ElMessage.success(`「${item.name || '道具'}」已加入本集`)
+        ElMessage.success(`Đã thêm "${item.name || 'đạo cụ'}" vào tập này`)
       }
       await loadDrama()
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingPropFromLibraryId.value = null
     }
@@ -547,7 +547,7 @@ export function useProps(deps) {
     return addPropToEpisode(item, 'team')
   }
 
-  // ── 添加道具简单弹窗的参考图 extract ─────────────────
+  // ── Trích xuất từ ảnh tham chiếu (dialog "Thêm đạo cụ" đơn giản) ─────────────────
   async function doExtractFromRef2(type) {
     if (type !== 'addProp') return
     const refImage = addPropAddRefImage.value
@@ -558,17 +558,17 @@ export function useProps(deps) {
       const res = await uploadAPI.extractDescriptionFromImage('prop', refImage.dataUrl, entityName)
       if (res?.description) {
         addPropForm.value.description = res.description
-        ElMessage.success('已从参考图提取特征描述')
+        ElMessage.success('Đã trích xuất mô tả đặc điểm từ ảnh tham chiếu')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查 AI 配置中是否有支持视觉的模型')
+      ElMessage.error(e.message || 'Trích xuất thất bại, vui lòng kiểm tra Cấu hình AI có model hỗ trợ thị giác không')
     } finally {
       extractingPropAddDesc.value = false
     }
   }
 
   return {
-    // 弹窗状态
+    // Trạng thái dialog
     showAddProp,
     addPropSaving,
     addPropForm,
@@ -582,10 +582,10 @@ export function useProps(deps) {
     addPropAddRefImage,
     addPropAddRefFileInput,
     extractingPropAddDesc,
-    // 生成状态
+    // Trạng thái tạo
     propsExtracting,
     generatingPropIds,
-    // 库状态
+    // Trạng thái thư viện
     showPropLibrary,
     propLibraryList,
     propLibraryLoading,
@@ -613,7 +613,7 @@ export function useProps(deps) {
     addingPropToMaterialId,
 
     addingPropFromLibraryId,
-    // 函数
+    // Hàm
     onExtractProps,
     stopPropPromptPoll,
     editProp,

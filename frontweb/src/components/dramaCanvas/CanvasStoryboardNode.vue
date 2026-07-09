@@ -10,15 +10,15 @@
         <span class="num">#{{ data.storyboard?.storyboard_number ?? data.index }}</span>
         <span v-if="data.workflowGroup?.title" class="wf-badge">{{ data.workflowGroup.title }}</span>
         <span v-if="data.storyboard?.segment_title" class="seg">{{ data.storyboard.segment_title }}</span>
-      <span v-if="data.storyboard?.creation_mode === 'universal'" class="mode-badge">全能</span>
+      <span v-if="data.storyboard?.creation_mode === 'universal'" class="mode-badge">Universal</span>
       </div>
-      <div class="title">{{ data.storyboard?.title || '分镜' }}</div>
+      <div class="title">{{ data.storyboard?.title || 'Storyboard' }}</div>
       <div class="chips">
         <span v-if="data.storyboard?.shot_type">{{ data.storyboard.shot_type }}</span>
         <span v-if="data.storyboard?.duration">{{ data.storyboard.duration }}s</span>
         <span :class="'st-' + (data.storyboard?.status || 'pending')">{{ statusLabel }}</span>
       </div>
-      <div class="hint">{{ showPanel ? '下方可编辑与生成' : '单击展开操作 · 双击进列表' }}</div>
+      <div class="hint">{{ showPanel ? 'Sửa và tạo bên dưới' : 'Nhấn để mở · nhấn đúp xem list' }}</div>
     </div>
     <CanvasStoryboardPanel
       v-if="showPanel"
@@ -47,7 +47,7 @@ const showPanel = computed(() => ctx?.focusedNodeId?.value === props.id)
 
 const statusLabel = computed(() => {
   const s = props.data.storyboard?.status || 'pending'
-  const map = { pending: '待处理', processing: '生成中', completed: '已完成', failed: '失败' }
+  const map = { pending: 'Chờ xử lý', processing: 'Đang tạo', completed: 'Hoàn tất', failed: 'Thất bại' }
   return map[s] || s
 })
 

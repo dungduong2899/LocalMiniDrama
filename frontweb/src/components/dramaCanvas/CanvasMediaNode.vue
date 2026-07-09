@@ -6,23 +6,23 @@
       <CanvasNodeStatusOverlay :node-id="id" />
       <div class="tag">{{ kindLabel }}</div>
       <template v-if="data.kind === 'text'">
-        <p class="text-body">{{ data.summary || '暂无脚本' }}</p>
+        <p class="text-body">{{ data.summary || 'Chưa có kịch bản' }}</p>
       </template>
       <template v-else-if="data.kind === 'universal'">
-        <p class="text-body universal-body">{{ data.summary || '暂无全能分镜词' }}</p>
+        <p class="text-body universal-body">{{ data.summary || 'Chưa có universal prompt' }}</p>
       </template>
       <template v-else-if="data.kind === 'image'">
         <img v-if="data.url" :src="data.url" alt="" class="media-img" />
-        <div v-else class="empty">无分镜图</div>
+        <div v-else class="empty">Chưa có ảnh storyboard</div>
       </template>
       <template v-else-if="data.kind === 'video'">
         <video v-if="data.url" :src="data.url" class="media-vid" muted playsinline />
-        <div v-else class="empty">无视频</div>
+        <div v-else class="empty">Chưa có video</div>
       </template>
       <template v-else-if="data.kind === 'audio'">
         <div class="audio-wrap">
           <span>🎵</span>
-          <span>{{ data.audioType === 'narration' ? '旁白' : '对白' }}</span>
+          <span>{{ data.audioType === 'narration' ? 'Narration' : 'Lời thoại' }}</span>
         </div>
       </template>
     </div>
@@ -60,7 +60,7 @@ const isNodeBusy = computed(() => {
 
 const kindLabel = computed(() => {
   if (props.data.frameLabel) return props.data.frameLabel
-  const map = { text: '脚本摘要', universal: '全能分镜词', image: '分镜图', video: '视频', audio: '音频' }
+  const map = { text: 'Tóm tắt kịch bản', universal: 'Universal prompt', image: 'Ảnh storyboard', video: 'Video', audio: 'Audio' }
   return map[props.data.kind] || props.data.kind
 })
 </script>

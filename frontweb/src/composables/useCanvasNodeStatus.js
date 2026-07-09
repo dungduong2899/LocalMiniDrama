@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 
-/** 画布节点操作状态（生图/生视频/生成参考图等） */
+/** Trạng thái thao tác node canvas (tạo ảnh/tạo video/tạo ảnh tham chiếu, v.v.) */
 export function createCanvasNodeStatusStore() {
   const map = reactive({})
 
@@ -12,7 +12,7 @@ export function createCanvasNodeStatusStore() {
     }
     map[nodeId] = {
       step: payload.step || 'busy',
-      message: payload.message || '处理中…',
+      message: payload.message || 'Đang xử lý…',
       at: Date.now(),
     }
   }
@@ -33,16 +33,16 @@ export function createCanvasNodeStatusStore() {
 }
 
 export const CANVAS_NODE_STATUS_LABELS = {
-  image: '生图中',
-  video: '生视频中',
-  audio: '配音中',
-  polish: '润色中',
-  save: '保存中',
-  ref_image: '生成参考图',
-  generate_sb: 'AI 生成分镜',
-  save_script: '保存剧本',
-  extract_chars: '提取角色',
-  extract_scenes: '提取场景',
-  extract_props: '提取道具',
-  extract_all: '一键提取',
+  image: 'Đang tạo ảnh',
+  video: 'Đang tạo video',
+  audio: 'Đang lồng tiếng',
+  polish: 'Đang chỉnh sửa',
+  save: 'Đang lưu',
+  ref_image: 'Tạo ảnh tham chiếu',
+  generate_sb: 'AI tạo storyboard',
+  save_script: 'Lưu kịch bản',
+  extract_chars: 'Trích xuất nhân vật',
+  extract_scenes: 'Trích xuất scene',
+  extract_props: 'Trích xuất đạo cụ',
+  extract_all: 'Trích xuất tất cả',
 }

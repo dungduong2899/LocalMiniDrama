@@ -14,13 +14,13 @@ async function pollTask(taskId, onTick, maxAttempts = 450, interval = 2000) {
       const t = await taskAPI.get(taskId)
       if (t.status === 'completed') return { status: 'completed', result: t.result }
       if (t.status === 'failed') {
-        return { status: 'failed', error: t.error?.message || t.error || '任务失败' }
+        return { status: 'failed', error: t.error?.message || t.error || 'Task thất bại' }
       }
     } catch (e) {
-      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || '轮询失败' }
+      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || 'Polling thất bại' }
     }
   }
-  return { status: 'timeout', error: '任务超时' }
+  return { status: 'timeout', error: 'Task timeout' }
 }
 
 async function pollUntilHasImage(findEntity, maxAttempts = 120, interval = 2000) {
@@ -33,7 +33,7 @@ async function pollUntilHasImage(findEntity, maxAttempts = 120, interval = 2000)
 }
 
 /**
- * 素材参考图生成（含轮询），并同步节点 busy 状态到卡片预览
+ * Tạo ảnh tham chiếu cho tư liệu (kèm polling), đồng thời đồng bộ trạng thái busy của node lên card preview
  */
 export async function generateAssetReferenceImage(ctx, { kind, entity, nodeId }) {
   const nodeStatus = ctx?.nodeStatus
@@ -53,7 +53,7 @@ export async function generateAssetReferenceImage(ctx, { kind, entity, nodeId })
     const taskId = res?.image_generation?.task_id ?? res?.task_id
     if (taskId) {
       const polled = await pollTask(taskId, () => ctx?.refreshDrama?.(true))
-      if (polled.status !== 'completed') throw new Error(polled.error || '生成失败')
+      if (polled.status !== 'completed') throw new Error(polled.error || 'Tạo thất bại')
     } else {
       await ctx?.refreshDrama?.(true)
       const ok = await pollUntilHasImage(() => {
@@ -64,7 +64,7 @@ export async function generateAssetReferenceImage(ctx, { kind, entity, nodeId })
             : ctx?.drama?.value?.props
         return (list || []).find((x) => Number(x.id) === Number(entity.id))
       })
-      if (!ok) throw new Error('生成超时，请稍后刷新查看')
+      if (!ok) throw new Error('Tạo timeout, vui lòng làm mới để xem lại')
     }
     await ctx?.refresh?.(true)
     return { ok: true }

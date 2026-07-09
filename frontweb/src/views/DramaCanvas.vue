@@ -3,16 +3,16 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo" @click="router.push('/')">
-          <span class="logo-main">本地短剧助手</span>
-          <span class="logo-sub">画布模式</span>
+          <span class="logo-main">Trợ lý phim ngắn Local</span>
+          <span class="logo-sub">Chế độ Canvas</span>
         </h1>
         <span class="breadcrumb-sep">›</span>
-        <span class="page-title">{{ drama?.title || '加载中…' }}</span>
+        <span class="page-title">{{ drama?.title || 'Đang tải…' }}</span>
 
         <el-select
           v-model="filterEpisodeId"
           class="episode-select"
-          placeholder="全部集数"
+          placeholder="Tất cả tập"
           clearable
           size="small"
           style="width: 150px"
@@ -20,66 +20,66 @@
           <el-option
             v-for="ep in (drama?.episodes || [])"
             :key="ep.id"
-            :label="ep.title || '第' + (ep.episode_number || 0) + '集'"
+            :label="ep.title || 'Tập ' + (ep.episode_number || 0)"
             :value="ep.id"
           />
         </el-select>
 
-        <span v-if="layoutSaveState === 'saving'" class="layout-status saving">保存中…</span>
-        <span v-else-if="layoutSaveState === 'saved'" class="layout-status saved">已保存</span>
-        <span v-else-if="layoutSaveState === 'error'" class="layout-status error">保存失败</span>
+        <span v-if="layoutSaveState === 'saving'" class="layout-status saving">Đang lưu…</span>
+        <span v-else-if="layoutSaveState === 'saved'" class="layout-status saved">Đã lưu</span>
+        <span v-else-if="layoutSaveState === 'error'" class="layout-status error">Lưu thất bại</span>
 
         <div class="header-actions">
           <el-button size="small" type="warning" plain @click="focusScriptNode">
-            剧本
+            Kịch bản
           </el-button>
           <el-button size="small" @click="openCreateDialog('storyboard')">
             <el-icon><Plus /></el-icon>
-            分镜
+            Storyboard
           </el-button>
-          <el-button size="small" @click="openCreateDialog('character')">角色</el-button>
-          <el-button size="small" @click="openCreateDialog('scene')">场景</el-button>
-          <el-button size="small" @click="openCreateDialog('prop')">道具</el-button>
+          <el-button size="small" @click="openCreateDialog('character')">Nhân vật</el-button>
+          <el-button size="small" @click="openCreateDialog('scene')">Scene</el-button>
+          <el-button size="small" @click="openCreateDialog('prop')">Đạo cụ</el-button>
           <el-button size="small" @click="openCreateDialog('episode')">
             <el-icon><Plus /></el-icon>
-            集
+            Tập
           </el-button>
           <el-button size="small" :loading="aligningNodes" @click="onAlignNodes">
             <el-icon><Grid /></el-icon>
-            对齐节点
+            Căn chỉnh node
           </el-button>
           <el-button type="primary" plain @click="goListMode">
             <el-icon><List /></el-icon>
-            列表模式
+            Chế độ danh sách
           </el-button>
           <el-button class="btn-theme" @click="toggleTheme">
             <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? '浅色' : '暗色' }}
+            {{ isDark ? 'Sáng' : 'Tối' }}
           </el-button>
         </div>
       </div>
 
       <div class="workflow-bar">
-        <span class="wf-hint">已选 {{ selectedStoryboardIds.length }} 个分镜</span>
+        <span class="wf-hint">Đã chọn {{ selectedStoryboardIds.length }} storyboard</span>
         <el-checkbox-group v-model="pipelineSteps" size="small" class="wf-steps">
-          <el-checkbox value="image">生图</el-checkbox>
-          <el-checkbox value="video">生视频</el-checkbox>
-          <el-checkbox value="audio">配音</el-checkbox>
+          <el-checkbox value="image">Tạo ảnh</el-checkbox>
+          <el-checkbox value="video">Tạo video</el-checkbox>
+          <el-checkbox value="audio">Lồng tiếng</el-checkbox>
         </el-checkbox-group>
         <el-button size="small" :disabled="selectedStoryboardIds.length === 0" @click="onCreateWorkflowGroup">
-          创建工作流
+          Tạo workflow
         </el-button>
         <el-select
           v-model="activeGroupId"
           size="small"
-          placeholder="选择工作流"
+          placeholder="Chọn workflow"
           clearable
           style="width: 160px"
         >
           <el-option
             v-for="g in workflowGroups"
             :key="g.id"
-            :label="`${g.title} (${(g.storyboard_ids || []).length}镜)`"
+            :label="`${g.title} (${(g.storyboard_ids || []).length} storyboard)`"
             :value="g.id"
           />
         </el-select>
@@ -90,17 +90,17 @@
           :disabled="!activeGroupId"
           @click="onRunActiveGroup"
         >
-          整组重跑
+          Chạy lại cả nhóm
         </el-button>
         <el-button size="small" type="danger" plain :disabled="!activeGroupId" @click="onDeleteActiveGroup">
-          删除工作流
+          Xoá workflow
         </el-button>
       </div>
 
       <div v-if="workflowProgress" class="workflow-progress">{{ workflowProgress }}</div>
 
       <div class="generate-bar">
-        <span class="gen-label">本集生成</span>
+        <span class="gen-label">Tạo cho tập này</span>
         <el-button
           size="small"
           type="primary"
@@ -108,7 +108,7 @@
           :disabled="!filterEpisodeId || workflowRunning"
           @click="aiGenerateStoryboards"
         >
-          AI 生成分镜
+          AI tạo storyboard
         </el-button>
         <el-button
           size="small"
@@ -116,7 +116,7 @@
           :disabled="!filterEpisodeId || workflowRunning"
           @click="batchGenerateImages"
         >
-          批量生图
+          Tạo ảnh hàng loạt
         </el-button>
         <el-button
           size="small"
@@ -124,9 +124,9 @@
           :disabled="!filterEpisodeId || workflowRunning"
           @click="batchGenerateVideos"
         >
-          批量生视频
+          Tạo video hàng loạt
         </el-button>
-        <span class="gen-hint" title="完整创作流水线">剧本 → 提取角色/场景/道具 → 分镜 → 生图 → 视频</span>
+        <span class="gen-hint" title="Pipeline sáng tạo đầy đủ">Kịch bản → Trích xuất nhân vật/scene/đạo cụ → Storyboard → Tạo ảnh → Video</span>
       </div>
       <div v-if="episodeGenProgress" class="workflow-progress episode-gen">{{ episodeGenProgress }}</div>
     </header>
@@ -135,18 +135,18 @@
       <aside v-if="drama" class="canvas-sidebar">
         <div class="sidebar-section sidebar-script">
           <div class="sec-label sec-label-row">
-            <span>📜 剧本</span>
-            <el-button link size="small" type="warning" @click="focusScriptNode">编辑</el-button>
+            <span>📜 Kịch bản</span>
+            <el-button link size="small" type="warning" @click="focusScriptNode">Sửa</el-button>
           </div>
-          <p class="sidebar-script-tip">从头创作：先写剧本，再提取左侧素材</p>
+          <p class="sidebar-script-tip">Sáng tạo từ đầu: viết kịch bản trước, sau đó trích xuất tư liệu ở bên trái</p>
         </div>
         <div class="sidebar-title">
-          素材库
-          <el-button v-if="highlightAssetId" link size="small" @click="clearAssetHighlight">清除</el-button>
+          Thư viện tư liệu
+          <el-button v-if="highlightAssetId" link size="small" @click="clearAssetHighlight">Xoá chọn</el-button>
         </div>
         <div class="sidebar-section">
           <div class="sec-label sec-label-row">
-            <span>角色 {{ (drama.characters || []).length }}</span>
+            <span>Nhân vật {{ (drama.characters || []).length }}</span>
             <el-button link size="small" type="primary" @click="openCreateDialog('character')">+</el-button>
           </div>
           <div
@@ -156,12 +156,12 @@
             :class="{ active: highlightAssetId === 'char:' + c.id }"
             @click="selectSidebarAsset('char:' + c.id)"
           >
-            {{ c.name || '未命名' }}
+            {{ c.name || 'Chưa đặt tên' }}
           </div>
         </div>
         <div class="sidebar-section">
           <div class="sec-label sec-label-row">
-            <span>场景 {{ (drama.scenes || []).length }}</span>
+            <span>Scene {{ (drama.scenes || []).length }}</span>
             <el-button link size="small" type="primary" @click="openCreateDialog('scene')">+</el-button>
           </div>
           <div
@@ -171,12 +171,12 @@
             :class="{ active: highlightAssetId === 'scene:' + s.id }"
             @click="selectSidebarAsset('scene:' + s.id)"
           >
-            {{ s.location || '未命名' }}
+            {{ s.location || 'Chưa đặt tên' }}
           </div>
         </div>
         <div class="sidebar-section">
           <div class="sec-label sec-label-row">
-            <span>道具 {{ (drama.props || []).length }}</span>
+            <span>Đạo cụ {{ (drama.props || []).length }}</span>
             <el-button link size="small" type="primary" @click="openCreateDialog('prop')">+</el-button>
           </div>
           <div
@@ -186,12 +186,12 @@
             :class="{ active: highlightAssetId === 'prop:' + p.id }"
             @click="selectSidebarAsset('prop:' + p.id)"
           >
-            {{ p.name || '未命名' }}
+            {{ p.name || 'Chưa đặt tên' }}
           </div>
         </div>
 
         <div class="sidebar-section workflow-list">
-          <div class="sec-label">工作流 {{ workflowGroups.length }}</div>
+          <div class="sec-label">Workflow {{ workflowGroups.length }}</div>
           <div
             v-for="g in workflowGroups"
             :key="g.id"
@@ -200,12 +200,12 @@
             @click="activeGroupId = g.id"
           >
             <div class="wf-item-title">{{ g.title }}</div>
-            <div class="wf-item-meta">{{ (g.storyboard_ids || []).length }} 镜 · {{ (g.pipeline || []).join('→') }}</div>
+            <div class="wf-item-meta">{{ (g.storyboard_ids || []).length }} storyboard · {{ (g.pipeline || []).join('→') }}</div>
           </div>
-          <div v-if="!workflowGroups.length" class="sidebar-empty">框选分镜后点「创建工作流」</div>
+          <div v-if="!workflowGroups.length" class="sidebar-empty">Chọn storyboard rồi bấm "Tạo workflow"</div>
         </div>
 
-        <p class="sidebar-tip">经典模式流水线：分镜 → 脚本摘要 → 分镜图 → 视频。摘要节点是画布可视化，列表里合并在分镜编辑区。顶栏「本集生成」可 AI 批量操作；单击分镜可单镜生图/生视频。</p>
+        <p class="sidebar-tip">Pipeline chế độ cổ điển: Storyboard → Tóm tắt script → Ảnh storyboard → Video. Node tóm tắt hiển thị trên canvas, ở chế độ danh sách được gộp vào khu vực sửa storyboard. Thanh trên "Tạo cho tập này" cho phép AI xử lý hàng loạt; click từng storyboard để tạo ảnh/video riêng lẻ.</p>
       </aside>
 
       <div ref="canvasMainRef" class="canvas-main">
@@ -238,7 +238,7 @@
           <Controls />
           <MiniMap pannable zoomable />
         </VueFlow>
-        <el-empty v-else-if="!loading" description="暂无画布数据" />
+        <el-empty v-else-if="!loading" description="Chưa có dữ liệu canvas" />
         <CanvasFloatingToolbar v-if="drama && nodes.length" />
       </div>
     </div>
@@ -488,7 +488,7 @@ async function onCreateSubmit(form) {
   try {
     await submitCreate(form)
   } catch (e) {
-    ElMessage.error(e?.message || '创建失败')
+    ElMessage.error(e?.message || 'Tạo thất bại')
   }
 }
 
@@ -599,7 +599,7 @@ async function persistCanvasState({ layoutOnly = false, groupsOnly = false } = {
     }, 2000)
   } catch (e) {
     layoutSaveState.value = 'error'
-    ElMessage.error(e?.message || '保存失败')
+    ElMessage.error(e?.message || 'Lưu thất bại')
   }
 }
 
@@ -650,7 +650,7 @@ function focusScriptNode() {
     if (eps.length === 1) epId = eps[0].id
   }
   if (!epId) {
-    ElMessage.warning('请先选择或新建集数')
+    ElMessage.warning('Vui lòng chọn hoặc tạo tập trước')
     return
   }
   if (!filterEpisodeId.value) filterEpisodeId.value = epId
@@ -692,9 +692,9 @@ async function onAlignNodes() {
       }
     }
     await persistCanvasState({ layoutOnly: true })
-    ElMessage.success('节点已按规则对齐并适配当前视图')
+    ElMessage.success('Đã căn chỉnh node và khớp với khung nhìn hiện tại')
   } catch (e) {
-    ElMessage.error(e?.message || '对齐失败')
+    ElMessage.error(e?.message || 'Căn chỉnh thất bại')
   } finally {
     aligningNodes.value = false
   }
@@ -713,7 +713,7 @@ async function loadDrama(silent = false) {
     await loadForDrama(drama.value, filterEpisodeId.value)
     rebuildGraph()
   } catch (e) {
-    if (!silent) ElMessage.error(e?.message || '加载项目失败')
+    if (!silent) ElMessage.error(e?.message || 'Tải dự án thất bại')
   } finally {
     if (!silent) loading.value = false
   }
@@ -721,14 +721,14 @@ async function loadDrama(silent = false) {
 
 async function onCreateWorkflowGroup() {
   if (!selectedStoryboardIds.value.length) {
-    ElMessage.warning('请先框选或 Ctrl 点击选择分镜节点')
+    ElMessage.warning('Vui lòng chọn storyboard bằng khung chọn hoặc Ctrl+click trước')
     return
   }
   try {
-    const { value } = await ElMessageBox.prompt('工作流名称', '创建工作流', {
-      confirmButtonText: '创建',
-      cancelButtonText: '取消',
-      inputValue: `工作流 ${workflowGroups.value.length + 1}`,
+    const { value } = await ElMessageBox.prompt('Tên workflow', 'Tạo workflow', {
+      confirmButtonText: 'Tạo',
+      cancelButtonText: 'Huỷ',
+      inputValue: `Workflow ${workflowGroups.value.length + 1}`,
     })
     workflowGroups.value = createWorkflowGroup(workflowGroups.value, {
       title: value?.trim() || undefined,
@@ -738,40 +738,40 @@ async function onCreateWorkflowGroup() {
     activeGroupId.value = workflowGroups.value[workflowGroups.value.length - 1]?.id || null
     await persistCanvasState({ groupsOnly: true })
     rebuildGraph()
-    ElMessage.success('工作流已创建')
+    ElMessage.success('Đã tạo workflow')
   } catch (_) {}
 }
 
 async function onDeleteActiveGroup() {
   if (!activeGroupId.value) return
   try {
-    await ElMessageBox.confirm('确定删除该工作流？', '删除工作流', { type: 'warning' })
+    await ElMessageBox.confirm('Bạn có chắc muốn xoá workflow này?', 'Xoá workflow', { type: 'warning' })
     workflowGroups.value = deleteWorkflowGroup(workflowGroups.value, activeGroupId.value)
     activeGroupId.value = workflowGroups.value[0]?.id || null
     await persistCanvasState({ groupsOnly: true })
     rebuildGraph()
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
   } catch (_) {}
 }
 
 async function onRunActiveGroup() {
   const group = workflowGroups.value.find((g) => g.id === activeGroupId.value)
   if (!group) {
-    ElMessage.warning('请先选择工作流')
+    ElMessage.warning('Vui lòng chọn workflow trước')
     return
   }
   try {
     await ElMessageBox.confirm(
-      `将对 ${(group.storyboard_ids || []).length} 个分镜依次执行：${(group.pipeline || pipelineSteps.value).join(' → ')}\n耗时可能较长，是否继续？`,
-      '整组重跑',
-      { type: 'warning', confirmButtonText: '开始执行' }
+      `Sẽ chạy lần lượt trên ${(group.storyboard_ids || []).length} storyboard: ${(group.pipeline || pipelineSteps.value).join(' → ')}\nQuá trình có thể kéo dài, tiếp tục?`,
+      'Chạy lại cả nhóm',
+      { type: 'warning', confirmButtonText: 'Bắt đầu' }
     )
   } catch {
     return
   }
 
   workflowRunning.value = true
-  workflowProgress.value = '准备执行…'
+  workflowProgress.value = 'Đang chuẩn bị…'
   try {
     const summary = await runWorkflowGroup(drama.value, {
       ...group,
@@ -784,22 +784,22 @@ async function onRunActiveGroup() {
         return findStoryboardInDrama(drama.value, storyboardId)?.storyboard
       },
       onStepStart: ({ storyboardId, step }) => {
-        workflowProgress.value = `分镜 #${storyboardId}：${step === 'image' ? '生图' : step === 'video' ? '生视频' : '配音'}…`
+        workflowProgress.value = `Storyboard #${storyboardId}: ${step === 'image' ? 'Đang tạo ảnh' : step === 'video' ? 'Đang tạo video' : 'Đang lồng tiếng'}…`
       },
       onStoryboardError: ({ storyboardId, error }) => {
-        ElMessage.error(`分镜 #${storyboardId} 失败：${error?.message || error}`)
+        ElMessage.error(`Storyboard #${storyboardId} thất bại: ${error?.message || error}`)
       },
     })
     await loadDrama(true)
     await loadForDrama(drama.value, filterEpisodeId.value)
     rebuildGraph()
     if (summary.failed.length) {
-      ElMessage.warning(`完成 ${summary.ok.length} 镜，失败 ${summary.failed.length} 镜`)
+      ElMessage.warning(`Hoàn tất ${summary.ok.length} storyboard, thất bại ${summary.failed.length} storyboard`)
     } else {
-      ElMessage.success(`工作流执行完成，共 ${summary.ok.length} 镜`)
+      ElMessage.success(`Đã chạy xong workflow, tổng cộng ${summary.ok.length} storyboard`)
     }
   } catch (e) {
-    ElMessage.error(e?.message || '工作流执行失败')
+    ElMessage.error(e?.message || 'Chạy workflow thất bại')
   } finally {
     workflowRunning.value = false
     workflowProgress.value = ''

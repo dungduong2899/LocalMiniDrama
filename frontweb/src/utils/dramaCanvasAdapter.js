@@ -20,7 +20,7 @@ const EPISODE_ROW_GAP = 48
 const SB_GAP_Y = 280
 const MEDIA_OFFSET_X = 228
 const MEDIA_GAP_X = 188
-/** 单行流水线（分镜 + 媒体）大致宽度，用于画布 bounds */
+/** Chiều rộng ước lượng của pipeline một hàng (storyboard + media), dùng cho bounds canvas */
 const SB_PIPELINE_WIDTH = MEDIA_OFFSET_X + 5 * MEDIA_GAP_X + 200
 
 const ASSET_EDGE_STYLE = { stroke: '#34d399', strokeWidth: 1.5, strokeDasharray: '6 4' }
@@ -28,7 +28,7 @@ const SCRIPT_EDGE_STYLE = { stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: 
 const PIPELINE_EDGE_STYLE = { stroke: '#818cf8', strokeWidth: 2 }
 const CHAIN_EDGE_STYLE = { stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4 3' }
 
-/** Vue Flow 贝塞尔曲线（curvature 越大弧线越明显） */
+/** Đường cong Bezier của Vue Flow (curvature càng lớn cung càng rõ) */
 function makeEdge(props) {
   return {
     type: 'default',
@@ -48,7 +48,7 @@ function storyboardSummary(sb) {
     return truncate(sb.universal_segment_text, 90)
   }
   const parts = [sb.action, sb.dialogue, sb.result].filter(Boolean)
-  return truncate(parts.join(' · '), 90) || truncate(sb.description, 90) || '暂无脚本内容'
+  return truncate(parts.join(' · '), 90) || truncate(sb.description, 90) || 'Chưa có nội dung kịch bản'
 }
 
 function sectionLabel(id, label, x, y) {
@@ -75,9 +75,9 @@ function buildAssetNodes(drama, savedLayout, startY) {
   let y = startY
 
   const sections = [
-    { key: 'characters', label: '👤 角色', hint: '从剧本提取', items: drama.characters || [], kind: 'character', prefix: 'char' },
-    { key: 'scenes', label: '🏞 场景', hint: '从剧本提取', items: drama.scenes || [], kind: 'scene', prefix: 'scene' },
-    { key: 'props', label: '🎭 道具', hint: '从剧本提取', items: drama.props || [], kind: 'prop', prefix: 'prop' },
+    { key: 'characters', label: '👤 Nhân vật', hint: 'Trích từ kịch bản', items: drama.characters || [], kind: 'character', prefix: 'char' },
+    { key: 'scenes', label: '🏞 Scene', hint: 'Trích từ kịch bản', items: drama.scenes || [], kind: 'scene', prefix: 'scene' },
+    { key: 'props', label: '🎭 Đạo cụ', hint: 'Trích từ kịch bản', items: drama.props || [], kind: 'prop', prefix: 'prop' },
   ]
 
   for (const sec of sections) {
@@ -98,7 +98,7 @@ function buildAssetNodes(drama, savedLayout, startY) {
       id: addId,
       type: 'canvasAddButton',
       position: resolveNodePosition(savedLayout, addId, { x: ASSET_X, y }),
-      data: { assetType: sec.kind, label: '+ 新建' },
+      data: { assetType: sec.kind, label: '+ Tạo mới' },
       draggable: false,
       selectable: false,
       connectable: false,
@@ -255,7 +255,7 @@ function buildEpisodePipeline(episode, savedLayout, startY, options = {}) {
           const imgId = `sbimg-first:${sb.id}`
           pipelineTailId = appendMediaImageNode(nodes, edges, {
             savedLayout, sb, sbId, fromId: pipelineTailId, mediaX, mediaY, imgId, url: firstUrl,
-            frameKind: 'first', frameLabel: '首帧',
+            frameKind: 'first', frameLabel: 'Frame đầu',
           })
           mediaX += MEDIA_GAP_X
         }
@@ -264,7 +264,7 @@ function buildEpisodePipeline(episode, savedLayout, startY, options = {}) {
           const imgId = `sbimg-last:${sb.id}`
           pipelineTailId = appendMediaImageNode(nodes, edges, {
             savedLayout, sb, sbId, fromId: pipelineTailId, mediaX, mediaY, imgId, url: lastUrl,
-            frameKind: 'last', frameLabel: '尾帧',
+            frameKind: 'last', frameLabel: 'Frame cuối',
           })
           mediaX += MEDIA_GAP_X
         }
@@ -274,7 +274,7 @@ function buildEpisodePipeline(episode, savedLayout, startY, options = {}) {
           const imgId = `sbimg:${sb.id}`
           pipelineTailId = appendMediaImageNode(nodes, edges, {
             savedLayout, sb, sbId, fromId: pipelineTailId, mediaX, mediaY, imgId, url: mainUrl,
-            frameKind: null, frameLabel: '分镜图',
+            frameKind: null, frameLabel: 'Ảnh storyboard',
           })
           mediaX += MEDIA_GAP_X
         }
@@ -364,7 +364,7 @@ function buildEpisodePipeline(episode, savedLayout, startY, options = {}) {
     id: addSbId,
     type: 'canvasAddButton',
     position: resolveNodePosition(savedLayout, addSbId, { x: PIPELINE_X, y: addY }),
-    data: { assetType: 'storyboard', label: '+ 新建分镜', episodeId: episode.id },
+    data: { assetType: 'storyboard', label: '+ Tạo storyboard', episodeId: episode.id },
     draggable: false,
     selectable: false,
     connectable: false,
@@ -376,7 +376,7 @@ function buildEpisodePipeline(episode, savedLayout, startY, options = {}) {
 }
 
 /**
- * 将 drama API 数据转为 Vue Flow 图（兼容无 canvas_layout 的旧 JSON）
+ * Chuyển dữ liệu API drama sang graph Vue Flow (tương thích JSON cũ không có canvas_layout)
  * @param {object} drama
  * @param {{ episodeId?: number|null }} options
  */
@@ -423,7 +423,7 @@ export function buildDramaCanvasGraph(drama, options = {}) {
   }
 
   if (!episodes.length) {
-    nodes.push(sectionLabel('label:empty', '暂无剧集，可点顶栏「+ 集」或右键空白处新建', PIPELINE_X, pipelineY))
+    nodes.push(sectionLabel('label:empty', 'Chưa có tập, bấm "+ Tập" trên thanh trên hoặc chuột phải vào vùng trống để tạo', PIPELINE_X, pipelineY))
   }
 
   return {
@@ -445,7 +445,7 @@ export function getStoryboardRefFromNode(node) {
   }
 }
 
-/** 点击素材时，计算应高亮的节点与连线 */
+/** Khi bấm vào tư liệu, tính các node/edge cần highlight */
 export function getAssetRelationHighlight(drama, assetNodeId) {
   const nodeIds = new Set([assetNodeId])
   const edgeIds = new Set()
@@ -521,13 +521,13 @@ export function applyCanvasHighlight(nodes, edges, highlightNodeId, drama) {
   }
 }
 
-/** 为边附加 _baseStyle 便于高亮恢复 */
+/** Gắn _baseStyle cho edge để dễ khôi phục sau highlight */
 export function stampEdgeBaseStyles(edges) {
   return edges.map((e) => ({ ...e, _baseStyle: e.style ? { ...e.style } : undefined }))
 }
 
 /**
- * 按默认网格规则计算全部节点坐标（忽略已保存的手动位置）
+ * Tính toạ độ toàn bộ node theo lưới mặc định (bỏ qua vị trí đã lưu thủ công)
  * @returns {{ positions: Record<string, {x:number,y:number}>, bounds: object }}
  */
 export function computeAutoLayoutPositions(drama, options = {}) {

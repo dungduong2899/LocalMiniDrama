@@ -12,11 +12,11 @@ export const useFilmStore = defineStore('film', () => {
   const storyInput = ref('')
   const scriptContent = ref('')
   const videoResolution = ref('480p')
-  /** 按 dramaId:episodeId 存储合成视频进度与状态 */
+  /** Lưu tiến độ và trạng thái ghép video theo dramaId:episodeId */
   const videoStateByKey = ref({})
 
   const dramaId = computed(() => drama.value?.id ?? null)
-  // 角色/道具/场景默认只显示本集资源（随「选择第几集」变化）
+  // Nhân vật / đạo cụ / scene mặc định chỉ hiển thị tài nguyên của tập hiện tại (thay đổi theo "chọn tập nào")
   const characters = computed(() => currentEpisode.value?.characters ?? [])
   const scenes = computed(() => currentEpisode.value?.scenes ?? [])
   const props = computed(() => currentEpisode.value?.props ?? [])
@@ -102,7 +102,7 @@ export const useFilmStore = defineStore('film', () => {
     currentEpisode.value = null
     storyInput.value = ''
     scriptContent.value = ''
-    // 保留 videoStateByKey：跨剧切换时其它项目的合成状态不丢失
+    // Giữ videoStateByKey: khi chuyển giữa các phim, trạng thái ghép của các dự án khác không mất
   }
 
   return {

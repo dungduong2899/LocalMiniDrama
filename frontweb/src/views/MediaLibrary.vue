@@ -4,29 +4,29 @@
       <div class="header-left">
         <el-button text @click="$router.back()">
           <el-icon><ArrowLeft /></el-icon>
-          返回
+          Quay lại
         </el-button>
-        <h2 class="page-title">媒体素材库</h2>
+        <h2 class="page-title">Thư viện media</h2>
       </div>
       <div class="header-actions">
         <el-button type="primary" plain @click="triggerUpload">
           <el-icon><Upload /></el-icon>
-          上传素材
+          Tải lên
         </el-button>
         <input ref="uploadInput" type="file" accept="image/*,video/*" multiple style="display:none" @change="onUpload" />
       </div>
     </div>
 
-    <!-- 筛选栏 -->
+    <!-- Thanh lọc -->
     <div class="filter-bar">
       <el-radio-group v-model="mediaType" class="type-filter" @change="loadMedia">
-        <el-radio-button value="all">全部</el-radio-button>
-        <el-radio-button value="image">图片</el-radio-button>
-        <el-radio-button value="video">视频</el-radio-button>
+        <el-radio-button value="all">Tất cả</el-radio-button>
+        <el-radio-button value="image">Ảnh</el-radio-button>
+        <el-radio-button value="video">Video</el-radio-button>
       </el-radio-group>
       <el-input
         v-model="keyword"
-        placeholder="搜索素材..."
+        placeholder="Tìm tư liệu..."
         class="search-input"
         clearable
         @input="debouncedLoad"
@@ -35,13 +35,13 @@
       </el-input>
     </div>
 
-    <!-- 上传进度 -->
+    <!-- Tiến độ upload -->
     <div v-if="uploading" class="upload-progress">
       <el-icon class="is-loading"><Loading /></el-icon>
-      <span>正在上传 {{ uploadProgress.current }}/{{ uploadProgress.total }}...</span>
+      <span>Đang tải lên {{ uploadProgress.current }}/{{ uploadProgress.total }}...</span>
     </div>
 
-    <!-- 媒体网格 -->
+    <!-- Lưới media -->
     <div v-loading="loading" class="media-grid">
       <div
         v-for="item in mediaItems"
@@ -76,18 +76,18 @@
           </div>
         </div>
         <div class="media-info">
-          <span class="media-name" :title="item.name">{{ item.name || '未命名' }}</span>
+          <span class="media-name" :title="item.name">{{ item.name || 'Chưa đặt tên' }}</span>
           <span class="media-meta">{{ formatSize(item.size) }}</span>
         </div>
       </div>
 
       <div v-if="!loading && mediaItems.length === 0" class="empty-media">
         <el-icon class="empty-icon"><Files /></el-icon>
-        <p>暂无素材，点击上传按钮添加</p>
+        <p>Chưa có tư liệu, nhấn nút Tải lên để thêm</p>
       </div>
     </div>
 
-    <!-- 分页 -->
+    <!-- Phân trang -->
     <div v-if="total > pageSize" class="pagination">
       <el-pagination
         v-model:current-page="page"
@@ -98,15 +98,15 @@
       />
     </div>
 
-    <!-- 批量操作 -->
+    <!-- Thao tác hàng loạt -->
     <div v-if="selectedIds.size > 0" class="batch-bar">
-      <span>已选 {{ selectedIds.size }} 项</span>
-      <el-button size="small" @click="selectedIds.clear()">取消选择</el-button>
-      <el-button size="small" type="danger" plain @click="batchDelete">批量删除</el-button>
+      <span>Đã chọn {{ selectedIds.size }} mục</span>
+      <el-button size="small" @click="selectedIds.clear()">Bỏ chọn</el-button>
+      <el-button size="small" type="danger" plain @click="batchDelete">Xoá hàng loạt</el-button>
     </div>
 
-    <!-- 预览弹窗 -->
-    <el-dialog v-model="showPreview" title="素材预览" width="800px" destroy-on-close>
+    <!-- Dialog preview -->
+    <el-dialog v-model="showPreview" title="Preview tư liệu" width="800px" destroy-on-close>
       <div class="preview-content">
         <video
           v-if="previewItem?.type === 'video'"
@@ -118,9 +118,9 @@
         <img v-else-if="previewItem" :src="itemUrl(previewItem)" class="preview-image" />
       </div>
       <div class="preview-meta">
-        <div class="meta-row"><span>名称：</span>{{ previewItem?.name || '未命名' }}</div>
-        <div class="meta-row"><span>大小：</span>{{ formatSize(previewItem?.size) }}</div>
-        <div class="meta-row"><span>创建时间：</span>{{ previewItem?.created_at }}</div>
+        <div class="meta-row"><span>Tên: </span>{{ previewItem?.name || 'Chưa đặt tên' }}</div>
+        <div class="meta-row"><span>Dung lượng: </span>{{ formatSize(previewItem?.size) }}</div>
+        <div class="meta-row"><span>Thời gian tạo: </span>{{ previewItem?.created_at }}</div>
       </div>
     </el-dialog>
   </div>
@@ -165,12 +165,12 @@ async function onUpload(e) {
       await uploadAPI.uploadImage(file)
       uploadProgress.value.current++
     } catch (err) {
-      ElMessage.warning(`${file.name} 上传失败: ${err.message}`)
+      ElMessage.warning(`${file.name} tải lên thất bại: ${err.message}`)
     }
   }
   uploading.value = false
   e.target.value = ''
-  ElMessage.success(`${files.length} 个素材上传完成`)
+  ElMessage.success(`Đã tải lên ${files.length} tư liệu`)
   loadMedia()
 }
 
@@ -236,19 +236,19 @@ function openPreview(item) {
 }
 
 async function deleteItem(item) {
-  await ElMessageBox.confirm('确定删除该素材？', '删除确认', { type: 'warning' })
+  await ElMessageBox.confirm('Bạn có chắc muốn xoá tư liệu này?', 'Xác nhận xoá', { type: 'warning' })
   try {
     await request.delete(`/assets/${item.id}`)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     loadMedia()
   } catch (err) {
-    ElMessage.error(err.message || '删除失败')
+    ElMessage.error(err.message || 'Xoá thất bại')
   }
 }
 
 async function batchDelete() {
   const count = selectedIds.size
-  await ElMessageBox.confirm(`确定删除选中的 ${count} 个素材？`, '批量删除', { type: 'warning' })
+  await ElMessageBox.confirm(`Bạn có chắc muốn xoá ${count} tư liệu đã chọn?`, 'Xoá hàng loạt', { type: 'warning' })
   let failed = 0
   for (const id of selectedIds) {
     try {
@@ -256,8 +256,8 @@ async function batchDelete() {
     } catch (_) { failed++ }
   }
   selectedIds.clear()
-  if (failed > 0) ElMessage.warning(`${count - failed} 个删除成功，${failed} 个失败`)
-  else ElMessage.success(`${count} 个素材已删除`)
+  if (failed > 0) ElMessage.warning(`Xoá thành công ${count - failed}, thất bại ${failed}`)
+  else ElMessage.success(`Đã xoá ${count} tư liệu`)
   loadMedia()
 }
 

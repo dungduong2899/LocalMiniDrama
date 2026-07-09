@@ -6,7 +6,7 @@ import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import { ElConfigProvider } from 'element-plus'
 import 'element-plus/dist/index.css'
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import vi from 'element-plus/dist/locale/vi.mjs'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
@@ -35,5 +35,5 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus, { locale: zhCn })
+app.use(ElementPlus, { locale: vi })
 app.mount('#app')

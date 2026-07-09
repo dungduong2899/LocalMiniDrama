@@ -4,44 +4,44 @@
       <div class="header-left">
         <el-button text @click="$router.back()">
           <el-icon><ArrowLeft /></el-icon>
-          返回
+          Quay lại
         </el-button>
-        <h2 class="page-title">自由创作</h2>
+        <h2 class="page-title">Sáng tạo tự do</h2>
       </div>
-      <p class="page-desc">不绑定剧集，直接输入文字生成图片或视频</p>
+      <p class="page-desc">Không gắn với phim, nhập text để tạo ảnh hoặc video</p>
     </div>
 
     <div class="create-layout">
-      <!-- 左侧：输入面板 -->
+      <!-- Trái: bảng nhập liệu -->
       <div class="input-panel">
         <el-tabs v-model="mode" class="mode-tabs">
-          <el-tab-pane label="🎨 生成图片" name="image" />
-          <el-tab-pane label="🎬 生成视频" name="video" />
+          <el-tab-pane label="🎨 Tạo ảnh" name="image" />
+          <el-tab-pane label="🎬 Tạo video" name="video" />
         </el-tabs>
 
         <div class="form-section">
-          <div class="form-label">提示词 <span class="required">*</span></div>
+          <div class="form-label">Prompt <span class="required">*</span></div>
           <el-input
             v-model="prompt"
             type="textarea"
             :rows="5"
-            placeholder="描述你想要生成的画面内容..."
+            placeholder="Mô tả nội dung bạn muốn tạo..."
             class="prompt-input"
           />
         </div>
 
         <div v-if="mode === 'video'" class="form-section">
-          <div class="form-label">参考图（可选）</div>
+          <div class="form-label">Ảnh tham chiếu (tuỳ chọn)</div>
           <div class="ref-image-zone" @click="triggerRefImageUpload" @dragover.prevent @drop.prevent="onRefImageDrop">
             <template v-if="refImageDataUrl">
               <img :src="refImageDataUrl" class="ref-preview" />
               <div class="ref-actions">
-                <el-button size="small" type="danger" plain @click.stop="clearRefImage">移除</el-button>
+                <el-button size="small" type="danger" plain @click.stop="clearRefImage">Bỏ</el-button>
               </div>
             </template>
             <template v-else>
               <el-icon class="upload-icon"><Picture /></el-icon>
-              <div class="upload-tip">点击或拖拽上传参考图</div>
+              <div class="upload-tip">Nhấn hoặc kéo thả để tải ảnh tham chiếu</div>
             </template>
           </div>
           <input ref="refImageInput" type="file" accept="image/*" style="display:none" @change="onRefImageChange" />
@@ -49,11 +49,11 @@
 
         <div class="form-section form-row">
           <div class="form-item">
-            <div class="form-label">风格</div>
-            <el-input v-model="style" placeholder="例如: cinematic, anime..." />
+            <div class="form-label">Phong cách</div>
+            <el-input v-model="style" placeholder="Ví dụ: cinematic, anime..." />
           </div>
           <div v-if="mode === 'image'" class="form-item">
-            <div class="form-label">比例</div>
+            <div class="form-label">Tỉ lệ</div>
             <el-select v-model="aspectRatio">
               <el-option label="16:9" value="16:9" />
               <el-option label="9:16" value="9:16" />
@@ -62,12 +62,12 @@
             </el-select>
           </div>
           <div v-if="mode === 'video'" class="form-item">
-            <div class="form-label">时长</div>
+            <div class="form-label">Thời lượng</div>
             <el-select v-model="duration">
-              <el-option label="3秒" :value="3" />
-              <el-option label="5秒" :value="5" />
-              <el-option label="8秒" :value="8" />
-              <el-option label="10秒" :value="10" />
+              <el-option label="3s" :value="3" />
+              <el-option label="5s" :value="5" />
+              <el-option label="8s" :value="8" />
+              <el-option label="10s" :value="10" />
             </el-select>
           </div>
         </div>
@@ -80,25 +80,25 @@
           class="generate-btn"
           @click="generate"
         >
-          {{ generating ? '生成中...' : (mode === 'image' ? '生成图片' : '生成视频') }}
+          {{ generating ? 'Đang tạo...' : (mode === 'image' ? 'Tạo ảnh' : 'Tạo video') }}
         </el-button>
       </div>
 
-      <!-- 右侧：结果展示 -->
+      <!-- Phải: hiển thị kết quả -->
       <div class="result-panel">
         <div class="result-header">
-          <span class="result-title">生成结果</span>
-          <el-button v-if="results.length > 0" size="small" plain @click="clearResults">清空</el-button>
+          <span class="result-title">Kết quả</span>
+          <el-button v-if="results.length > 0" size="small" plain @click="clearResults">Xoá hết</el-button>
         </div>
 
         <div v-if="results.length === 0 && !generating" class="empty-result">
           <el-icon class="empty-icon"><MagicStick /></el-icon>
-          <p>生成的内容将显示在这里</p>
+          <p>Nội dung tạo ra sẽ hiển thị ở đây</p>
         </div>
 
         <div v-if="generating" class="generating-tip">
           <el-icon class="is-loading"><Loading /></el-icon>
-          <span>正在生成，请稍候...</span>
+          <span>Đang tạo, vui lòng đợi...</span>
         </div>
 
         <div class="result-grid">
@@ -119,17 +119,17 @@
               />
               <div v-else-if="item.status === 'pending' || item.status === 'processing'" class="media-loading">
                 <el-icon class="is-loading"><Loading /></el-icon>
-                <span>{{ item.status === 'processing' ? '生成中...' : '排队中...' }}</span>
+                <span>{{ item.status === 'processing' ? 'Đang tạo...' : 'Đang xếp hàng...' }}</span>
               </div>
               <div v-else-if="item.status === 'failed'" class="media-error">
                 <el-icon><CircleClose /></el-icon>
-                <span>{{ item.error || '生成失败' }}</span>
+                <span>{{ item.error || 'Tạo thất bại' }}</span>
               </div>
             </div>
             <div class="result-meta">
               <span class="result-prompt">{{ item.prompt }}</span>
               <div class="result-actions">
-                <el-button v-if="item.url" size="small" plain @click="downloadItem(item)">下载</el-button>
+                <el-button v-if="item.url" size="small" plain @click="downloadItem(item)">Tải xuống</el-button>
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@
       </div>
     </div>
 
-    <!-- 图片预览 -->
+    <!-- Preview ảnh -->
     <div v-if="previewUrl" class="image-preview-overlay" @click="previewUrl = null">
       <img :src="previewUrl" class="preview-img" @click.stop />
     </div>
@@ -164,7 +164,7 @@ const previewUrl = ref(null)
 const refImageDataUrl = ref(null)
 const refImageLocalPath = ref(null)
 const refImageInput = ref(null)
-/** 与后端视频异步超时一致（分钟 → 毫秒） */
+/** Đồng bộ với timeout xử lý video ở backend (phút → mili giây) */
 const videoPollMaxMs = ref(30 * 60 * 1000)
 
 onMounted(async () => {
@@ -261,12 +261,12 @@ async function generate() {
         await pollVideoTask(res.task_id, newItem)
       } else {
         newItem.status = 'failed'
-        newItem.error = '提交失败'
+        newItem.error = 'Gửi thất bại'
       }
     }
   } catch (e) {
     newItem.status = 'failed'
-    newItem.error = e.message || '生成失败'
+    newItem.error = e.message || 'Tạo thất bại'
     ElMessage.error(newItem.error)
   } finally {
     generating.value = false
@@ -288,13 +288,13 @@ async function pollImageTask(taskId, item, maxMs = 180000) {
       }
       if (res.status === 'failed') {
         item.status = 'failed'
-        item.error = res.error || '生成失败'
+        item.error = res.error || 'Tạo thất bại'
         return
       }
     } catch (_) {}
   }
   item.status = 'failed'
-  item.error = '超时'
+  item.error = 'Quá thời gian'
 }
 
 async function pollVideoTask(taskId, item) {
@@ -317,13 +317,13 @@ async function pollVideoTask(taskId, item) {
       }
       if (res?.status === 'failed') {
         item.status = 'failed'
-        item.error = res.error || '生成失败'
+        item.error = res.error || 'Tạo thất bại'
         return
       }
     } catch (_) {}
   }
   item.status = 'failed'
-  item.error = '超时'
+  item.error = 'Quá thời gian'
 }
 </script>
 

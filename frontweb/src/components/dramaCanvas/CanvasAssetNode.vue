@@ -52,8 +52,8 @@ const ctx = useCanvasContext()
 const showPanel = computed(() => ctx?.focusedNodeId?.value === props.id)
 
 const kindLabel = computed(() => {
-  const map = { character: '角色', scene: '场景', prop: '道具' }
-  return map[props.data.kind] || '素材'
+  const map = { character: 'Nhân vật', scene: 'Scene', prop: 'Đạo cụ' }
+  return map[props.data.kind] || 'Tư liệu'
 })
 
 const kindIcon = computed(() => {
@@ -63,7 +63,7 @@ const kindIcon = computed(() => {
 
 const displayName = computed(() => {
   const e = props.data.entity || {}
-  return e.name || e.location || '未命名'
+  return e.name || e.location || 'Chưa đặt tên'
 })
 
 const thumbUrl = computed(() => assetImageUrl(props.data.entity))
@@ -77,11 +77,11 @@ const isNodeBusy = computed(() => {
 const statusChip = computed(() => {
   const map = ctx?.nodeStatus?.map
   const busy = map?.[props.id]
-  if (busy) return { key: 'busy', label: busy.message?.slice(0, 8) || '处理中' }
+  if (busy) return { key: 'busy', label: busy.message?.slice(0, 8) || 'Đang xử lý' }
   const s = entityStatus.value
-  if (s === 'processing') return { key: 'processing', label: '生成中' }
-  if (s === 'failed') return { key: 'failed', label: '失败' }
-  if (thumbUrl.value) return { key: 'ready', label: '有图' }
+  if (s === 'processing') return { key: 'processing', label: 'Đang tạo' }
+  if (s === 'failed') return { key: 'failed', label: 'Thất bại' }
+  if (thumbUrl.value) return { key: 'ready', label: 'Có ảnh' }
   return null
 })
 </script>

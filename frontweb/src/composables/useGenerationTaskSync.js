@@ -5,7 +5,7 @@ export function buildExtractTaskMeta(store, dramaId, episodeId, resourceType, la
   const ep = store.drama?.episodes?.find((e) => Number(e.id) === Number(episodeId))
     || (Number(store.currentEpisode?.id) === Number(episodeId) ? store.currentEpisode : null)
   const epNum = ep?.episode_number ?? store.currentEpisode?.episode_number
-  const epLabel = dramaTitle ? `${dramaTitle} · 第${epNum ?? ''}集` : `第${epNum ?? ''}集`
+  const epLabel = dramaTitle ? `${dramaTitle} · Tập ${epNum ?? ''}` : `Tập ${epNum ?? ''}`
   return {
     dramaId,
     episodeId,
@@ -28,7 +28,7 @@ export function isEpisodeExtractRunning(genStore, dramaId, episodeId, resourceTy
 }
 
 /**
- * 将全局任务 store 中当前集的运行中任务同步到 FilmCreate 本地 loading Sets。
+ * Đồng bộ các task đang chạy của tập hiện tại từ global task store về các loading Sets local trong FilmCreate.
  */
 export function syncGeneratingSetsFromStore(genStore, dramaId, episodeId, sets) {
   if (dramaId == null || episodeId == null || !genStore) return
@@ -79,7 +79,7 @@ export function syncGeneratingSetsFromStore(genStore, dramaId, episodeId, sets) 
     }
   }
 
-  // 移除 store 已非 running 的本地 loading（避免僵尸条目）
+  // Xoá loading local mà trong store đã không còn running (tránh entry zombie)
   if (sets.generatingCharIds) {
     for (const id of [...sets.generatingCharIds]) {
       if (!runningCharIds.has(id)) sets.generatingCharIds.delete(id)

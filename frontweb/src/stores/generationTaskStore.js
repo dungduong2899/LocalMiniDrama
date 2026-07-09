@@ -4,7 +4,7 @@ import { taskAPI } from '@/api/task'
 import { imagesAPI } from '@/api/images'
 import { videosAPI } from '@/api/videos'
 
-/** 资源类型常量 */
+/** Hằng số loại resource */
 export const GEN_RESOURCE = {
   CHAR_IMAGE: 'char_image',
   PROP_IMAGE: 'prop_image',
@@ -21,9 +21,9 @@ export const GEN_RESOURCE = {
   GENERATE_STORY: 'generate_story',
 }
 
-/** 超过此时间仍为 running 且无进展则自动清理（毫秒） */
+/** Task quá thời gian này mà vẫn running và không có tiến triển thì tự động dọn (ms) */
 const STALE_TASK_MS = 30 * 60 * 1000
-/** 后端任务 updated_at 长时间不变，视为重启后僵尸任务（毫秒） */
+/** updated_at của task backend không đổi lâu, coi như task zombie sau khi restart (ms) */
 const ORPHAN_PROCESSING_MS = 10 * 60 * 1000
 
 const LAST_FRAME_TYPES = new Set(['last', 'storyboard_last', 'tail', 'last_frame'])
@@ -60,12 +60,12 @@ function isOrphanedProcessingTask(remote, staleMs = ORPHAN_PROCESSING_MS) {
   return Date.now() - updatedAt > staleMs
 }
 
-const ORPHAN_TASK_MSG = '任务长时间无进展，可能因服务重启而中断，请重新操作'
-const USER_CANCEL_TASK_MSG = '用户已取消'
+const ORPHAN_TASK_MSG = 'Task không có tiến triển trong thời gian dài, có thể đã gián đoạn do service restart, vui lòng thao tác lại'
+const USER_CANCEL_TASK_MSG = 'Người dùng đã huỷ'
 
 function taskFailMessage(t) {
-  if (!t) return '任务失败'
-  return (t.error || t.message || '任务失败').trim()
+  if (!t) return 'Task thất bại'
+  return (t.error || t.message || 'Task thất bại').trim()
 }
 
 export const useGenerationTaskStore = defineStore('generationTask', () => {
@@ -73,9 +73,9 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
   const tasks = ref(new Map())
   /** @type {Map<string, Promise>} taskId → poll promise */
   const pollPromises = ref(new Map())
-  /** 本会话已处理过的恢复 taskId，避免切集重复注册 */
+  /** taskId đã được khôi phục trong session, tránh đăng ký lặp khi chuyển tập */
   const recoveredTaskIds = ref(new Set())
-  /** 用户或系统主动停止轮询的 taskId */
+  /** taskId đã bị người dùng hoặc hệ thống chủ động dừng polling */
   const cancelledPollTaskIds = ref(new Set())
 
   const runningTasks = computed(() => {
@@ -163,14 +163,14 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
     return runningTasks.value
   }
 
-  /** 停止指定 taskId 的轮询并清除 store 中的 running 状态 */
+  /** Dừng polling của taskId và xoá trạng thái running trong store */
   function stopPollingTask(taskId, reason) {
     if (!taskId) return
     cancelledPollTaskIds.value = new Set([...cancelledPollTaskIds.value, taskId])
-    markFailed({ taskId }, reason || '任务已停止')
+    markFailed({ taskId }, reason || 'Task đã dừng')
   }
 
-  /** 取消任务：通知后端并停止前端轮询 */
+  /** Huỷ task: gọi backend và dừng polling ở frontend */
   async function cancelTask(meta, options = {}) {
     const reason = options.reason || USER_CANCEL_TASK_MSG
     const taskId = typeof meta === 'string' ? meta : meta?.taskId
@@ -187,16 +187,16 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
     markFailed(key, reason)
   }
 
-  /** 清除所有 running 任务（页面级兜底） */
+  /** Xoá tất cả task đang running (fallback ở cấp trang) */
   function clearAllRunningTasks(reason) {
     for (const t of [...runningTasks.value]) {
       if (t.taskId) stopPollingTask(t.taskId, reason)
-      else markFailed(t, reason || '已清除')
+      else markFailed(t, reason || 'Đã xoá')
     }
   }
 
   /**
-   * 校验 store 中 running 任务是否与后端一致；清理已完成/失败/超时的僵尸条目。
+   * Kiểm tra task đang running trong store có khớp với backend không; dọn các entry zombie đã hoàn tất/thất bại/hết hạn.
    */
   async function reconcileRunningTasks(ctx = {}) {
     const { characters = [], props = [], scenes = [], storyboards = [] } = ctx
@@ -205,7 +205,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
 
     for (const t of running) {
       if (t.startedAt && now - t.startedAt > STALE_TASK_MS) {
-        markFailed(t, '任务等待超时，已自动清除（请刷新确认是否已完成）')
+        markFailed(t, 'Task chờ quá lâu, đã tự động dọn (vui lòng làm mới để xác nhận đã hoàn tất chưa)')
         continue
       }
 
@@ -228,7 +228,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
             markFailed(t, ORPHAN_TASK_MSG)
           }
         } catch (_) {
-          // 网络异常跳过，下次 reconcile 再试
+          // Lỗi mạng thì bỏ qua, lần reconcile tiếp theo thử lại
         }
         continue
       }
@@ -249,10 +249,10 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
   }
 
   /**
-   * 轮询异步任务；同一 taskId 只轮询一次，多路 await 共享结果。
+   * Poll task bất đồng bộ; cùng một taskId chỉ poll một lần, nhiều await cùng chia sẻ kết quả.
    */
   function pollTask(taskId, meta, onDone, options = {}) {
-    if (!taskId) return Promise.resolve({ status: 'failed', error: '缺少 task_id' })
+    if (!taskId) return Promise.resolve({ status: 'failed', error: 'Thiếu task_id' })
 
     const key = markRunning({ ...meta, taskId })
 
@@ -270,8 +270,8 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
     const promise = new Promise((resolve) => {
       const tick = async () => {
         if (stopped || cancelledPollTaskIds.value.has(taskId)) {
-          markFailed(key, '任务轮询已停止')
-          return resolve({ status: 'cancelled', error: '任务轮询已停止' })
+          markFailed(key, 'Đã dừng polling task')
+          return resolve({ status: 'cancelled', error: 'Đã dừng polling task' })
         }
         attempts++
         try {
@@ -310,7 +310,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
           setTimeout(tick, interval)
         } else {
           const timeoutMsg = options.timeoutMessage
-            || '生成任务已超时（超过15分钟），请刷新页面查看是否已完成'
+            || 'Task tạo đã hết hạn (quá 15 phút), vui lòng làm mới trang để xem đã hoàn tất chưa'
           markFailed(key, timeoutMsg)
           if (showTimeoutToast && options.ElMessage) {
             options.ElMessage.warning(timeoutMsg)
@@ -335,7 +335,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
   }
 
   /**
-   * 若 task 仍在运行且尚未轮询，则 attach 轮询（用于页面刷新/切集恢复）。
+   * Nếu task vẫn đang chạy và chưa được poll thì attach polling (dùng cho refresh trang / khôi phục khi chuyển tập).
    */
   async function attachPollIfNeeded(taskId, meta, onDone, options = {}) {
     if (!taskId) return null
@@ -365,7 +365,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
         return { status: 'completed', result: t.result }
       }
     } catch (_) {
-      // 网络异常时仍尝试轮询
+      // Khi lỗi mạng vẫn thử polling
     }
 
     markRunning({ ...meta, taskId })
@@ -380,7 +380,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
         if (t.status === 'completed') markDone({ ...meta, taskId })
         else if (t.status === 'failed') markFailed({ ...meta, taskId }, taskFailMessage(t))
         else if (!isActiveTaskStatus(t.status)) markDone({ ...meta, taskId })
-        else if (cancelledPollTaskIds.value.has(taskId)) markFailed({ ...meta, taskId }, '任务轮询已停止')
+        else if (cancelledPollTaskIds.value.has(taskId)) markFailed({ ...meta, taskId }, 'Đã dừng polling task')
       } catch (_) {}
       return
     }
@@ -392,7 +392,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
   }
 
   /**
-   * 从后端恢复当前集进行中的图片/视频/合成任务，并重新 attach 轮询。
+   * Khôi phục các task ảnh/video/ghép đang chạy của tập hiện tại từ backend và attach lại polling.
    */
   async function recoverPendingForEpisode(ctx) {
     const {
@@ -427,8 +427,8 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
     const sceneIdSet = new Set(scenes.map((s) => Number(s.id)))
     const propIdSet = new Set(props.map((p) => Number(p.id)))
     const epLabel = dramaTitle
-      ? `${dramaTitle} · 第${episodeNumber ?? ''}集`
-      : `第${episodeNumber ?? episodeId}集`
+      ? `${dramaTitle} · Tập ${episodeNumber ?? ''}`
+      : `Tập ${episodeNumber ?? episodeId}`
 
     const pollOpts = { ElMessage, showErrorToast: false, showTimeoutToast: false }
 
@@ -446,20 +446,20 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
         const sb = storyboards.find((s) => Number(s.id) === resourceId)
         const num = sb?.storyboard_number ?? resourceId
         label = resourceType === GEN_RESOURCE.SB_LAST_IMAGE
-          ? `${epLabel} 尾帧 #${num}`
+          ? `${epLabel} frame cuối #${num}`
           : resourceType === GEN_RESOURCE.SB_FIRST_IMAGE
-            ? `${epLabel} 首帧 #${num}`
-            : `${epLabel} 分镜图 #${num}`
+            ? `${epLabel} frame đầu #${num}`
+            : `${epLabel} ảnh storyboard #${num}`
       } else if (img.character_id != null && charIdSet.has(Number(img.character_id))) {
         resourceType = GEN_RESOURCE.CHAR_IMAGE
         resourceId = Number(img.character_id)
         const c = characters.find((x) => Number(x.id) === resourceId)
-        label = `${epLabel} 角色图: ${c?.name || resourceId}`
+        label = `${epLabel} ảnh nhân vật: ${c?.name || resourceId}`
       } else if (img.scene_id != null && sceneIdSet.has(Number(img.scene_id))) {
         resourceType = GEN_RESOURCE.SCENE_IMAGE
         resourceId = Number(img.scene_id)
         const s = scenes.find((x) => Number(x.id) === resourceId)
-        label = `${epLabel} 场景图: ${s?.location || resourceId}`
+        label = `${epLabel} ảnh scene: ${s?.location || resourceId}`
       } else {
         return
       }
@@ -493,7 +493,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
         episodeNumber,
         resourceType: GEN_RESOURCE.SB_VIDEO,
         resourceId,
-        label: `${epLabel} 分镜视频 #${num}`,
+        label: `${epLabel} video storyboard #${num}`,
       }
       _recoverAttachTask(vid.task_id, meta, () => callbacks.onStoryboardMedia?.(resourceId), pollOpts)
     }
@@ -528,16 +528,16 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
             episodeNumber,
             resourceType: GEN_RESOURCE.EPISODE_MERGE,
             resourceId: Number(episodeId),
-            label: `${epLabel} 合成视频`,
+            label: `${epLabel} ghép video`,
             taskId: t.id,
           }
           _recoverAttachTask(t.id, meta, () => callbacks.onDramaRefresh?.(), pollOpts)
           continue
         }
         const extractTypeMap = {
-          prop_extraction: { resourceType: GEN_RESOURCE.EXTRACT_PROPS, label: `${epLabel} 提取道具` },
-          background_extraction: { resourceType: GEN_RESOURCE.EXTRACT_SCENES, label: `${epLabel} 提取场景` },
-          storyboard_generation: { resourceType: GEN_RESOURCE.GENERATE_STORYBOARD, label: `${epLabel} AI生成分镜` },
+          prop_extraction: { resourceType: GEN_RESOURCE.EXTRACT_PROPS, label: `${epLabel} trích xuất đạo cụ` },
+          background_extraction: { resourceType: GEN_RESOURCE.EXTRACT_SCENES, label: `${epLabel} trích xuất scene` },
+          storyboard_generation: { resourceType: GEN_RESOURCE.GENERATE_STORYBOARD, label: `${epLabel} AI tạo storyboard` },
         }
         const extractCfg = extractTypeMap[t.type]
         if (extractCfg) {
@@ -555,7 +555,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
         }
       }
 
-      // 角色提取 task 挂在 dramaId 上，同一 taskId 只恢复一次（避免多集重复显示）
+      // Task trích xuất nhân vật gắn với dramaId, cùng một taskId chỉ khôi phục một lần (tránh hiển thị lặp qua nhiều tập)
       const dramaTasks = await taskAPI.listByResource(String(dramaId)).catch(() => [])
       for (const t of dramaTasks || []) {
         if (!isActiveTaskStatus(t.status)) continue
@@ -569,7 +569,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
           episodeNumber,
           resourceType: GEN_RESOURCE.EXTRACT_CHARACTERS,
           resourceId: Number(episodeId),
-          label: `${epLabel} 提取角色`,
+          label: `${epLabel} trích xuất nhân vật`,
           taskId: t.id,
         }
         _recoverAttachTask(t.id, meta, () => callbacks.onDramaRefresh?.(), pollOpts)
@@ -588,7 +588,7 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
           episodeNumber,
           resourceType: GEN_RESOURCE.GENERATE_STORY,
           resourceId: Number(dramaId),
-          label: `${dramaTitle || '项目'} 生成剧本`,
+          label: `${dramaTitle || 'Dự án'} tạo kịch bản`,
           taskId: t.id,
         }
         _recoverAttachTask(t.id, meta, () => callbacks.onDramaRefresh?.(), pollOpts)
@@ -617,15 +617,15 @@ export const useGenerationTaskStore = defineStore('generationTask', () => {
       await Promise.all([
         ...[...charIdSet].map((id) => {
           const c = characters.find((x) => Number(x.id) === Number(id))
-          return attachResourceTask(id, GEN_RESOURCE.CHAR_IMAGE, `${epLabel} 角色图: ${c?.name || id}`)
+          return attachResourceTask(id, GEN_RESOURCE.CHAR_IMAGE, `${epLabel} ảnh nhân vật: ${c?.name || id}`)
         }),
         ...[...propIdSet].map((id) => {
           const p = props.find((x) => Number(x.id) === Number(id))
-          return attachResourceTask(id, GEN_RESOURCE.PROP_IMAGE, `${epLabel} 道具图: ${p?.name || id}`)
+          return attachResourceTask(id, GEN_RESOURCE.PROP_IMAGE, `${epLabel} ảnh đạo cụ: ${p?.name || id}`)
         }),
         ...[...sceneIdSet].map((id) => {
           const s = scenes.find((x) => Number(x.id) === Number(id))
-          return attachResourceTask(id, GEN_RESOURCE.SCENE_IMAGE, `${epLabel} 场景图: ${s?.location || id}`)
+          return attachResourceTask(id, GEN_RESOURCE.SCENE_IMAGE, `${epLabel} ảnh scene: ${s?.location || id}`)
         }),
       ])
 

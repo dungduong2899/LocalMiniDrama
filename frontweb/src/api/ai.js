@@ -19,11 +19,11 @@ export const aiAPI = {
   testConnection(body) {
     return request.post('/ai-configs/test', body)
   },
-  /** 即梦2角色认证：GET /api/business/v1/assets（body: base_url, api_key, limit?, cursor?） */
+  /** Xác thực nhân vật Jimeng2: GET /api/business/v1/assets (body: base_url, api_key, limit?, cursor?) */
   listJimeng2MaterialAssets(body) {
     return request.post('/ai-configs/jimeng2-list-assets', body)
   },
-  /** ModelArk 私有资产库：action + payload，见 AI 配置页 SD2 资产管理 */
+  /** Thư viện tài sản riêng của ModelArk: action + payload, xem trang Cấu hình AI phần quản lý tài sản SD2 */
   modelArkAsset(body) {
     return request.post('/ai-configs/model-ark-asset', body)
   },

@@ -1,4 +1,4 @@
-/** 统一实体 ID 为 number，避免 el-select 因 string/number 混用显示 raw id */
+/** Chuẩn hoá ID entity về number để tránh el-select hiển thị raw id khi trộn string/number */
 export function normalizeEntityId(id) {
   if (id == null || id === '') return null
   const n = Number(id)

@@ -9,16 +9,16 @@ import { useGenerationTaskStore, GEN_RESOURCE } from '@/stores/generationTaskSto
 import { buildExtractTaskMeta, isEpisodeExtractRunning } from '@/composables/useGenerationTaskSync'
 
 /**
- * 角色管理 Composable
- * @param {object} deps - 共享依赖
+ * Composable quản lý nhân vật
+ * @param {object} deps - Dependencies dùng chung
  * @param {object} deps.store - Pinia store
  * @param {import('vue').ComputedRef} deps.dramaId
  * @param {import('vue').ComputedRef} deps.currentEpisodeId
- * @param {Function} deps.getSelectedStyle - 获取当前生成风格
- * @param {Function} deps.loadDrama - 重新加载剧集数据
- * @param {Function} deps.pollTask - 轮询异步任务
- * @param {Function} deps.pollUntilResourceHasImage - 等待资源有图片
- * @param {Function} deps.hasAssetImage - 判断资源是否有图片
+ * @param {Function} deps.getSelectedStyle - Lấy phong cách tạo hiện tại
+ * @param {Function} deps.loadDrama - Tải lại dữ liệu phim
+ * @param {Function} deps.pollTask - Poll task bất đồng bộ
+ * @param {Function} deps.pollUntilResourceHasImage - Chờ resource có ảnh
+ * @param {Function} deps.hasAssetImage - Kiểm tra resource có ảnh hay không
  */
 export function useCharacters(deps) {
   const { store, dramaId, currentEpisodeId, getSelectedStyle, loadDrama, pollTask, pollUntilResourceHasImage, hasAssetImage } = deps
@@ -27,7 +27,7 @@ export function useCharacters(deps) {
   function buildCharImageMeta(char) {
     const dramaTitle = store.drama?.title || ''
     const epNum = store.currentEpisode?.episode_number
-    const epLabel = dramaTitle ? `${dramaTitle} · 第${epNum ?? ''}集` : `第${epNum ?? ''}集`
+    const epLabel = dramaTitle ? `${dramaTitle} · Tập ${epNum ?? ''}` : `Tập ${epNum ?? ''}`
     return {
       dramaId: dramaId.value,
       episodeId: currentEpisodeId.value,
@@ -35,7 +35,7 @@ export function useCharacters(deps) {
       episodeNumber: epNum,
       resourceType: GEN_RESOURCE.CHAR_IMAGE,
       resourceId: char.id,
-      label: `${epLabel} 角色图: ${char.name || char.id}`,
+      label: `${epLabel} Ảnh nhân vật: ${char.name || char.id}`,
     }
   }
 
@@ -49,7 +49,7 @@ export function useCharacters(deps) {
     return new File([u8arr], filename || 'reference.png', { type: mime })
   }
 
-  // ── 角色弹窗状态 ─────────────────────────────────────
+  // ── Trạng thái dialog nhân vật ─────────────────────────────────────
   const showEditCharacter = ref(false)
   const editCharacterForm = ref(null)
   const editCharacterSaving = ref(false)
@@ -60,8 +60,8 @@ export function useCharacters(deps) {
   const addCharRefFileInput = ref(null)
   let editCharacterPollTimer = null
 
-  // ── 角色生成状态 ──────────────────────────────────────
-  /** 仅当前集「提取角色」进行中时为 true（按集隔离，切集不误显示 loading） */
+  // ── Trạng thái tạo nhân vật ──────────────────────────────────────
+  /** True chỉ khi task "trích xuất nhân vật" của tập hiện tại đang chạy (theo tập, đổi tập không hiển thị loading nhầm) */
   const charactersGenerating = computed(() =>
     isEpisodeExtractRunning(genStore, dramaId.value, currentEpisodeId.value, GEN_RESOURCE.EXTRACT_CHARACTERS)
   )
@@ -71,7 +71,7 @@ export function useCharacters(deps) {
   const charSd2CertPayload = ref(null)
   const sd2VoiceUploadingId = ref(null)
 
-  // ── 角色库状态 ────────────────────────────────────────
+  // ── Trạng thái thư viện nhân vật ────────────────────────────────────────
   const showCharLibrary = ref(false)
   const charLibraryList = ref([])
   const charLibraryLoading = ref(false)
@@ -87,7 +87,7 @@ export function useCharacters(deps) {
   const addingCharFromLibraryId = ref(null)
   let charLibraryKeywordTimer = null
 
-  /** 角色库弹窗 Tab：library | drama | team */
+  /** Tab dialog thư viện nhân vật: library | drama | team */
   const charLibraryTab = ref('library')
   const dramaAllCharList = ref([])
   const dramaAllCharLoading = ref(false)
@@ -98,19 +98,19 @@ export function useCharacters(deps) {
   let dramaAllCharKeywordTimer = null
 
 
-  // ── 常量 ──────────────────────────────────────────────
-  const CHAR_ROLE_LABEL = { main: '主角', supporting: '配角', minor: '次要角色' }
+  // ── Hằng số ──────────────────────────────────────────────
+  const CHAR_ROLE_LABEL = { main: 'Nhân vật chính', supporting: 'Nhân vật phụ', minor: 'Vai phụ' }
   function charRoleLabel(role) { return CHAR_ROLE_LABEL[role] || role || '' }
 
-  // ── 核心函数 ──────────────────────────────────────────
+  // ── Hàm chính ──────────────────────────────────────────
   async function onGenerateCharacters() {
     if (!store.dramaId) return
     const epId = currentEpisodeId.value
     if (!epId) {
-      ElMessage.warning('请先选择集次')
+      ElMessage.warning('Vui lòng chọn tập trước')
       return
     }
-    const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.EXTRACT_CHARACTERS, '提取角色')
+    const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.EXTRACT_CHARACTERS, 'Trích xuất nhân vật')
     genStore.markRunning(meta)
     try {
       const outline =
@@ -122,12 +122,12 @@ export function useCharacters(deps) {
       const taskId = res?.task_id
       if (taskId) {
         await pollTask(taskId, () => loadDrama(), meta)
-        ElMessage.success('角色生成完成')
+        ElMessage.success('Đã tạo nhân vật xong')
       } else {
         await loadDrama()
       }
     } catch (e) {
-      ElMessage.error(e.message || '生成失败')
+      ElMessage.error(e.message || 'Tạo thất bại')
     } finally {
       genStore.markDone(meta)
     }
@@ -204,7 +204,7 @@ export function useCharacters(deps) {
       const refPath = uploadRes.local_path || uploadRes.url || ''
       await characterAPI.putRefImage(characterId, refPath)
     } catch (e) {
-      console.warn('[saveCharRefImage] 保存参考图失败:', e.message)
+      console.warn('[saveCharRefImage] failed to save reference image:', e.message)
     }
   }
 
@@ -224,7 +224,7 @@ export function useCharacters(deps) {
           stages: form.stages ? form.stages.trim() || undefined : undefined
         })
         await saveCharRefImageIfAny(form.id)
-        ElMessage.success('角色已保存')
+        ElMessage.success('Đã lưu nhân vật')
       } else {
         const existing = (store.drama?.characters || []).map((c) => ({
           id: c.id,
@@ -251,12 +251,12 @@ export function useCharacters(deps) {
           const newChar = (store.drama?.characters || []).find(c => c.name === form.name.trim())
           if (newChar?.id) await saveCharRefImageIfAny(newChar.id)
         }
-        ElMessage.success('角色已添加')
+        ElMessage.success('Đã thêm nhân vật')
       }
       await loadDrama()
       showEditCharacter.value = false
     } catch (e) {
-      ElMessage.error(e.message || (form.id ? '保存失败' : '添加失败'))
+      ElMessage.error(e.message || (form.id ? 'Lưu thất bại' : 'Thêm thất bại'))
     } finally {
       editCharacterSaving.value = false
     }
@@ -270,11 +270,11 @@ export function useCharacters(deps) {
       const res = await characterAPI.generatePrompt(form.id)
       if (res?.polished_prompt) {
         form.polished_prompt = res.polished_prompt
-        ElMessage.success('提示词已生成')
+        ElMessage.success('Đã tạo prompt')
         await loadDrama()
       }
     } catch (e) {
-      ElMessage.error(e.message || '生成提示词失败')
+      ElMessage.error(e.message || 'Tạo prompt thất bại')
     } finally {
       editCharacterPromptGenerating.value = false
     }
@@ -288,10 +288,10 @@ export function useCharacters(deps) {
       const res = await characterAPI.extractFromImage(form.id)
       if (res?.appearance) {
         form.appearance = res.appearance
-        ElMessage.success('已从图片提取外貌描述')
+        ElMessage.success('Đã trích xuất mô tả ngoại hình từ ảnh')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查角色是否已上传参考图片')
+      ElMessage.error(e.message || 'Trích xuất thất bại, vui lòng kiểm tra xem nhân vật đã có ảnh tham chiếu chưa')
     } finally {
       extractingCharAppearance.value = false
     }
@@ -303,9 +303,9 @@ export function useCharacters(deps) {
     try {
       await characterAPI.putRefImage(form.id, null)
       form.ref_image = ''
-      ElMessage.success('参考图已移除')
+      ElMessage.success('Đã xoá ảnh tham chiếu')
     } catch (e) {
-      ElMessage.error('移除失败')
+      ElMessage.error('Xoá thất bại')
     }
   }
 
@@ -319,16 +319,16 @@ export function useCharacters(deps) {
   async function onDeleteCharacter(char) {
     try {
       await ElMessageBox.confirm(
-        `确定要删除角色「${(char.name || '未命名').slice(0, 20)}」吗？此操作不可恢复。`,
-        '删除确认',
-        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+        `Bạn có chắc muốn xoá nhân vật "${(char.name || 'Chưa đặt tên').slice(0, 20)}"? Thao tác này không thể hoàn tác.`,
+        'Xác nhận xoá',
+        { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }
       )
       await characterAPI.delete(char.id)
       await loadDrama()
-      ElMessage.success('角色已删除')
+      ElMessage.success('Đã xoá nhân vật')
     } catch (e) {
       if (e === 'cancel') return
-      ElMessage.error(e.message || '删除失败')
+      ElMessage.error(e.message || 'Xoá thất bại')
     }
   }
 
@@ -344,9 +344,9 @@ export function useCharacters(deps) {
       if (taskId) {
         const pollRes = await pollTask(taskId, () => loadDrama(), meta)
         if (pollRes?.status === 'failed') {
-          char.errorMsg = pollRes.error || '生成失败'
+          char.errorMsg = pollRes.error || 'Tạo thất bại'
         } else {
-          ElMessage.success('角色图片已生成')
+          ElMessage.success('Đã tạo ảnh nhân vật')
         }
       } else {
         await loadDrama()
@@ -355,19 +355,19 @@ export function useCharacters(deps) {
           const c = list.find((x) => Number(x.id) === Number(char.id))
           return !!(c && (c.image_url || c.local_path))
         })
-        ElMessage.success('角色图片已生成')
+        ElMessage.success('Đã tạo ảnh nhân vật')
       }
     } catch (e) {
       console.error(e)
-      char.errorMsg = e.message || '生成失败'
-      ElMessage.error(e.message || '提交失败')
+      char.errorMsg = e.message || 'Tạo thất bại'
+      ElMessage.error(e.message || 'Gửi thất bại')
     } finally {
       generatingCharIds.delete(char.id)
       genStore.markDone(meta)
     }
   }
 
-  // ── 角色库函数 ────────────────────────────────────────
+  // ── Hàm thư viện nhân vật ────────────────────────────────────────
   async function loadCharLibraryList() {
     charLibraryLoading.value = true
     try {
@@ -479,11 +479,11 @@ export function useCharacters(deps) {
         description: editCharLibraryForm.value.description || null,
         tags: editCharLibraryForm.value.tags || null
       })
-      ElMessage.success('已保存')
+      ElMessage.success('Đã lưu')
       showEditCharLibrary.value = false
       loadCharLibraryList()
     } catch (e) {
-      ElMessage.error(e.message || '保存失败')
+      ElMessage.error(e.message || 'Lưu thất bại')
     } finally {
       editCharLibrarySaving.value = false
     }
@@ -492,41 +492,41 @@ export function useCharacters(deps) {
   async function onDeleteCharLibrary(item) {
     try {
       await ElMessageBox.confirm(
-        `确定删除公共角色「${(item.name || '未命名').slice(0, 20)}」吗？`,
-        '删除确认',
-        { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+        `Bạn có chắc muốn xoá nhân vật công khai "${(item.name || 'Chưa đặt tên').slice(0, 20)}"?`,
+        'Xác nhận xoá',
+        { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }
       )
       await characterLibraryAPI.delete(item.id)
-      ElMessage.success('已删除')
+      ElMessage.success('Đã xoá')
       loadCharLibraryList()
     } catch (e) {
       if (e === 'cancel') return
-      ElMessage.error(e.message || '删除失败')
+      ElMessage.error(e.message || 'Xoá thất bại')
     }
   }
 
   async function onAddCharacterToLibrary(char) {
-    if (!hasAssetImage(char)) { ElMessage.warning('请先为该角色生成或上传图片'); return }
+    if (!hasAssetImage(char)) { ElMessage.warning('Vui lòng tạo hoặc tải lên ảnh cho nhân vật này trước'); return }
     addingCharToLibraryId.value = char.id
     try {
       await characterAPI.addToLibrary(char.id, {})
-      ElMessage.success('已加入本剧角色库')
+      ElMessage.success('Đã thêm vào thư viện nhân vật của phim')
       if (showCharLibrary.value) loadCharLibraryList()
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingCharToLibraryId.value = null
     }
   }
 
   async function onAddCharacterToMaterialLibrary(char) {
-    if (!hasAssetImage(char)) { ElMessage.warning('请先为该角色生成或上传图片'); return }
+    if (!hasAssetImage(char)) { ElMessage.warning('Vui lòng tạo hoặc tải lên ảnh cho nhân vật này trước'); return }
     addingCharToMaterialId.value = char.id
     try {
       await characterAPI.addToMaterialLibrary(char.id)
-      ElMessage.success('已加入全局素材库')
+      ElMessage.success('Đã thêm vào thư viện tư liệu toàn cục')
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingCharToMaterialId.value = null
     }
@@ -535,7 +535,7 @@ export function useCharacters(deps) {
   async function addCharToEpisode(item, scope) {
     if (!store.dramaId) return
     if (!currentEpisodeId.value) {
-      ElMessage.warning('请先选择本集')
+      ElMessage.warning('Vui lòng chọn tập hiện tại trước')
       return
     }
     const loadingKey = charAddToEpisodeLoadingKey(scope, item.id)
@@ -552,7 +552,7 @@ export function useCharacters(deps) {
         local_path: c.local_path || undefined,
       }))
       const newCharacters = [...existing]
-      const existingChar = newCharacters.find((c) => c.name === (item.name || '未命名'))
+      const existingChar = newCharacters.find((c) => c.name === (item.name || 'Chưa đặt tên'))
       if (existingChar) {
         existingChar.description = item.description || existingChar.description
         existingChar.appearance = item.appearance || existingChar.appearance
@@ -561,7 +561,7 @@ export function useCharacters(deps) {
         if (item.role && !existingChar.role) existingChar.role = item.role
       } else {
         newCharacters.push({
-          name: item.name || '未命名',
+          name: item.name || 'Chưa đặt tên',
           role: item.role || undefined,
           description: item.description || undefined,
           appearance: item.appearance || undefined,
@@ -575,9 +575,9 @@ export function useCharacters(deps) {
         episode_id: currentEpisodeId.value ?? undefined,
       })
       await loadDrama()
-      ElMessage.success(`「${item.name || '角色'}」已加入本集`)
+      ElMessage.success(`Đã thêm "${item.name || 'nhân vật'}" vào tập này`)
     } catch (e) {
-      ElMessage.error(e.message || '加入失败')
+      ElMessage.error(e.message || 'Thêm thất bại')
     } finally {
       addingCharFromLibraryId.value = null
     }
@@ -595,14 +595,14 @@ export function useCharacters(deps) {
     const form = editCharacterForm.value
     if (!form?.id) return
     if (!form.appearance) {
-      ElMessage.warning('请先填写角色外貌描述')
+      ElMessage.warning('Vui lòng điền mô tả ngoại hình nhân vật trước')
       return
     }
     extractingAnchors.value = true
     try {
       await characterAPI.extractAnchors(form.id)
-      ElMessage.success('视觉锚点提炼已启动，请稍后查看')
-      // 轮询等待锚点写入
+      ElMessage.success('Đã bắt đầu trích xuất visual anchors, vui lòng xem lại sau')
+      // Poll để chờ anchors được ghi
       let elapsed = 0
       const timer = setInterval(async () => {
         elapsed += 3
@@ -623,7 +623,7 @@ export function useCharacters(deps) {
         }
       }, 3000)
     } catch (e) {
-      ElMessage.error(e.message || '提炼失败')
+      ElMessage.error(e.message || 'Trích xuất thất bại')
       extractingAnchors.value = false
     }
   }
@@ -631,27 +631,27 @@ export function useCharacters(deps) {
   async function onSd2CertifyCharacter(char) {
     if (!char?.id) return
     if (!hasAssetImage(char)) {
-      ElMessage.warning('请先为该角色生成或上传图片')
+      ElMessage.warning('Vui lòng tạo hoặc tải lên ảnh cho nhân vật này trước')
       return
     }
     sd2CertifyingId.value = char.id
     try {
       await characterAPI.sd2Certify(char.id)
       await loadDrama()
-      ElMessage.success('SD2 认证请求已提交')
+      ElMessage.success('Đã gửi yêu cầu chứng thực SD2')
     } catch (e) {
       const msg = e?.message || ''
       if (/已存在|已认证|already/i.test(msg)) {
         try {
           await characterAPI.sd2CertifyRefresh(char.id)
           await loadDrama()
-          ElMessage.success('SD2 认证状态已刷新')
+          ElMessage.success('Đã làm mới trạng thái chứng thực SD2')
           return
         } catch (_) {
           // fall through
         }
       }
-      ElMessage.error(msg || 'SD2 认证失败')
+      ElMessage.error(msg || 'Chứng thực SD2 thất bại')
     } finally {
       sd2CertifyingId.value = null
     }
@@ -663,9 +663,9 @@ export function useCharacters(deps) {
     try {
       await characterAPI.sd2CertifyRefresh(char.id)
       await loadDrama()
-      ElMessage.success('SD2 认证状态已刷新')
+      ElMessage.success('Đã làm mới trạng thái chứng thực SD2')
     } catch (e) {
-      ElMessage.error(e?.message || '刷新失败')
+      ElMessage.error(e?.message || 'Làm mới thất bại')
     } finally {
       sd2CertifyingId.value = null
     }
@@ -673,10 +673,10 @@ export function useCharacters(deps) {
 
   function sd2ActionLabel(char) {
     const status = String(char?.seedance2_asset?.status || '').toLowerCase()
-    if (status === 'active') return '查看认证'
-    if (status === 'processing') return '刷新认证'
-    if (status === 'failed') return '重新认证'
-    return 'sd2认证'
+    if (status === 'active') return 'Xem chứng thực'
+    if (status === 'processing') return 'Làm mới chứng thực'
+    if (status === 'failed') return 'Chứng thực lại'
+    return 'Chứng thực SD2'
   }
 
   async function onSd2PrimaryAction(char) {
@@ -699,27 +699,27 @@ export function useCharacters(deps) {
 
   function sd2VoiceActionLabel(char) {
     const status = String(char?.seedance2_voice_asset?.status || '').toLowerCase()
-    if (status === 'active') return '音色参考'
-    if (status === 'processing') return '刷新音色'
-    if (status === 'failed') return '重新上传'
-    return '上传音色'
+    if (status === 'active') return 'Voice tham chiếu'
+    if (status === 'processing') return 'Làm mới voice'
+    if (status === 'failed') return 'Tải lên lại'
+    return 'Tải lên voice'
   }
 
   async function onSd2VoicePrimaryAction(char) {
     const status = String(char?.seedance2_voice_asset?.status || '').toLowerCase()
     if (status === 'active') {
-      ElMessage.info('音色参考已设置，将在 Seedance 2.0 模型中使用')
+      ElMessage.info('Voice tham chiếu đã được thiết lập, sẽ dùng trong model Seedance 2.0')
       return
     }
     if (status === 'processing' || status === 'stale') {
       await onSd2VoiceRefresh(char)
       return
     }
-    // 触发文件选择上传
+    // Kích hoạt chọn file để tải lên
     await triggerSd2VoiceUpload(char)
   }
 
-  // 专门用于“更换”：无论当前是否 active，都直接触发文件选择上传（覆盖）
+  // Dùng riêng để "thay thế": bất kể trạng thái hiện tại, luôn trigger chọn file để tải lên (ghi đè)
   async function onSd2VoiceReplace(char) {
     await triggerSd2VoiceUpload(char)
   }
@@ -730,9 +730,9 @@ export function useCharacters(deps) {
     try {
       const res = await characterAPI.sd2VoiceRefresh(char.id)
       await loadDrama()
-      ElMessage.success(res?.data?.message || '音色状态已刷新')
+      ElMessage.success(res?.data?.message || 'Đã làm mới trạng thái voice')
     } catch (e) {
-      ElMessage.error(e?.message || '刷新失败')
+      ElMessage.error(e?.message || 'Làm mới thất bại')
     } finally {
       sd2VoiceUploadingId.value = null
     }
@@ -740,7 +740,7 @@ export function useCharacters(deps) {
 
   async function triggerSd2VoiceUpload(char) {
     if (!char?.id) return
-    // 创建隐藏的 file input
+    // Tạo file input ẩn
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'audio/*'
@@ -750,11 +750,11 @@ export function useCharacters(deps) {
       sd2VoiceUploadingId.value = char.id
       try {
         const res = await characterAPI.sd2VoiceUpload(char.id, file)
-        ElMessage.success('Seedance 2.0 音色参考已上传')
-        // 强制重新加载整个剧本数据，确保 seedance2_voice_asset 被正确解析并更新到 store
+        ElMessage.success('Đã tải lên voice tham chiếu Seedance 2.0')
+        // Force reload toàn bộ dữ liệu kịch bản để đảm bảo seedance2_voice_asset được parse và cập nhật vào store
         await loadDrama()
       } catch (e) {
-        ElMessage.error(e?.message || '音色上传失败')
+        ElMessage.error(e?.message || 'Tải lên voice thất bại')
       } finally {
         sd2VoiceUploadingId.value = null
       }
@@ -762,30 +762,30 @@ export function useCharacters(deps) {
     input.click()
   }
 
-  // 播放 Seedance 2.0 音色参考（仅 active 状态）
+  // Phát voice tham chiếu Seedance 2.0 (chỉ khi status active)
   function playSd2Voice(char) {
     const url = char?.seedance2_voice_asset?.url
     if (!url) {
-      ElMessage.warning('该角色暂无音色参考音频')
+      ElMessage.warning('Nhân vật này chưa có audio voice tham chiếu')
       return
     }
     try {
-      // 统一使用相对 /static/...（与图片 assetImageUrl 一致），由当前页面 origin + Vite/后端代理或静态服务处理
+      // Dùng relative /static/... (giống assetImageUrl cho ảnh), xử lý bởi origin trang hiện tại + Vite/backend proxy hoặc static serve
       const audio = new Audio(url)
       audio.onerror = () => {
-        // 常见原因：文件不在 static 根目录下（后端写盘路径与 express.static(storageRoot) 不一致）、404、格式不支持
-        ElMessage.error('音频播放失败：文件可能不存在或路径不匹配，请尝试重新上传该音色参考')
+        // Nguyên nhân thường gặp: file không nằm trong static root (đường dẫn ghi của backend không khớp với express.static(storageRoot)), 404, hoặc format không hỗ trợ
+        ElMessage.error('Phát audio thất bại: file có thể không tồn tại hoặc đường dẫn không khớp, hãy thử tải lên lại voice tham chiếu')
       }
       audio.play().catch((err) => {
-        ElMessage.error('音频播放失败，请检查文件或稍后重试')
+        ElMessage.error('Phát audio thất bại, vui lòng kiểm tra file hoặc thử lại sau')
       })
     } catch (e) {
-      ElMessage.error('无法播放音频')
+      ElMessage.error('Không thể phát audio')
     }
   }
 
   return {
-    // 弹窗状态
+    // Trạng thái dialog
     showEditCharacter,
     editCharacterForm,
     editCharacterSaving,
@@ -794,14 +794,14 @@ export function useCharacters(deps) {
     extractingAnchors,
     addCharRefImage,
     addCharRefFileInput,
-    // 生成状态
+    // Trạng thái tạo
     charactersGenerating,
     generatingCharIds,
     sd2CertifyingId,
     showCharSd2Cert,
     charSd2CertPayload,
     sd2VoiceUploadingId,
-    // 库状态
+    // Trạng thái thư viện
     showCharLibrary,
     charLibraryList,
     charLibraryLoading,
@@ -830,7 +830,7 @@ export function useCharacters(deps) {
     addingCharToMaterialId,
 
     addingCharFromLibraryId,
-    // 函数
+    // Hàm
     charRoleLabel,
     onGenerateCharacters,
     openAddCharacter,

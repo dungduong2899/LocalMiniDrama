@@ -13,7 +13,7 @@ function postUniversalSegmentNdjsonStream(url, body, onDelta) {
     body: JSON.stringify(body || {}),
   }).then(async (res) => {
     if (!res.ok) {
-      let msg = `请求失败 (${res.status})`
+      let msg = `Yêu cầu thất bại (${res.status})`
       try {
         const j = await res.json()
         if (j?.error?.message) msg = j.error.message
@@ -26,7 +26,7 @@ function postUniversalSegmentNdjsonStream(url, body, onDelta) {
       throw new Error(msg)
     }
     const reader = res.body && res.body.getReader()
-    if (!reader) throw new Error('浏览器不支持流式读取')
+    if (!reader) throw new Error('Trình duyệt không hỗ trợ đọc stream')
     const dec = new TextDecoder()
     let buf = ''
     let finalText = ''
@@ -46,7 +46,7 @@ function postUniversalSegmentNdjsonStream(url, body, onDelta) {
           continue
         }
         if (obj.type === 'delta' && obj.text && typeof onDelta === 'function') onDelta(String(obj.text))
-        if (obj.type === 'error') throw new Error(obj.message || '请求失败')
+        if (obj.type === 'error') throw new Error(obj.message || 'Yêu cầu thất bại')
         if (obj.type === 'done') {
           finalText = (obj.universal_segment_text && String(obj.universal_segment_text).trim()) || ''
         }
@@ -56,7 +56,7 @@ function postUniversalSegmentNdjsonStream(url, body, onDelta) {
     if (tail) {
       try {
         const obj = JSON.parse(tail)
-        if (obj.type === 'error') throw new Error(obj.message || '请求失败')
+        if (obj.type === 'error') throw new Error(obj.message || 'Yêu cầu thất bại')
         if (obj.type === 'done') finalText = (obj.universal_segment_text && String(obj.universal_segment_text).trim()) || finalText
       } catch (e) {
         if (e instanceof Error && e.message && !e.message.includes('JSON')) throw e
@@ -85,18 +85,18 @@ export const storyboardsAPI = {
   getFramePrompts(id) {
     return request.get(`/storyboards/${id}/frame-prompts`)
   },
-  /** 保存/覆盖首帧或尾帧提示词（用于用户手动编辑后保存） */
+  /** Lưu/ghi đè prompt của frame đầu hoặc frame cuối (dùng khi người dùng sửa thủ công rồi lưu) */
   saveFramePrompt(id, frameType, data) {
     return request.put(`/storyboards/${id}/frame-prompts/${frameType}`, data || {})
   },
   polishPrompt(id) {
     return request.post(`/storyboards/${id}/polish-prompt`, {})
   },
-  /** 全能模式：根据分镜内容 AI 生成片段描述（非流式，兼容旧调用） */
+  /** Chế độ toàn năng: AI tạo mô tả segment dựa trên nội dung storyboard (không stream, tương thích cũ) */
   generateUniversalSegmentPrompt(id, body = {}) {
     return request.post(`/storyboards/${id}/universal-segment-prompt`, body)
   },
-  /** 全能模式生成：NDJSON 流式，可选 body.duration、body.force_without_reference_images */
+  /** Tạo bằng chế độ toàn năng: NDJSON stream, tuỳ chọn body.duration, body.force_without_reference_images */
   generateUniversalSegmentPromptStream(id, body, onDelta) {
     return postUniversalSegmentNdjsonStream(
       `/api/v1/storyboards/${id}/universal-segment-prompt-stream`,
@@ -105,8 +105,8 @@ export const storyboardsAPI = {
     )
   },
   /**
-   * 流式润色全能片段：NDJSON 行 {type:'delta',text} / {type:'done',universal_segment_text} / {type:'error',message}
-   * body.draft_universal_segment_text 为当前编辑区全文；可选 duration、force_without_reference_images
+   * Trau chuốt segment toàn năng dạng stream: dòng NDJSON {type:'delta',text} / {type:'done',universal_segment_text} / {type:'error',message}
+   * body.draft_universal_segment_text là toàn bộ nội dung vùng soạn thảo hiện tại; tuỳ chọn duration, force_without_reference_images
    */
   polishUniversalSegmentPromptStream(id, body, onDelta) {
     return postUniversalSegmentNdjsonStream(
@@ -124,19 +124,19 @@ export const storyboardsAPI = {
   upscale(id) {
     return request.post(`/storyboards/${id}/upscale`, {})
   },
-  /** 尾帧衔接：提取当前分镜视频最后一帧，设为下一个分镜的首帧 */
+  /** Nối frame cuối: trích xuất frame cuối của video storyboard hiện tại, đặt làm frame đầu của storyboard kế tiếp */
   linkTailFrame(id, data) {
     return request.post(`/storyboards/${id}/link-tail-frame`, data || {})
   },
-  /** 一键 AI 重新生成/优化本分镜的 layout_description（空间布局合同），自动参考上下分镜 */
+  /** Tạo lại/tối ưu layout_description của storyboard này bằng AI (hợp đồng bố cục không gian), tự tham chiếu storyboard trước/sau */
   regenerateLayoutDescription(id) {
     return request.post(`/storyboards/${id}/regenerate-layout-description`, {})
   },
-  /** 按后端最新规则重建单镜 video_prompt（含音色锚点，不调用 AI） */
+  /** Dựng lại video_prompt của storyboard theo quy tắc mới nhất của backend (có neo voice, không gọi AI) */
   rebuildVideoPrompt(id) {
     return request.post(`/storyboards/${id}/rebuild-video-prompt`, {})
   },
-  /** 按对白/旁白拆成多条分镜（每条仅一人说话或仅画外旁白） */
+  /** Tách theo lời thoại/narration thành nhiều storyboard (mỗi storyboard chỉ một người nói hoặc chỉ narration ngoài hình) */
   splitByAudio(id) {
     return request.post(`/storyboards/${id}/split-by-audio`, {})
   },

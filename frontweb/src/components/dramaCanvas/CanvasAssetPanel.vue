@@ -10,7 +10,7 @@
   >
     <div class="panel-head">
       <span>{{ kindLabel }}</span>
-      <el-button link size="small" @click.stop="closePanel">收起</el-button>
+      <el-button link size="small" @click.stop="closePanel">Thu gọn</el-button>
     </div>
 
     <div class="panel-body">
@@ -20,7 +20,7 @@
           <div v-else-if="!generating" class="preview-empty">{{ kindIcon }}</div>
           <div v-if="generating || nodeBusy" class="preview-loading">
             <span class="spinner" />
-            <span>{{ nodeBusy?.message || '生成参考图…' }}</span>
+            <span>{{ nodeBusy?.message || 'Đang tạo ảnh tham chiếu…' }}</span>
           </div>
         </div>
         <div v-if="entityStatus" class="entity-status" :class="'st-' + entityStatus">{{ entityStatusLabel }}</div>
@@ -30,83 +30,83 @@
         <el-form label-position="left" label-width="44px" size="small" class="panel-form compact-form">
           <template v-if="kind === 'character'">
             <div class="form-row-2">
-              <el-form-item label="名称" class="flex-1">
-                <el-input v-model="form.name" placeholder="角色名" />
+              <el-form-item label="Tên" class="flex-1">
+                <el-input v-model="form.name" placeholder="Tên nhân vật" />
               </el-form-item>
-              <el-form-item label="类型" class="type-field">
+              <el-form-item label="Loại" class="type-field">
                 <el-select
                   v-model="form.role"
                   clearable
-                  placeholder="类型"
+                  placeholder="Loại"
                   teleported
                   popper-class="canvas-panel-popper"
                   @visible-change="onSelectVisibleChange"
                 >
-                  <el-option label="主角" value="main" />
-                  <el-option label="配角" value="supporting" />
+                  <el-option label="Nhân vật chính" value="main" />
+                  <el-option label="Nhân vật phụ" value="supporting" />
                 </el-select>
               </el-form-item>
             </div>
-            <el-form-item label="外貌">
+            <el-form-item label="Ngoại hình">
               <el-input
                 v-model="form.appearance"
                 type="textarea"
                 :rows="2"
                 resize="vertical"
-                placeholder="外貌描述"
+                placeholder="Mô tả ngoại hình"
               />
             </el-form-item>
-            <el-form-item label="简介">
+            <el-form-item label="Mô tả">
               <el-input
                 v-model="form.description"
                 type="textarea"
                 :rows="2"
                 resize="vertical"
-                placeholder="角色简介"
+                placeholder="Mô tả nhân vật"
               />
             </el-form-item>
           </template>
 
           <template v-else-if="kind === 'scene'">
             <div class="form-row-2">
-              <el-form-item label="地点" class="flex-1">
-                <el-input v-model="form.location" placeholder="场景地点" />
+              <el-form-item label="Địa điểm" class="flex-1">
+                <el-input v-model="form.location" placeholder="Địa điểm của scene" />
               </el-form-item>
-              <el-form-item label="时间" class="time-field">
-                <el-input v-model="form.time" placeholder="白天/夜" />
+              <el-form-item label="Thời gian" class="time-field">
+                <el-input v-model="form.time" placeholder="Ban ngày / đêm" />
               </el-form-item>
             </div>
-            <el-form-item label="描述">
+            <el-form-item label="Mô tả">
               <el-input
                 v-model="form.prompt"
                 type="textarea"
                 :rows="2"
                 resize="vertical"
-                placeholder="场景描述"
+                placeholder="Mô tả scene"
               />
             </el-form-item>
           </template>
 
           <template v-else>
-            <el-form-item label="名称">
-              <el-input v-model="form.name" placeholder="道具名称" />
+            <el-form-item label="Tên">
+              <el-input v-model="form.name" placeholder="Tên đạo cụ" />
             </el-form-item>
-            <el-form-item label="描述">
+            <el-form-item label="Mô tả">
               <el-input
                 v-model="form.description"
                 type="textarea"
                 :rows="2"
                 resize="vertical"
-                placeholder="道具描述"
+                placeholder="Mô tả đạo cụ"
               />
             </el-form-item>
-            <el-form-item label="提示">
+            <el-form-item label="Prompt">
               <el-input
                 v-model="form.prompt"
                 type="textarea"
                 :rows="2"
                 resize="vertical"
-                placeholder="生图提示词"
+                placeholder="Prompt tạo ảnh"
               />
             </el-form-item>
           </template>
@@ -115,7 +115,7 @@
     </div>
 
     <div class="panel-actions">
-      <el-button size="small" :loading="saving" @click.stop="saveAsset">保存</el-button>
+      <el-button size="small" :loading="saving" @click.stop="saveAsset">Lưu</el-button>
       <el-button
         v-if="canGenerate || generating"
         size="small"
@@ -123,10 +123,10 @@
         :loading="generating"
         @click.stop="generateImage"
       >
-        生成参考图
+        Tạo ảnh tham chiếu
       </el-button>
-      <el-button size="small" plain @click.stop="highlightRelated">关联分镜</el-button>
-      <el-button size="small" type="danger" plain @click.stop="deleteAsset">删除</el-button>
+      <el-button size="small" plain @click.stop="highlightRelated">Storyboard liên quan</el-button>
+      <el-button size="small" type="danger" plain @click.stop="deleteAsset">Xoá</el-button>
     </div>
   </div>
 </template>
@@ -161,8 +161,8 @@ const form = reactive({
 })
 
 const kindLabel = computed(() => {
-  const map = { character: '角色', scene: '场景', prop: '道具' }
-  return map[props.kind] || '素材'
+  const map = { character: 'Nhân vật', scene: 'Scene', prop: 'Đạo cụ' }
+  return map[props.kind] || 'Tư liệu'
 })
 
 const kindIcon = computed(() => {
@@ -175,8 +175,8 @@ const canGenerate = computed(() => !previewUrl.value)
 const entityStatus = computed(() => props.entity?.status || '')
 const entityStatusLabel = computed(() => {
   const s = entityStatus.value
-  const map = { pending: '待生成', processing: '生成中', completed: '已完成', failed: '失败' }
-  return map[s] || (previewUrl.value ? '已有参考图' : '无参考图')
+  const map = { pending: 'Chờ tạo', processing: 'Đang tạo', completed: 'Hoàn tất', failed: 'Thất bại' }
+  return map[s] || (previewUrl.value ? 'Đã có ảnh tham chiếu' : 'Chưa có ảnh tham chiếu')
 })
 
 const nodeBusy = computed(() => {
@@ -207,11 +207,11 @@ function closePanel() {
 
 async function saveAsset() {
   saving.value = true
-  ctx?.nodeStatus?.set(props.nodeId, { step: 'save', message: '保存中…' })
+  ctx?.nodeStatus?.set(props.nodeId, { step: 'save', message: 'Đang lưu…' })
   try {
     if (props.kind === 'character') {
       if (!form.name.trim()) {
-        ElMessage.warning('请填写角色名称')
+        ElMessage.warning('Vui lòng nhập tên nhân vật')
         return
       }
       await characterAPI.update(props.entity.id, {
@@ -222,7 +222,7 @@ async function saveAsset() {
       })
     } else if (props.kind === 'scene') {
       if (!form.location.trim()) {
-        ElMessage.warning('请填写场景地点')
+        ElMessage.warning('Vui lòng nhập địa điểm scene')
         return
       }
       await sceneAPI.update(props.entity.id, {
@@ -232,7 +232,7 @@ async function saveAsset() {
       })
     } else {
       if (!form.name.trim()) {
-        ElMessage.warning('请填写道具名称')
+        ElMessage.warning('Vui lòng nhập tên đạo cụ')
         return
       }
       await propAPI.update(props.entity.id, {
@@ -241,10 +241,10 @@ async function saveAsset() {
         prompt: form.prompt.trim() || undefined,
       })
     }
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
     await ctx?.refreshDrama?.(true)
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElMessage.error(e?.message || 'Lưu thất bại')
   } finally {
     saving.value = false
     if (!generating.value) ctx?.nodeStatus?.clear(props.nodeId)
@@ -253,13 +253,13 @@ async function saveAsset() {
 
 async function deleteAsset() {
   const label = props.kind === 'scene'
-    ? (props.entity.location || '未命名')
-    : (props.entity.name || '未命名')
+    ? (props.entity.location || 'Chưa đặt tên')
+    : (props.entity.name || 'Chưa đặt tên')
   try {
-    await ElMessageBox.confirm(`确定删除「${label.slice(0, 20)}」？`, '删除确认', {
+    await ElMessageBox.confirm(`Bạn có chắc muốn xoá "${label.slice(0, 20)}"?`, 'Xác nhận xoá', {
       type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
     })
     if (props.kind === 'character') {
       await characterAPI.delete(props.entity.id)
@@ -269,11 +269,11 @@ async function deleteAsset() {
       await propAPI.delete(props.entity.id)
     }
     ctx?.clearFocusedNode?.()
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     await ctx?.refresh?.()
   } catch (e) {
     if (e === 'cancel') return
-    ElMessage.error(e?.message || '删除失败')
+    ElMessage.error(e?.message || 'Xoá thất bại')
   }
 }
 
@@ -285,9 +285,9 @@ async function generateImage() {
       entity: props.entity,
       nodeId: props.nodeId,
     })
-    ElMessage.success('参考图已生成')
+    ElMessage.success('Đã tạo ảnh tham chiếu')
   } catch (e) {
-    ElMessage.error(e?.message || '生成失败')
+    ElMessage.error(e?.message || 'Tạo thất bại')
   } finally {
     generating.value = false
   }

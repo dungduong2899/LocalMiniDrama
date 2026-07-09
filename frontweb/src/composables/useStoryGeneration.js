@@ -5,8 +5,8 @@ import { stylePromptMetadataForSave } from '@/constants/styleOptions'
 import { GEN_RESOURCE } from '@/stores/generationTaskStore'
 
 /**
- * 从故事梗概调用 AI 生成多集剧本并写入 drama（与 FilmCreate.onGenerateStory 一致）
- * 生成与保存由后端异步任务完成，离开页面后仍会入库。
+ * Từ story premise gọi AI tạo kịch bản nhiều tập rồi ghi vào drama (tương ứng FilmCreate.onGenerateStory)
+ * Việc tạo và lưu do task async của backend xử lý, rời trang vẫn tiếp tục lưu vào DB.
  * @returns {Promise<{ ok: boolean, dramaId?: number, episodeCount?: number, error?: string }>}
  */
 export async function runGenerateStoryFromPremise({
@@ -29,12 +29,12 @@ export async function runGenerateStoryFromPremise({
   pollTask,
   replaceRouteWhenNew = true,
   onComplete,
-  /** 为 true 时保存集数/梗概后不调用 loadDrama（用于剧本管理页生成后直接 router.push 进创作页） */
+  /** Khi true sẽ không gọi loadDrama sau khi lưu tập/premise (dùng cho trang quản lý kịch bản, tạo xong router.push thẳng vào trang sáng tác) */
   skipPostLoad = false,
 }) {
   const text = (premise || '').trim()
   if (!text) {
-    ElMessage.warning('请先输入故事梗概')
+    ElMessage.warning('Vui lòng nhập story premise trước')
     return { ok: false }
   }
 
@@ -43,7 +43,7 @@ export async function runGenerateStoryFromPremise({
     let dramaId = store.dramaId
     if (!dramaId) {
       const drama = await dramaAPI.create({
-        title: scriptTitle || '新故事',
+        title: scriptTitle || 'Câu chuyện mới',
         description: text,
         genre: storyType || undefined,
         style: generationStyle || undefined,
@@ -60,7 +60,7 @@ export async function runGenerateStoryFromPremise({
       }
     }
 
-    const dramaTitle = store.drama?.title || scriptTitle || '项目'
+    const dramaTitle = store.drama?.title || scriptTitle || 'Dự án'
     const meta = {
       dramaId,
       episodeId: store.currentEpisode?.id ?? selectedEpisodeId?.value ?? 0,
@@ -68,7 +68,7 @@ export async function runGenerateStoryFromPremise({
       episodeNumber: store.currentEpisode?.episode_number ?? 1,
       resourceType: GEN_RESOURCE.GENERATE_STORY,
       resourceId: Number(dramaId),
-      label: `${dramaTitle} 生成剧本`,
+      label: `${dramaTitle} tạo kịch bản`,
     }
 
     scriptGenerating.value = true
@@ -92,13 +92,13 @@ export async function runGenerateStoryFromPremise({
 
       const taskId = res?.task_id
       if (!taskId) {
-        ElMessage.error('未能启动剧本生成任务')
+        ElMessage.error('Không khởi động được task tạo kịch bản')
         return { ok: false }
       }
 
       const pollRes = await pollTask(taskId, () => loadDrama?.(), meta)
       if (pollRes?.status !== 'completed') {
-        return { ok: false, error: pollRes?.error || '剧本生成失败' }
+        return { ok: false, error: pollRes?.error || 'Tạo kịch bản thất bại' }
       }
 
       savedCurrentEpisodeNumber.value = 1
@@ -118,22 +118,22 @@ export async function runGenerateStoryFromPremise({
         : (pollRes?.result || {})
       const n = (store.drama?.episodes || []).length || parsedResult.episode_count || 1
       if (!skipPostLoad) {
-        ElMessage.success(n > 1 ? `剧本已生成，共 ${n} 集，已默认选中第1集` : '剧本已生成并已保存')
+        ElMessage.success(n > 1 ? `Đã tạo kịch bản, tổng ${n} tập, đã chọn mặc định tập 1` : 'Đã tạo và lưu kịch bản')
       } else {
-        ElMessage.success(n > 1 ? `剧本已生成，共 ${n} 集` : '剧本已生成并已保存')
+        ElMessage.success(n > 1 ? `Đã tạo kịch bản, tổng ${n} tập` : 'Đã tạo và lưu kịch bản')
       }
       if (typeof onComplete === 'function') {
         onComplete({ episodeCount: n, dramaId })
       }
       return { ok: true, dramaId, episodeCount: n }
     } catch (e) {
-      ElMessage.error(e.message || '剧本生成失败')
+      ElMessage.error(e.message || 'Tạo kịch bản thất bại')
       return { ok: false, error: e.message }
     } finally {
       scriptGenerating.value = false
     }
   } catch (e) {
-    ElMessage.error(e.message || '故事生成失败')
+    ElMessage.error(e.message || 'Tạo câu chuyện thất bại')
     return { ok: false, error: e.message }
   } finally {
     storyGenerating.value = false

@@ -22,11 +22,11 @@ export const dramaAPI = {
   saveCharacters(id, data) {
     return request.put(`/dramas/${id}/characters`, data)
   },
-  /** AI 一键推荐配音：为该剧集下所有角色（或仅未分配的）批量匹配语音库中的语音 */
+  /** AI đề xuất lồng tiếng: khớp voice từ thư viện voice cho toàn bộ nhân vật của phim (hoặc chỉ nhân vật chưa gán) hàng loạt */
   recommendVoices(id, onlyUnassigned) {
     return request.post(`/dramas/${id}/characters/voice-recommend`, { only_unassigned: !!onlyUnassigned })
   },
-  /** 保存梗概/故事摘要到项目（outline），body: { summary, title?, genre?, tags? } */
+  /** Lưu tóm tắt/outline vào dự án, body: { summary, title?, genre?, tags? } */
   saveOutline(id, data) {
     return request.put(`/dramas/${id}/outline`, data)
   },
@@ -43,7 +43,7 @@ export const dramaAPI = {
     return request.get(`/episodes/${episodeId}/storyboards`)
   },
   generateStoryboard(episodeId, options) {
-    // 兼容旧调用方式: generateStoryboard(episodeId, model, style)
+    // Tương thích cách gọi cũ: generateStoryboard(episodeId, model, style)
     let body = {};
     if (arguments.length > 2 || typeof options === 'string') {
        body.model = arguments[1];

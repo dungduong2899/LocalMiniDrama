@@ -5,7 +5,7 @@ import { storyboardsAPI } from '@/api/storyboards'
 import { sceneAPI } from '@/api/scenes'
 import { propAPI } from '@/api/props'
 
-/** 合并 drama 级与本集已关联角色，避免 drama.characters 被布局保存截断后漏传 */
+/** Gộp nhân vật cấp drama và nhân vật đã gán cho tập hiện tại, tránh drama.characters bị cắt khi lưu layout */
 function collectExistingCharacters(dramaData, episodeId) {
   const map = new Map()
   for (const c of dramaData?.characters || []) {
@@ -33,7 +33,7 @@ function toCharacterSavePayload(c) {
   }
 }
 
-/** 画布内新建实体（复用列表模式同款 API） */
+/** Tạo entity mới trong canvas (dùng chung API với chế độ danh sách) */
 export function useCanvasCrud(deps) {
   const {
     drama,
@@ -46,7 +46,7 @@ export function useCanvasCrud(deps) {
 
   const createDialogVisible = ref(false)
   const createDialogType = ref('storyboard')
-  /** 右键菜单创建时在画布上的坐标 { x, y } */
+  /** Toạ độ trên canvas khi tạo qua menu chuột phải { x, y } */
   const pendingFlowPosition = ref(null)
 
   function resolveEpisodeId() {
@@ -58,7 +58,7 @@ export function useCanvasCrud(deps) {
 
   function openCreateDialog(type, flowPosition = null) {
     if (['storyboard', 'character', 'scene', 'prop'].includes(type) && !resolveEpisodeId()) {
-      ElMessage.warning('请先选择集数（或确保项目至少有一集）')
+      ElMessage.warning('Vui lòng chọn tập trước (hoặc đảm bảo dự án có ít nhất một tập)')
       return
     }
     createDialogType.value = type
@@ -88,13 +88,13 @@ export function useCanvasCrud(deps) {
 
   async function createStoryboard(form) {
     const episodeId = resolveEpisodeId()
-    if (!episodeId) throw new Error('请先选择集数')
+    if (!episodeId) throw new Error('Vui lòng chọn tập trước')
 
     const boards = (drama.value?.episodes || [])
       .find((ep) => ep.id === episodeId)?.storyboards || []
     const maxNum = boards.reduce((max, sb) => Math.max(max, sb.storyboard_number || 0), 0)
     const nextNum = maxNum + 1
-    const title = (form.title || '').trim() || `镜头 ${nextNum}`
+    const title = (form.title || '').trim() || `Cảnh ${nextNum}`
 
     const sb = await storyboardsAPI.create({
       episode_id: episodeId,
@@ -107,23 +107,23 @@ export function useCanvasCrud(deps) {
     const pos = pendingFlowPosition.value
     if (pos) await saveNodePosition(nodeId, pos)
     await focusAfterCreate(nodeId)
-    ElMessage.success('分镜已添加')
+    ElMessage.success('Đã thêm storyboard')
     return sb
   }
 
   async function createEpisode(form) {
     const dramaId = drama.value?.id
-    if (!dramaId) throw new Error('项目未加载')
+    if (!dramaId) throw new Error('Dự án chưa được tải')
 
     const list = drama.value.episodes || []
     const nextNum = list.length > 0
       ? Math.max(...list.map((ep) => Number(ep.episode_number) || 0), 0) + 1
       : 1
-    const title = (form.title || '').trim() || `第${nextNum}集`
+    const title = (form.title || '').trim() || `Tập ${nextNum}`
 
     const updated = list.map((ep, i) => ({
       episode_number: ep.episode_number ?? i + 1,
-      title: ep.title || `第${ep.episode_number ?? i + 1}集`,
+      title: ep.title || `Tập ${ep.episode_number ?? i + 1}`,
       script_content: ep.script_content || '',
       description: ep.description ?? null,
       duration: ep.duration ?? 0,
@@ -147,13 +147,13 @@ export function useCanvasCrud(deps) {
       await refreshCanvas()
     }
     pendingFlowPosition.value = null
-    ElMessage.success(`已添加${title}`)
+    ElMessage.success(`Đã thêm ${title}`)
   }
 
   async function createCharacter(form) {
     const dramaId = drama.value?.id
     const episodeId = resolveEpisodeId()
-    if (!dramaId) throw new Error('项目未加载')
+    if (!dramaId) throw new Error('Dự án chưa được tải')
 
     const beforeIds = new Set((drama.value?.characters || []).map((c) => c.id))
 
@@ -177,13 +177,13 @@ export function useCanvasCrud(deps) {
     const pos = pendingFlowPosition.value
     if (nodeId && pos) await saveNodePosition(nodeId, pos)
     await focusAfterCreate(nodeId)
-    ElMessage.success('角色已添加')
+    ElMessage.success('Đã thêm nhân vật')
   }
 
   async function createScene(form) {
     const dramaId = drama.value?.id
     const episodeId = resolveEpisodeId()
-    if (!dramaId) throw new Error('项目未加载')
+    if (!dramaId) throw new Error('Dự án chưa được tải')
 
     const scene = await sceneAPI.create({
       drama_id: dramaId,
@@ -198,13 +198,13 @@ export function useCanvasCrud(deps) {
     const pos = pendingFlowPosition.value
     if (nodeId && pos) await saveNodePosition(nodeId, pos)
     await focusAfterCreate(nodeId)
-    ElMessage.success('场景已添加')
+    ElMessage.success('Đã thêm scene')
   }
 
   async function createProp(form) {
     const dramaId = drama.value?.id
     const episodeId = resolveEpisodeId()
-    if (!dramaId) throw new Error('项目未加载')
+    if (!dramaId) throw new Error('Dự án chưa được tải')
 
     const prop = await propAPI.create({
       drama_id: dramaId,
@@ -219,7 +219,7 @@ export function useCanvasCrud(deps) {
     const pos = pendingFlowPosition.value
     if (nodeId && pos) await saveNodePosition(nodeId, pos)
     await focusAfterCreate(nodeId)
-    ElMessage.success('道具已添加')
+    ElMessage.success('Đã thêm đạo cụ')
   }
 
   async function submitCreate(form) {

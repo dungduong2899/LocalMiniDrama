@@ -30,7 +30,7 @@ export function getSbVideosList(videosBySbId, storyboardId) {
   return list.filter((v) => v.status === 'completed' && ((v.local_path && String(v.local_path).trim()) || isHttpVideoUrl(v.video_url)))
 }
 
-/** 首帧图记录（与 FilmCreate.getSbFirstImage 一致） */
+/** Record ảnh frame đầu (đồng bộ với FilmCreate.getSbFirstImage) */
 export function resolveSbFirstImageRecord(sb, imagesBySbId) {
   if (!sb) return null
   const images = getSbImagesList(imagesBySbId, sb.id)
@@ -51,7 +51,7 @@ export function resolveSbFirstImageRecord(sb, imagesBySbId) {
   return null
 }
 
-/** 尾帧图记录（与 FilmCreate.getSbLastImage 一致） */
+/** Record ảnh frame cuối (đồng bộ với FilmCreate.getSbLastImage) */
 export function resolveSbLastImageRecord(sb, imagesBySbId) {
   if (!sb) return null
   const images = getSbImagesList(imagesBySbId, sb.id)
@@ -72,7 +72,7 @@ export function resolveSbLastImageRecord(sb, imagesBySbId) {
   return null
 }
 
-/** 经典单图模式主图 */
+/** Ảnh chính ở chế độ single-image cổ điển */
 export function resolveSbMainImageRecord(sb, imagesBySbId) {
   if (!sb) return null
   const images = getSbImagesList(imagesBySbId, sb.id)
@@ -87,7 +87,7 @@ export function imageRecordUrl(record) {
   return assetImageUrl(record)
 }
 
-/** 当前分镜视频（优先匹配 storyboard.video_url） */
+/** Video của storyboard hiện tại (ưu tiên khớp storyboard.video_url) */
 export function resolveSbVideoRecord(sb, videosBySbId) {
   if (!sb) return null
   const list = getSbVideosList(videosBySbId, sb.id)
@@ -137,7 +137,7 @@ export function sbVideoFirstLastUrls(sb, imagesBySbId, useFirstLast) {
   return { first: first || undefined, last }
 }
 
-/** 分镜是否已有可用图片（与列表模式 hasSbImage 逻辑对齐） */
+/** Storyboard đã có ảnh dùng được chưa (đồng bộ với hasSbImage ở list mode) */
 export function hasStoryboardImage(sb, imagesBySbId, drama) {
   if (!sb) return false
   if (dramaUsesFirstLastFrame(drama) && sb.creation_mode !== 'universal') {
@@ -146,7 +146,7 @@ export function hasStoryboardImage(sb, imagesBySbId, drama) {
   return !!(resolveSbMainImageRecord(sb, imagesBySbId) || sb.image_url || sb.local_path || sb.composed_image)
 }
 
-/** 分镜是否已有可用视频 */
+/** Storyboard đã có video dùng được chưa */
 export function hasStoryboardVideo(sb, videosBySbId) {
   if (!sb) return false
   const rec = resolveSbVideoRecord(sb, videosBySbId)

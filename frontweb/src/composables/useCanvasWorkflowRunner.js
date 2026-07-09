@@ -12,7 +12,7 @@ import {
 import { dramaUsesFirstLastFrame, sbVideoFirstLastUrls } from '@/utils/storyboardMedia'
 
 async function pollTaskSimple(taskId, options = {}) {
-  if (!taskId) return { status: 'failed', error: '缺少 task_id' }
+  if (!taskId) return { status: 'failed', error: 'Thiếu task_id' }
   const maxAttempts = options.maxAttempts ?? 450
   const interval = options.interval ?? 2000
   for (let i = 0; i < maxAttempts; i++) {
@@ -21,18 +21,18 @@ async function pollTaskSimple(taskId, options = {}) {
       const t = await taskAPI.get(taskId)
       if (t.status === 'completed') return { status: 'completed', result: t.result }
       if (t.status === 'failed') {
-        return { status: 'failed', error: t.error?.message || t.error || '任务失败' }
+        return { status: 'failed', error: t.error?.message || t.error || 'Task thất bại' }
       }
     } catch (e) {
-      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || '轮询失败' }
+      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || 'Polling thất bại' }
     }
   }
-  return { status: 'timeout', error: '任务超时' }
+  return { status: 'timeout', error: 'Task timeout' }
 }
 
 export async function runImageStep(drama, sb, genOpts) {
   const prompt = sb.polished_prompt || sb.image_prompt || sb.description || sb.action || ''
-  if (!prompt.trim()) throw new Error(`分镜 #${sb.storyboard_number ?? sb.id} 缺少图片提示词`)
+  if (!prompt.trim()) throw new Error(`Storyboard #${sb.storyboard_number ?? sb.id} thiếu prompt ảnh`)
   const res = await imagesAPI.create({
     storyboard_id: sb.id,
     drama_id: drama.id,
@@ -42,7 +42,7 @@ export async function runImageStep(drama, sb, genOpts) {
   })
   if (res?.task_id) {
     const polled = await pollTaskSimple(res.task_id)
-    if (polled.status !== 'completed') throw new Error(polled.error || '分镜图生成失败')
+    if (polled.status !== 'completed') throw new Error(polled.error || 'Tạo ảnh storyboard thất bại')
   }
 }
 
@@ -52,7 +52,7 @@ export async function runVideoStep(drama, sb, genOpts) {
   const { first, last } = sbVideoFirstLastUrls(sb, imagesBySbId, useFirstLast)
   const imgPath = first || storyboardImageUrl(sb)
   if (!imgPath && !sb.video_prompt && !last) {
-    throw new Error(`分镜 #${sb.storyboard_number ?? sb.id} 缺少分镜图，无法生成视频`)
+    throw new Error(`Storyboard #${sb.storyboard_number ?? sb.id} thiếu ảnh storyboard, không thể tạo video`)
   }
   const absoluteFirst = toAbsoluteMediaUrl(imgPath)
   const absoluteLast = last ? toAbsoluteMediaUrl(last) : undefined
@@ -71,13 +71,13 @@ export async function runVideoStep(drama, sb, genOpts) {
   })
   if (res?.task_id) {
     const polled = await pollTaskSimple(res.task_id)
-    if (polled.status !== 'completed') throw new Error(polled.error || '视频生成失败')
+    if (polled.status !== 'completed') throw new Error(polled.error || 'Tạo video thất bại')
   }
 }
 
 export async function runAudioStep(sb) {
   const text = (sb.dialogue || '').trim()
-  if (!text) return { skipped: true, reason: '无对白' }
+  if (!text) return { skipped: true, reason: 'Không có lời thoại' }
   await request.post('/audio/extract', {
     storyboard_id: sb.id,
     text,
@@ -87,12 +87,12 @@ export async function runAudioStep(sb) {
 }
 
 /**
- * 对单个分镜按 pipeline 顺序执行生成
+ * Chạy tạo cho một storyboard theo thứ tự pipeline
  * @param {'image'|'video'|'audio'}[] pipeline
  */
 export async function runStoryboardPipeline(drama, storyboardId, pipeline, hooks = {}) {
   const found = findStoryboardInDrama(drama, storyboardId)
-  if (!found) throw new Error(`找不到分镜 ${storyboardId}`)
+  if (!found) throw new Error(`Không tìm thấy storyboard ${storyboardId}`)
   let { storyboard: sb } = found
   const genOpts = {
     ...getDramaGenerationOptions(drama),
@@ -127,7 +127,7 @@ export async function runStoryboardPipeline(drama, storyboardId, pipeline, hooks
   return results
 }
 
-/** 按工作流组顺序执行（组内分镜按 storyboard_ids 顺序） */
+/** Chạy theo thứ tự nhóm workflow (storyboard trong nhóm chạy theo thứ tự storyboard_ids) */
 export async function runWorkflowGroup(drama, group, hooks = {}) {
   const pipeline = group.pipeline || DEFAULT_PIPELINE
   const ids = group.storyboard_ids || []

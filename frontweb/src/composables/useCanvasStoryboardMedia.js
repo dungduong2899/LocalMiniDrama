@@ -3,7 +3,7 @@ import { imagesAPI } from '@/api/images'
 import { videosAPI } from '@/api/videos'
 
 /**
- * 加载当前剧集分镜的 images / videos 列表（与 FilmCreate.loadStoryboardMedia 对齐）
+ * Tải danh sách images / videos của storyboard cho tập hiện tại (đồng bộ với FilmCreate.loadStoryboardMedia)
  */
 export function useCanvasStoryboardMedia() {
   const imagesBySbId = ref({})

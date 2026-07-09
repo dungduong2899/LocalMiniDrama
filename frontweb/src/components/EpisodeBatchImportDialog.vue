@@ -1,12 +1,12 @@
 <template>
   <div class="episode-batch-import-trigger">
     <el-button size="small" @click="openDialog">
-      <el-icon><Upload /></el-icon>批量导入剧集
+      <el-icon><Upload /></el-icon>Nhập hàng loạt tập phim
     </el-button>
 
     <el-dialog
       v-model="visible"
-      title="批量导入剧集"
+      title="Nhập hàng loạt tập phim"
       width="920px"
       append-to-body
       destroy-on-close
@@ -14,80 +14,80 @@
     >
       <div class="batch-import-dialog">
         <el-tabs v-model="activeTab" class="batch-import-tabs">
-          <el-tab-pane label="1. 导入设置" name="config">
+          <el-tab-pane label="1. Cài đặt nhập" name="config">
             <div class="batch-import-panel">
               <div class="batch-import-toolbar">
                 <input ref="fileInputRef" type="file" accept=".txt,text/plain" style="display:none" @change="onFileChange" />
                 <el-button @click="fileInputRef?.click()">
-                  <el-icon><Upload /></el-icon>选择 TXT 文件
+                  <el-icon><Upload /></el-icon>Chọn file TXT
                 </el-button>
                 <span class="batch-import-file" :class="{ 'is-empty': !fileName }">
-                  {{ fileName || '未选择文件' }}
+                  {{ fileName || 'Chưa chọn file' }}
                 </span>
               </div>
 
               <el-form label-width="120px" class="batch-import-form">
-                <el-form-item label="章节正则">
-                  <el-input v-model="chapterPattern" placeholder="例如：^\s*(第\d+章[^\n]*)" />
+                <el-form-item label="Regex chương">
+                  <el-input v-model="chapterPattern" placeholder="Ví dụ: ^\s*(第\d+章[^\n]*)" />
                 </el-form-item>
-                <el-form-item label="每集章节数">
+                <el-form-item label="Số chương mỗi tập">
                   <el-input-number v-model="chaptersPerEpisode" :min="1" :max="100" />
                 </el-form-item>
               </el-form>
 
               <div class="batch-import-tip-block">
-                <div class="batch-import-tip">将提前准备好的小说原文或者剧本内容的.txt文件导入系统</div>
-                <div class="batch-import-tip">请正确输入用于匹配章节标题的正则表达式。</div>
-                <div class="batch-import-tip">示例：<code class="batch-import-code">^\s*(第\d+章[^\n]*)</code>、<code class="batch-import-code">^\s*(第\d+集[^\n]*)</code></div>
-                <div class="batch-import-tip">点击“确认导入配置”后，会先解析章节并切换到预览页。</div>
+                <div class="batch-import-tip">Nhập file .txt chứa nội dung tiểu thuyết hoặc kịch bản đã chuẩn bị sẵn vào hệ thống</div>
+                <div class="batch-import-tip">Vui lòng nhập đúng regex dùng để khớp tiêu đề chương.</div>
+                <div class="batch-import-tip">Ví dụ: <code class="batch-import-code">^\s*(第\d+章[^\n]*)</code>, <code class="batch-import-code">^\s*(第\d+集[^\n]*)</code></div>
+                <div class="batch-import-tip">Nhấn "Xác nhận cấu hình nhập" để phân tích chương và chuyển sang trang xem trước.</div>
               </div>
             </div>
           </el-tab-pane>
 
-          <el-tab-pane label="2. 预览确认" name="preview" :disabled="!previewReady">
+          <el-tab-pane label="2. Xem trước" name="preview" :disabled="!previewReady">
             <div class="batch-import-panel">
               <template v-if="previewEpisodes.length">
                 <div class="batch-import-preview-header">
-                  <span>共识别 {{ previewChapters.length }} 章，预计导入 {{ previewEpisodes.length }} 集</span>
+                  <span>Đã nhận diện {{ previewChapters.length }} chương, dự kiến nhập {{ previewEpisodes.length }} tập</span>
                 </div>
                 <el-table :data="previewEpisodes" border stripe height="420" class="batch-import-preview-table">
-                  <el-table-column prop="episode_number" label="集数" width="80" align="center" />
-                  <el-table-column prop="title" label="集标题" min-width="220" show-overflow-tooltip />
-                  <el-table-column label="包含章节" min-width="260" show-overflow-tooltip>
+                  <el-table-column prop="episode_number" label="Tập" width="80" align="center" />
+                  <el-table-column prop="title" label="Tiêu đề tập" min-width="220" show-overflow-tooltip />
+                  <el-table-column label="Chương bao gồm" min-width="260" show-overflow-tooltip>
                     <template #default="scope">
-                      {{ scope.row.chapter_titles.join('、') || '未识别章节标题' }}
+                      {{ scope.row.chapter_titles.join(', ') || 'Chưa nhận diện tiêu đề chương' }}
                     </template>
                   </el-table-column>
-                  <el-table-column label="内容预览" min-width="320" show-overflow-tooltip>
+                  <el-table-column label="Xem trước nội dung" min-width="320" show-overflow-tooltip>
                     <template #default="scope">
                       <div class="batch-import-preview-cell batch-import-preview-cell--single-line">
-                        {{ scope.row.script_content || '暂无内容' }}
+                        {{ scope.row.script_content || 'Chưa có nội dung' }}
                       </div>
                     </template>
                   </el-table-column>
                 </el-table>
               </template>
-              <div v-else class="batch-import-empty">请先在上一步确认导入配置</div>
+              <div v-else class="batch-import-empty">Vui lòng xác nhận cấu hình nhập ở bước trước</div>
             </div>
           </el-tab-pane>
         </el-tabs>
       </div>
       <template #footer>
-        <el-button @click="visible = false">取消</el-button>
-        <el-button v-if="activeTab === 'preview'" @click="activeTab = 'config'">上一步</el-button>
+        <el-button @click="visible = false">Huỷ</el-button>
+        <el-button v-if="activeTab === 'preview'" @click="activeTab = 'config'">Bước trước</el-button>
         <el-button
           v-if="activeTab === 'config'"
           type="primary"
           :disabled="!rawText.trim()"
           @click="confirmConfig"
-        >确认导入配置</el-button>
+        >Xác nhận cấu hình nhập</el-button>
         <el-button
           v-else
           type="primary"
           :disabled="!previewEpisodes.length"
           :loading="importing"
           @click="confirmImport"
-        >确认导入集数</el-button>
+        >Xác nhận nhập tập phim</el-button>
       </template>
     </el-dialog>
   </div>
@@ -154,18 +154,18 @@ function onFileChange(event) {
     rawText.value = String(ev.target?.result || '')
   }
   reader.onerror = () => {
-    ElMessage.error('读取文件失败')
+    ElMessage.error('Đọc file thất bại')
   }
   reader.readAsText(file, 'utf-8')
 }
 
 function createChapterRegex(pattern) {
   const source = String(pattern || '').trim()
-  if (!source) throw new Error('请输入章节正则')
+  if (!source) throw new Error('Vui lòng nhập regex chương')
   try {
     return new RegExp(source, 'gm')
   } catch {
-    throw new Error('章节正则格式不正确')
+    throw new Error('Định dạng regex chương không hợp lệ')
   }
 }
 
@@ -174,7 +174,7 @@ function splitNovelChapters(text, pattern) {
   if (!normalized) return []
   const regex = createChapterRegex(pattern)
   const matches = [...normalized.matchAll(regex)]
-  if (!matches.length) throw new Error('未匹配到任何章节，请调整章节正则')
+  if (!matches.length) throw new Error('Không khớp được chương nào, vui lòng điều chỉnh regex chương')
   return matches.map((match, index) => {
     const title = String(match[1] || match[0] || '').trim()
     const titleStart = match.index ?? 0
@@ -184,7 +184,7 @@ function splitNovelChapters(text, pattern) {
       : normalized.length
     const content = normalized.slice(contentStart, nextTitleStart).trim()
     return {
-      title: title || `第${index + 1}章`,
+      title: title || `Chương ${index + 1}`,
       content,
     }
   }).filter((chapter) => chapter.title || chapter.content)
@@ -216,32 +216,32 @@ function buildEpisodesFromChapters(chapters, sizeValue) {
 
 function confirmConfig() {
   if (!rawText.value.trim()) {
-    ElMessage.warning('请先选择 TXT 文件')
+    ElMessage.warning('Vui lòng chọn file TXT trước')
     return
   }
   try {
     const chapters = splitNovelChapters(rawText.value, chapterPattern.value)
     const episodes = buildEpisodesFromChapters(chapters, chaptersPerEpisode.value)
     if (!episodes.length) {
-      ElMessage.warning('未生成可导入的集数')
+      ElMessage.warning('Không tạo được tập phim để nhập')
       return
     }
     previewChapters.value = chapters
     previewEpisodes.value = episodes
     previewReady.value = true
     activeTab.value = 'preview'
-    ElMessage.success(`已识别 ${chapters.length} 章，可导入 ${episodes.length} 集`)
+    ElMessage.success(`Đã nhận diện ${chapters.length} chương, có thể nhập ${episodes.length} tập`)
   } catch (e) {
     previewReady.value = false
     previewChapters.value = []
     previewEpisodes.value = []
-    ElMessage.error(e.message || '章节预览失败')
+    ElMessage.error(e.message || 'Xem trước chương thất bại')
   }
 }
 
 async function confirmImport() {
   if (!previewEpisodes.value.length) {
-    ElMessage.warning('请先完成预览')
+    ElMessage.warning('Vui lòng hoàn tất xem trước')
     return
   }
   importing.value = true
@@ -253,10 +253,10 @@ async function confirmImport() {
       description: null,
       duration: 0,
     })))
-    ElMessage.success(`已导入 ${previewEpisodes.value.length} 集`)
+    ElMessage.success(`Đã nhập ${previewEpisodes.value.length} tập`)
     resetState()
   } catch (e) {
-    ElMessage.error(e.message || '批量导入失败')
+    ElMessage.error(e.message || 'Nhập hàng loạt thất bại')
   } finally {
     importing.value = false
   }

@@ -3,49 +3,49 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo">
-          <span class="logo-main">本地短剧助手</span>
+          <span class="logo-main">Trợ lý phim ngắn</span>
           <span class="logo-sub">LocalMiniDrama</span>
         </h1>
         <!-- 公共资源库（左侧，靛紫调） -->
         <div class="header-library">
           <el-button class="btn-library" @click="showCharLibrary = true">
-            <el-icon><User /></el-icon>素材角色
+            <el-icon><User /></el-icon>Tư liệu nhân vật
           </el-button>
           <el-button class="btn-library" @click="showSceneLibrary = true">
-            <el-icon><PictureFilled /></el-icon>素材场景
+            <el-icon><PictureFilled /></el-icon>Tư liệu scene
           </el-button>
           <el-button class="btn-library" @click="showPropLibrary = true">
-            <el-icon><Box /></el-icon>素材道具
+            <el-icon><Box /></el-icon>Tư liệu đạo cụ
           </el-button>
         </div>
         <!-- 右侧操作区 -->
         <div class="header-actions">
           <!-- 暂时隐藏，功能待完善 -->
-          <!-- <el-button class="btn-library" title="自由创作" @click="$router.push('/free-create')">
-            <el-icon><MagicStick /></el-icon>自由创作
+          <!-- <el-button class="btn-library" title="Sáng tạo tự do" @click="$router.push('/free-create')">
+            <el-icon><MagicStick /></el-icon>Sáng tạo tự do
           </el-button>
-          <el-button class="btn-library" title="媒体素材库" @click="$router.push('/media-library')">
-            <el-icon><Files /></el-icon>素材库
+          <el-button class="btn-library" title="Thư viện media" @click="$router.push('/media-library')">
+            <el-icon><Files /></el-icon>Thư viện tư liệu
           </el-button> -->
-          <el-button v-if="!vendorLockEnabled" class="btn-wechat" title="扫码联系作者" @click="showWechat = true">
-            <el-icon><ChatDotSquare /></el-icon>微信我
+          <el-button v-if="!vendorLockEnabled" class="btn-wechat" title="Quét mã liên hệ tác giả" @click="showWechat = true">
+            <el-icon><ChatDotSquare /></el-icon>WeChat
           </el-button>
-          <el-button class="btn-library" title="配音管理" @click="$router.push('/voice-library')">
-            <el-icon><Microphone /></el-icon>配音管理
+          <el-button class="btn-library" title="Quản lý lồng tiếng" @click="$router.push('/voice-library')">
+            <el-icon><Microphone /></el-icon>Quản lý lồng tiếng
           </el-button>
-          <el-button class="btn-theme" :title="isDark ? '切换到浅色模式' : '切换到暗色模式'" @click="toggleTheme">
+          <el-button class="btn-theme" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
             <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? '浅色' : '暗色' }}
+            {{ isDark ? 'Sáng' : 'Tối' }}
           </el-button>
           <el-button class="btn-settings" @click="showAiConfigDialog = true">
-            <el-icon><Setting /></el-icon>AI配置
+            <el-icon><Setting /></el-icon>Cấu hình AI
           </el-button>
           <el-button class="btn-import" :loading="importing" @click="triggerImport">
-            <el-icon><Upload /></el-icon>导入项目
+            <el-icon><Upload /></el-icon>Nhập dự án
           </el-button>
           <input ref="importFileInput" type="file" accept=".zip" style="display:none" @change="onImportFile" />
           <el-button type="primary" class="btn-new" @click="goNewProject">
-            <el-icon><Plus /></el-icon>新建项目
+            <el-icon><Plus /></el-icon>Tạo dự án
           </el-button>
         </div>
       </div>
@@ -57,19 +57,19 @@
           <!-- 操作卡片：始终作为第一个格子 -->
           <div class="project-card action-card">
             <div class="action-card-inner">
-              <h3 class="action-card-title">快速开始</h3>
+              <h3 class="action-card-title">Bắt đầu nhanh</h3>
               <div class="action-card-buttons">
                 <el-button type="primary" size="large" class="action-btn action-btn-new" @click="goNewProject">
-                  <el-icon><Plus /></el-icon>新建短剧项目
+                  <el-icon><Plus /></el-icon>Tạo dự án phim ngắn
                 </el-button>
                 <el-button size="large" class="action-btn action-btn-import" :loading="importing" @click="triggerImport">
-                  <el-icon><Upload /></el-icon>导入短剧项目
+                  <el-icon><Upload /></el-icon>Nhập dự án phim ngắn
                 </el-button>
               </div>
               <div v-if="exampleList.length > 0" class="action-card-example">
                 <div class="example-hint">
                   <el-icon class="example-hint-icon"><QuestionFilled /></el-icon>
-                  <span class="example-hint-text">新手？试试导入示例项目快速体验</span>
+                  <span class="example-hint-text">Mới bắt đầu? Thử nhập dự án mẫu để trải nghiệm nhanh</span>
                 </div>
                 <div class="example-list">
                   <el-button
@@ -93,17 +93,17 @@
             @click="openProject(d.id)"
           >
             <div class="project-card-actions" @click.stop>
-              <el-button size="small" circle :icon="Download" title="导出项目" :loading="exportingId === d.id" @click="onExport(d)" />
-              <el-button size="small" circle :icon="Edit" title="编辑" @click="openEditDialog(d)" />
-              <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="onDelete(d)" />
+              <el-button size="small" circle :icon="Download" title="Xuất dự án" :loading="exportingId === d.id" @click="onExport(d)" />
+              <el-button size="small" circle :icon="Edit" title="Sửa" @click="openEditDialog(d)" />
+              <el-button size="small" type="danger" plain circle :icon="Delete" title="Xoá" @click="onDelete(d)" />
             </div>
             <div class="project-card-body">
-              <h3 class="project-title">{{ d.title || '未命名项目' }}</h3>
-              <p class="project-desc">{{ d.description || '暂无描述' }}</p>
+              <h3 class="project-title">{{ d.title || 'Dự án chưa đặt tên' }}</h3>
+              <p class="project-desc">{{ d.description || 'Chưa có mô tả' }}</p>
               <div class="project-badges">
                 <span class="badge badge-status" :class="'badge-status--' + (d.status || 'draft')">{{ formatStatus(d.status) }}</span>
-                <span v-if="d.episodes?.length" class="badge badge-episodes">{{ d.episodes.length }} 集</span>
-                <span v-if="totalStoryboards(d) > 0" class="badge badge-storyboards">{{ totalStoryboards(d) }} 分镜</span>
+                <span v-if="d.episodes?.length" class="badge badge-episodes">{{ d.episodes.length }} tập</span>
+                <span v-if="totalStoryboards(d) > 0" class="badge badge-storyboards">{{ totalStoryboards(d) }} storyboard</span>
                 <span v-if="d.metadata?.aspect_ratio" class="badge badge-ratio">{{ d.metadata.aspect_ratio }}</span>
                 <span v-if="d.style" class="badge badge-style">{{ formatStyle(d.style) }}</span>
                 <span v-if="d.genre" class="badge badge-genre">{{ formatGenre(d.genre) }}</span>
@@ -118,209 +118,209 @@
     <!-- 新建项目：先填标题和描述 -->
     <el-dialog
       v-model="showNewDialog"
-      title="新建项目"
+      title="Tạo dự án"
       width="480px"
       :close-on-click-modal="false"
       @closed="resetNewForm"
     >
       <el-form :model="newForm" label-width="80px" label-position="top">
-        <el-form-item label="标题" required>
-          <el-input v-model="newForm.title" placeholder="输入项目标题" maxlength="100" show-word-limit />
+        <el-form-item label="Tiêu đề" required>
+          <el-input v-model="newForm.title" placeholder="Nhập tiêu đề dự án" maxlength="100" show-word-limit />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="newForm.description" type="textarea" :rows="3" placeholder="输入项目描述（选填）" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="newForm.description" type="textarea" :rows="3" placeholder="Nhập mô tả dự án (tuỳ chọn)" />
         </el-form-item>
-        <el-form-item label="画面比例">
+        <el-form-item label="Tỉ lệ khung hình">
           <el-select v-model="newForm.aspect_ratio" style="width: 100%">
-            <el-option label="16:9 横屏（默认）" value="16:9" />
-            <el-option label="9:16 竖屏（短视频）" value="9:16" />
-            <el-option label="3:4 竖版" value="3:4" />
-            <el-option label="1:1 方形" value="1:1" />
-            <el-option label="4:3 传统横屏" value="4:3" />
-            <el-option label="21:9 宽银幕" value="21:9" />
+            <el-option label="16:9 Ngang (mặc định)" value="16:9" />
+            <el-option label="9:16 Dọc (video ngắn)" value="9:16" />
+            <el-option label="3:4 Dọc" value="3:4" />
+            <el-option label="1:1 Vuông" value="1:1" />
+            <el-option label="4:3 Ngang truyền thống" value="4:3" />
+            <el-option label="21:9 Màn ảnh rộng" value="21:9" />
           </el-select>
-          <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">影响分镜图和视频的生成比例，短视频选 9:16</p>
+          <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">Ảnh hưởng đến tỉ lệ tạo storyboard và video, video ngắn chọn 9:16</p>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showNewDialog = false">取消</el-button>
-        <el-button type="primary" :loading="newSaving" :disabled="!newForm.title?.trim()" @click="submitNew">确定</el-button>
+        <el-button @click="showNewDialog = false">Huỷ</el-button>
+        <el-button type="primary" :loading="newSaving" :disabled="!newForm.title?.trim()" @click="submitNew">Xác nhận</el-button>
       </template>
     </el-dialog>
 
     <!-- AI 配置弹窗 -->
-    <el-dialog v-model="showAiConfigDialog" title="AI 配置" width="90%" destroy-on-close>
+    <el-dialog v-model="showAiConfigDialog" title="Cấu hình AI" width="90%" destroy-on-close>
       <AIConfigContent v-if="showAiConfigDialog" />
     </el-dialog>
 
     <!-- 公共角色库 -->
-    <el-dialog v-model="showCharLibrary" title="素材库 · 角色" width="720px" destroy-on-close class="library-dialog" @open="loadCharLibraryList">
+    <el-dialog v-model="showCharLibrary" title="Thư viện tư liệu · Nhân vật" width="720px" destroy-on-close class="library-dialog" @open="loadCharLibraryList">
       <div class="library-toolbar">
-        <el-input v-model="charLibraryKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadCharLibrary()" />
+        <el-input v-model="charLibraryKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadCharLibrary()" />
       </div>
       <div v-loading="charLibraryLoading" class="library-list">
         <div v-for="item in charLibraryList" :key="item.id" class="library-item">
           <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
             <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-            <span v-else class="library-item-placeholder">暂无图</span>
+            <span v-else class="library-item-placeholder">Chưa có ảnh</span>
           </div>
           <div class="library-item-info">
-            <div class="library-item-name">{{ item.name || '未命名' }}</div>
+            <div class="library-item-name">{{ item.name || 'Chưa đặt tên' }}</div>
             <div class="library-item-desc">{{ (item.description || '').slice(0, 60) }}{{ (item.description || '').length > 60 ? '…' : '' }}</div>
             <div class="library-item-actions">
-              <el-button size="small" @click="openEditCharLibrary(item)">编辑</el-button>
-              <el-button size="small" type="danger" plain @click="onDeleteCharLibrary(item)">删除</el-button>
+              <el-button size="small" @click="openEditCharLibrary(item)">Sửa</el-button>
+              <el-button size="small" type="danger" plain @click="onDeleteCharLibrary(item)">Xoá</el-button>
             </div>
           </div>
         </div>
-        <div v-if="!charLibraryLoading && charLibraryList.length === 0" class="library-empty">素材库暂无角色，可在项目中将角色「加入素材库」后在此查看</div>
+        <div v-if="!charLibraryLoading && charLibraryList.length === 0" class="library-empty">Thư viện tư liệu chưa có nhân vật, có thể thêm nhân vật vào "Thư viện tư liệu" trong dự án rồi xem tại đây</div>
       </div>
       <div class="library-pagination">
         <el-pagination v-model:current-page="charLibraryPage" v-model:page-size="charLibraryPageSize" :total="charLibraryTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadCharLibraryList" @size-change="loadCharLibraryList" />
       </div>
-      <template #footer><el-button @click="showCharLibrary = false">关闭</el-button></template>
+      <template #footer><el-button @click="showCharLibrary = false">Đóng</el-button></template>
     </el-dialog>
     <!-- 编辑公共角色 -->
-    <el-dialog v-model="showEditCharLibrary" title="编辑素材角色" width="480px" @close="editCharLibraryForm = null">
+    <el-dialog v-model="showEditCharLibrary" title="Sửa nhân vật tư liệu" width="480px" @close="editCharLibraryForm = null">
       <el-form v-if="editCharLibraryForm" label-width="80px">
-        <el-form-item label="图片">
+        <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openImagePreview(assetImageUrl(editCharLibraryForm))">
               <img v-if="editCharLibraryForm.image_url || editCharLibraryForm.local_path" :src="assetImageUrl(editCharLibraryForm)" />
               <div v-else class="lib-img-empty"><el-icon><PictureFilled /></el-icon></div>
             </div>
             <div class="lib-img-btns">
-              <el-button size="small" :loading="editCharLibraryForm.imgUploading" @click="charLibFileRef.click()">上传图片</el-button>
-              <el-button size="small" type="primary" :loading="editCharLibraryForm.imgGenerating" @click="doGenerateLibImg(editCharLibraryForm, (editCharLibraryForm.name + (editCharLibraryForm.description ? ', ' + editCharLibraryForm.description : '')), characterLibraryAPI, loadCharLibraryList)">AI 生成</el-button>
+              <el-button size="small" :loading="editCharLibraryForm.imgUploading" @click="charLibFileRef.click()">Tải ảnh lên</el-button>
+              <el-button size="small" type="primary" :loading="editCharLibraryForm.imgGenerating" @click="doGenerateLibImg(editCharLibraryForm, (editCharLibraryForm.name + (editCharLibraryForm.description ? ', ' + editCharLibraryForm.description : '')), characterLibraryAPI, loadCharLibraryList)">Tạo bằng AI</el-button>
             </div>
           </div>
           <input ref="charLibFileRef" type="file" accept="image/*" style="display:none" @change="e => doUploadLibImg(e, editCharLibraryForm, characterLibraryAPI, loadCharLibraryList)" />
         </el-form-item>
-        <el-form-item label="名称"><el-input v-model="editCharLibraryForm.name" placeholder="角色名称" /></el-form-item>
-        <el-form-item label="分类"><el-input v-model="editCharLibraryForm.category" placeholder="可选" /></el-form-item>
-        <el-form-item label="描述"><el-input v-model="editCharLibraryForm.description" type="textarea" :rows="3" placeholder="可选" /></el-form-item>
-        <el-form-item label="标签"><el-input v-model="editCharLibraryForm.tags" placeholder="可选，逗号分隔" /></el-form-item>
+        <el-form-item label="Tên"><el-input v-model="editCharLibraryForm.name" placeholder="Tên nhân vật" /></el-form-item>
+        <el-form-item label="Phân loại"><el-input v-model="editCharLibraryForm.category" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Mô tả"><el-input v-model="editCharLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Tag"><el-input v-model="editCharLibraryForm.tags" placeholder="Tuỳ chọn, cách nhau bởi dấu phẩy" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditCharLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editCharLibrarySaving" @click="submitEditCharLibrary">保存</el-button>
+        <el-button @click="showEditCharLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editCharLibrarySaving" @click="submitEditCharLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
     <!-- 公共场景库 -->
-    <el-dialog v-model="showSceneLibrary" title="素材库 · 场景" width="720px" destroy-on-close class="library-dialog" @open="loadSceneLibraryList">
+    <el-dialog v-model="showSceneLibrary" title="Thư viện tư liệu · Scene" width="720px" destroy-on-close class="library-dialog" @open="loadSceneLibraryList">
       <div class="library-toolbar">
-        <el-input v-model="sceneLibraryKeyword" placeholder="搜索地点或描述" clearable style="width: 200px" @input="debouncedLoadSceneLibrary()" />
+        <el-input v-model="sceneLibraryKeyword" placeholder="Tìm theo địa điểm hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadSceneLibrary()" />
       </div>
       <div v-loading="sceneLibraryLoading" class="library-list">
         <div v-for="item in sceneLibraryList" :key="item.id" class="library-item">
           <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
             <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-            <span v-else class="library-item-placeholder">暂无图</span>
+            <span v-else class="library-item-placeholder">Chưa có ảnh</span>
           </div>
           <div class="library-item-info">
-            <div class="library-item-name">{{ item.location || item.time || '未命名' }}</div>
+            <div class="library-item-name">{{ item.location || item.time || 'Chưa đặt tên' }}</div>
             <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
             <div class="library-item-actions">
-              <el-button size="small" @click="openEditSceneLibrary(item)">编辑</el-button>
-              <el-button size="small" type="danger" plain @click="onDeleteSceneLibrary(item)">删除</el-button>
+              <el-button size="small" @click="openEditSceneLibrary(item)">Sửa</el-button>
+              <el-button size="small" type="danger" plain @click="onDeleteSceneLibrary(item)">Xoá</el-button>
             </div>
           </div>
         </div>
-        <div v-if="!sceneLibraryLoading && sceneLibraryList.length === 0" class="library-empty">素材库暂无场景，可在项目中将场景「加入素材库」后在此查看</div>
+        <div v-if="!sceneLibraryLoading && sceneLibraryList.length === 0" class="library-empty">Thư viện tư liệu chưa có scene, có thể thêm scene vào "Thư viện tư liệu" trong dự án rồi xem tại đây</div>
       </div>
       <div class="library-pagination">
         <el-pagination v-model:current-page="sceneLibraryPage" v-model:page-size="sceneLibraryPageSize" :total="sceneLibraryTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadSceneLibraryList" @size-change="loadSceneLibraryList" />
       </div>
-      <template #footer><el-button @click="showSceneLibrary = false">关闭</el-button></template>
+      <template #footer><el-button @click="showSceneLibrary = false">Đóng</el-button></template>
     </el-dialog>
     <!-- 编辑公共场景 -->
-    <el-dialog v-model="showEditSceneLibrary" title="编辑素材场景" width="480px" @close="editSceneLibraryForm = null">
+    <el-dialog v-model="showEditSceneLibrary" title="Sửa scene tư liệu" width="480px" @close="editSceneLibraryForm = null">
       <el-form v-if="editSceneLibraryForm" label-width="80px">
-        <el-form-item label="图片">
+        <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openImagePreview(assetImageUrl(editSceneLibraryForm))">
               <img v-if="editSceneLibraryForm.image_url || editSceneLibraryForm.local_path" :src="assetImageUrl(editSceneLibraryForm)" />
               <div v-else class="lib-img-empty"><el-icon><PictureFilled /></el-icon></div>
             </div>
             <div class="lib-img-btns">
-              <el-button size="small" :loading="editSceneLibraryForm.imgUploading" @click="sceneLibFileRef.click()">上传图片</el-button>
-              <el-button size="small" type="primary" :loading="editSceneLibraryForm.imgGenerating" @click="doGenerateLibImg(editSceneLibraryForm, ([editSceneLibraryForm.location, editSceneLibraryForm.time, editSceneLibraryForm.description].filter(Boolean).join(', ')), sceneLibraryAPI, loadSceneLibraryList)">AI 生成</el-button>
+              <el-button size="small" :loading="editSceneLibraryForm.imgUploading" @click="sceneLibFileRef.click()">Tải ảnh lên</el-button>
+              <el-button size="small" type="primary" :loading="editSceneLibraryForm.imgGenerating" @click="doGenerateLibImg(editSceneLibraryForm, ([editSceneLibraryForm.location, editSceneLibraryForm.time, editSceneLibraryForm.description].filter(Boolean).join(', ')), sceneLibraryAPI, loadSceneLibraryList)">Tạo bằng AI</el-button>
             </div>
           </div>
           <input ref="sceneLibFileRef" type="file" accept="image/*" style="display:none" @change="e => doUploadLibImg(e, editSceneLibraryForm, sceneLibraryAPI, loadSceneLibraryList)" />
         </el-form-item>
-        <el-form-item label="地点"><el-input v-model="editSceneLibraryForm.location" placeholder="场景地点" /></el-form-item>
-        <el-form-item label="时间"><el-input v-model="editSceneLibraryForm.time" placeholder="如：浅色/夜晚" /></el-form-item>
-        <el-form-item label="分类"><el-input v-model="editSceneLibraryForm.category" placeholder="可选" /></el-form-item>
-        <el-form-item label="描述"><el-input v-model="editSceneLibraryForm.description" type="textarea" :rows="3" placeholder="可选" /></el-form-item>
-        <el-form-item label="标签"><el-input v-model="editSceneLibraryForm.tags" placeholder="可选，逗号分隔" /></el-form-item>
+        <el-form-item label="Địa điểm"><el-input v-model="editSceneLibraryForm.location" placeholder="Địa điểm scene" /></el-form-item>
+        <el-form-item label="Thời gian"><el-input v-model="editSceneLibraryForm.time" placeholder="Ví dụ: ban ngày/ban đêm" /></el-form-item>
+        <el-form-item label="Phân loại"><el-input v-model="editSceneLibraryForm.category" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Mô tả"><el-input v-model="editSceneLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Tag"><el-input v-model="editSceneLibraryForm.tags" placeholder="Tuỳ chọn, cách nhau bởi dấu phẩy" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditSceneLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editSceneLibrarySaving" @click="submitEditSceneLibrary">保存</el-button>
+        <el-button @click="showEditSceneLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editSceneLibrarySaving" @click="submitEditSceneLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
     <!-- 公共道具库 -->
-    <el-dialog v-model="showPropLibrary" title="素材库 · 道具" width="720px" destroy-on-close class="library-dialog" @open="loadPropLibraryList">
+    <el-dialog v-model="showPropLibrary" title="Thư viện tư liệu · Đạo cụ" width="720px" destroy-on-close class="library-dialog" @open="loadPropLibraryList">
       <div class="library-toolbar">
-        <el-input v-model="propLibraryKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadPropLibrary()" />
+        <el-input v-model="propLibraryKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadPropLibrary()" />
       </div>
       <div v-loading="propLibraryLoading" class="library-list">
         <div v-for="item in propLibraryList" :key="item.id" class="library-item">
           <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
             <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-            <span v-else class="library-item-placeholder">暂无图</span>
+            <span v-else class="library-item-placeholder">Chưa có ảnh</span>
           </div>
           <div class="library-item-info">
-            <div class="library-item-name">{{ item.name || '未命名' }}</div>
+            <div class="library-item-name">{{ item.name || 'Chưa đặt tên' }}</div>
             <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
             <div class="library-item-actions">
-              <el-button size="small" @click="openEditPropLibrary(item)">编辑</el-button>
-              <el-button size="small" type="danger" plain @click="onDeletePropLibrary(item)">删除</el-button>
+              <el-button size="small" @click="openEditPropLibrary(item)">Sửa</el-button>
+              <el-button size="small" type="danger" plain @click="onDeletePropLibrary(item)">Xoá</el-button>
             </div>
           </div>
         </div>
-        <div v-if="!propLibraryLoading && propLibraryList.length === 0" class="library-empty">素材库暂无道具，可在项目中将道具「加入素材库」后在此查看</div>
+        <div v-if="!propLibraryLoading && propLibraryList.length === 0" class="library-empty">Thư viện tư liệu chưa có đạo cụ, có thể thêm đạo cụ vào "Thư viện tư liệu" trong dự án rồi xem tại đây</div>
       </div>
       <div class="library-pagination">
         <el-pagination v-model:current-page="propLibraryPage" v-model:page-size="propLibraryPageSize" :total="propLibraryTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadPropLibraryList" @size-change="loadPropLibraryList" />
       </div>
-      <template #footer><el-button @click="showPropLibrary = false">关闭</el-button></template>
+      <template #footer><el-button @click="showPropLibrary = false">Đóng</el-button></template>
     </el-dialog>
     <!-- 编辑公共道具 -->
-    <el-dialog v-model="showEditPropLibrary" title="编辑素材道具" width="480px" @close="editPropLibraryForm = null">
+    <el-dialog v-model="showEditPropLibrary" title="Sửa đạo cụ tư liệu" width="480px" @close="editPropLibraryForm = null">
       <el-form v-if="editPropLibraryForm" label-width="80px">
-        <el-form-item label="图片">
+        <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openImagePreview(assetImageUrl(editPropLibraryForm))">
               <img v-if="editPropLibraryForm.image_url || editPropLibraryForm.local_path" :src="assetImageUrl(editPropLibraryForm)" />
               <div v-else class="lib-img-empty"><el-icon><PictureFilled /></el-icon></div>
             </div>
             <div class="lib-img-btns">
-              <el-button size="small" :loading="editPropLibraryForm.imgUploading" @click="propLibFileRef.click()">上传图片</el-button>
-              <el-button size="small" type="primary" :loading="editPropLibraryForm.imgGenerating" @click="doGenerateLibImg(editPropLibraryForm, (editPropLibraryForm.name + (editPropLibraryForm.description ? ', ' + editPropLibraryForm.description : '')), propLibraryAPI, loadPropLibraryList)">AI 生成</el-button>
+              <el-button size="small" :loading="editPropLibraryForm.imgUploading" @click="propLibFileRef.click()">Tải ảnh lên</el-button>
+              <el-button size="small" type="primary" :loading="editPropLibraryForm.imgGenerating" @click="doGenerateLibImg(editPropLibraryForm, (editPropLibraryForm.name + (editPropLibraryForm.description ? ', ' + editPropLibraryForm.description : '')), propLibraryAPI, loadPropLibraryList)">Tạo bằng AI</el-button>
             </div>
           </div>
           <input ref="propLibFileRef" type="file" accept="image/*" style="display:none" @change="e => doUploadLibImg(e, editPropLibraryForm, propLibraryAPI, loadPropLibraryList)" />
         </el-form-item>
-        <el-form-item label="名称"><el-input v-model="editPropLibraryForm.name" placeholder="道具名称" /></el-form-item>
-        <el-form-item label="分类"><el-input v-model="editPropLibraryForm.category" placeholder="可选" /></el-form-item>
-        <el-form-item label="描述"><el-input v-model="editPropLibraryForm.description" type="textarea" :rows="3" placeholder="可选" /></el-form-item>
-        <el-form-item label="标签"><el-input v-model="editPropLibraryForm.tags" placeholder="可选，逗号分隔" /></el-form-item>
+        <el-form-item label="Tên"><el-input v-model="editPropLibraryForm.name" placeholder="Tên đạo cụ" /></el-form-item>
+        <el-form-item label="Phân loại"><el-input v-model="editPropLibraryForm.category" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Mô tả"><el-input v-model="editPropLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" /></el-form-item>
+        <el-form-item label="Tag"><el-input v-model="editPropLibraryForm.tags" placeholder="Tuỳ chọn, cách nhau bởi dấu phẩy" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditPropLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editPropLibrarySaving" @click="submitEditPropLibrary">保存</el-button>
+        <el-button @click="showEditPropLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editPropLibrarySaving" @click="submitEditPropLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
     <!-- 微信二维码 -->
-    <el-dialog v-if="!vendorLockEnabled" v-model="showWechat" title="微信联系作者" width="320px" align-center>
+    <el-dialog v-if="!vendorLockEnabled" v-model="showWechat" title="Liên hệ tác giả qua WeChat" width="320px" align-center>
       <div style="text-align:center;padding:8px 0 4px">
-        <img src="/wx.jpg" alt="微信二维码" style="width:240px;height:240px;object-fit:contain;border-radius:8px;" />
-        <p style="margin:12px 0 0;font-size:13px;color:var(--text-secondary,#a1a1aa);">扫码添加微信，欢迎交流</p>
+        <img src="/wx.jpg" alt="Mã QR WeChat" style="width:240px;height:240px;object-fit:contain;border-radius:8px;" />
+        <p style="margin:12px 0 0;font-size:13px;color:var(--text-secondary,#a1a1aa);">Quét mã để thêm WeChat, hoan nghênh trao đổi</p>
       </div>
     </el-dialog>
 
@@ -334,22 +334,22 @@
     <!-- 编辑项目：修改标题和故事 -->
     <el-dialog
       v-model="showEditDialog"
-      title="编辑项目"
+      title="Sửa dự án"
       width="480px"
       :close-on-click-modal="false"
       @closed="resetEditForm"
     >
       <el-form :model="editForm" label-width="80px" label-position="top">
-        <el-form-item label="标题" required>
-          <el-input v-model="editForm.title" placeholder="输入项目标题" maxlength="100" show-word-limit />
+        <el-form-item label="Tiêu đề" required>
+          <el-input v-model="editForm.title" placeholder="Nhập tiêu đề dự án" maxlength="100" show-word-limit />
         </el-form-item>
-        <el-form-item label="故事">
-          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="输入故事梗概（选填）" />
+        <el-form-item label="Cốt truyện">
+          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="Nhập tóm tắt cốt truyện (tuỳ chọn)" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="primary" :loading="editSaving" :disabled="!editForm.title?.trim()" @click="submitEdit">保存</el-button>
+        <el-button @click="showEditDialog = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editSaving" :disabled="!editForm.title?.trim()" @click="submitEdit">Lưu</el-button>
       </template>
     </el-dialog>
   </div>
@@ -389,44 +389,44 @@ async function doUploadLibImg(event, form, api, reloadFn) {
     const res = await uploadAPI.uploadImage(file)
     const data = res?.data ?? res
     const url = data?.url || data?.path || data?.local_path
-    if (!url) { ElMessage.error('上传未返回地址'); return }
+    if (!url) { ElMessage.error('Tải lên không trả về địa chỉ'); return }
     form.image_url = url
     form.local_path = data?.local_path ?? null
     await api.update(form.id, { image_url: url, local_path: null })
     reloadFn()
-    ElMessage.success('图片已更新')
-  } catch (e) { ElMessage.error(e.message || '上传失败') }
+    ElMessage.success('Đã cập nhật ảnh')
+  } catch (e) { ElMessage.error(e.message || 'Tải lên thất bại') }
   finally { form.imgUploading = false }
 }
 
 // 共享：AI 生成图片
 async function doGenerateLibImg(form, prompt, api, reloadFn) {
-  if (!prompt?.trim()) { ElMessage.warning('请先填写名称或描述'); return }
+  if (!prompt?.trim()) { ElMessage.warning('Vui lòng nhập tên hoặc mô tả trước'); return }
   form.imgGenerating = true
   try {
     const res = await imagesAPI.create({ prompt: prompt.trim(), drama_id: null })
     const imgData = res?.data ?? res
     const taskId = imgData?.task_id
-    if (!taskId) throw new Error('未返回任务ID')
+    if (!taskId) throw new Error('Không trả về task ID')
     let task = null
     for (let i = 0; i < 300; i++) {
       await new Promise(r => setTimeout(r, 1500))
       const tr = await taskAPI.get(taskId)
       task = tr?.data ?? tr
       if (task.status === 'completed') break
-      if (task.status === 'failed') throw new Error(task.error || '生成失败')
+      if (task.status === 'failed') throw new Error(task.error || 'Tạo thất bại')
     }
-    if (!task || task.status !== 'completed') throw new Error('生成超时')
+    if (!task || task.status !== 'completed') throw new Error('Tạo quá thời gian')
     const result = task.result
     const imageUrl = result?.image_url
     const localPath = result?.local_path ?? null
-    if (!imageUrl && !localPath) throw new Error('未获取到图片地址')
+    if (!imageUrl && !localPath) throw new Error('Không lấy được địa chỉ ảnh')
     form.image_url = imageUrl || ''
     form.local_path = localPath
     await api.update(form.id, { image_url: imageUrl || null, local_path: localPath })
     reloadFn()
-    ElMessage.success('AI 图片已生成')
-  } catch (e) { ElMessage.error(e.message || '生成失败') }
+    ElMessage.success('Đã tạo ảnh bằng AI')
+  } catch (e) { ElMessage.error(e.message || 'Tạo thất bại') }
   finally { form.imgGenerating = false }
 }
 
@@ -488,14 +488,14 @@ async function submitEditCharLibrary() {
   editCharLibrarySaving.value = true
   try {
     await characterLibraryAPI.update(editCharLibraryForm.value.id, { name: editCharLibraryForm.value.name, category: editCharLibraryForm.value.category || null, description: editCharLibraryForm.value.description || null, tags: editCharLibraryForm.value.tags || null, image_url: editCharLibraryForm.value.image_url || null, local_path: editCharLibraryForm.value.local_path ?? null })
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
     showEditCharLibrary.value = false
     loadCharLibraryList()
-  } catch (e) { ElMessage.error(e.message || '保存失败') } finally { editCharLibrarySaving.value = false }
+  } catch (e) { ElMessage.error(e.message || 'Lưu thất bại') } finally { editCharLibrarySaving.value = false }
 }
 async function onDeleteCharLibrary(item) {
-  try { await ElMessageBox.confirm(`确定删除公共角色「${(item.name || '未命名').slice(0, 20)}」吗？`, '删除确认', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }) } catch { return }
-  try { await characterLibraryAPI.delete(item.id); ElMessage.success('已删除'); loadCharLibraryList() } catch (e) { ElMessage.error(e.message || '删除失败') }
+  try { await ElMessageBox.confirm(`Bạn có chắc muốn xoá nhân vật tư liệu "${(item.name || 'Chưa đặt tên').slice(0, 20)}"?`, 'Xác nhận xoá', { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }) } catch { return }
+  try { await characterLibraryAPI.delete(item.id); ElMessage.success('Đã xoá'); loadCharLibraryList() } catch (e) { ElMessage.error(e.message || 'Xoá thất bại') }
 }
 
 // 公共场景库
@@ -535,15 +535,15 @@ async function submitEditSceneLibrary() {
   editSceneLibrarySaving.value = true
   try {
     await sceneLibraryAPI.update(editSceneLibraryForm.value.id, { location: editSceneLibraryForm.value.location, time: editSceneLibraryForm.value.time || null, category: editSceneLibraryForm.value.category || null, description: editSceneLibraryForm.value.description || null, tags: editSceneLibraryForm.value.tags || null, image_url: editSceneLibraryForm.value.image_url || null, local_path: editSceneLibraryForm.value.local_path ?? null })
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
     showEditSceneLibrary.value = false
     loadSceneLibraryList()
-  } catch (e) { ElMessage.error(e.message || '保存失败') } finally { editSceneLibrarySaving.value = false }
+  } catch (e) { ElMessage.error(e.message || 'Lưu thất bại') } finally { editSceneLibrarySaving.value = false }
 }
 async function onDeleteSceneLibrary(item) {
-  const name = (item.location || item.time || '未命名').slice(0, 20)
-  try { await ElMessageBox.confirm(`确定删除公共场景「${name}」吗？`, '删除确认', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }) } catch { return }
-  try { await sceneLibraryAPI.delete(item.id); ElMessage.success('已删除'); loadSceneLibraryList() } catch (e) { ElMessage.error(e.message || '删除失败') }
+  const name = (item.location || item.time || 'Chưa đặt tên').slice(0, 20)
+  try { await ElMessageBox.confirm(`Bạn có chắc muốn xoá scene tư liệu "${name}"?`, 'Xác nhận xoá', { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }) } catch { return }
+  try { await sceneLibraryAPI.delete(item.id); ElMessage.success('Đã xoá'); loadSceneLibraryList() } catch (e) { ElMessage.error(e.message || 'Xoá thất bại') }
 }
 
 // 公共道具库
@@ -583,14 +583,14 @@ async function submitEditPropLibrary() {
   editPropLibrarySaving.value = true
   try {
     await propLibraryAPI.update(editPropLibraryForm.value.id, { name: editPropLibraryForm.value.name, category: editPropLibraryForm.value.category || null, description: editPropLibraryForm.value.description || null, tags: editPropLibraryForm.value.tags || null, image_url: editPropLibraryForm.value.image_url || null, local_path: editPropLibraryForm.value.local_path ?? null })
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
     showEditPropLibrary.value = false
     loadPropLibraryList()
-  } catch (e) { ElMessage.error(e.message || '保存失败') } finally { editPropLibrarySaving.value = false }
+  } catch (e) { ElMessage.error(e.message || 'Lưu thất bại') } finally { editPropLibrarySaving.value = false }
 }
 async function onDeletePropLibrary(item) {
-  try { await ElMessageBox.confirm(`确定删除公共道具「${(item.name || '未命名').slice(0, 20)}」吗？`, '删除确认', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }) } catch { return }
-  try { await propLibraryAPI.delete(item.id); ElMessage.success('已删除'); loadPropLibraryList() } catch (e) { ElMessage.error(e.message || '删除失败') }
+  try { await ElMessageBox.confirm(`Bạn có chắc muốn xoá đạo cụ tư liệu "${(item.name || 'Chưa đặt tên').slice(0, 20)}"?`, 'Xác nhận xoá', { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }) } catch { return }
+  try { await propLibraryAPI.delete(item.id); ElMessage.success('Đã xoá'); loadPropLibraryList() } catch (e) { ElMessage.error(e.message || 'Xoá thất bại') }
 }
 
 const showNewDialog = ref(false)
@@ -613,10 +613,10 @@ async function onImportExample(ex) {
   importingExample.value = ex.filename
   try {
     const data = await dramaAPI.importExample(ex.filename)
-    ElMessage.success(`示例导入成功：${data?.title || ex.name}`)
+    ElMessage.success(`Nhập mẫu thành công: ${data?.title || ex.name}`)
     loadList()
   } catch (e) {
-    const msg = e.response?.data?.message || e.message || '导入失败'
+    const msg = e.response?.data?.message || e.message || 'Nhập thất bại'
     ElMessage.error(msg)
   } finally {
     importingExample.value = null
@@ -646,59 +646,59 @@ function loadList() {
 function formatDate(val) {
   if (!val) return ''
   const d = new Date(val)
-  return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatStatus(status) {
-  const map = { draft: '草稿', published: '已发布', archived: '已归档', generating: '生成中' }
-  return map[status] || status || '草稿'
+  const map = { draft: 'Bản nháp', published: 'Đã phát hành', archived: 'Đã lưu trữ', generating: 'Đang tạo' }
+  return map[status] || status || 'Bản nháp'
 }
 
 function formatStyle(style) {
   const map = {
     // 写实 / 影视
-    realistic: '写实',
-    cinematic: '电影感',
-    documentary: '纪录片',
-    noir: '黑色电影',
-    'retro film': '复古胶片',
-    horror: '恐怖',
+    realistic: 'Tả thực',
+    cinematic: 'Phong cách điện ảnh',
+    documentary: 'Phim tài liệu',
+    noir: 'Phim đen',
+    'retro film': 'Film cổ điển',
+    horror: 'Kinh dị',
     // 动漫 / 卡通
-    'anime style': '日本动漫',
-    anime: '日本动漫',
-    'comic style': '欧美漫画',
-    cartoon: '卡通',
+    'anime style': 'Anime Nhật Bản',
+    anime: 'Anime Nhật Bản',
+    'comic style': 'Comic Âu Mỹ',
+    cartoon: 'Cartoon',
     // 中国风格
-    'ink wash': '国画水墨',
-    'chinese style': '中国风',
-    historical: '古装',
-    wuxia: '武侠',
+    'ink wash': 'Tranh thuỷ mặc',
+    'chinese style': 'Phong cách Trung Hoa',
+    historical: 'Cổ trang',
+    wuxia: 'Võ hiệp',
     // 绘画艺术
-    watercolor: '水彩',
-    'oil painting': '油画',
-    sketch: '素描',
-    'woodblock print': '版画',
-    impressionist: '印象派',
+    watercolor: 'Màu nước',
+    'oil painting': 'Sơn dầu',
+    sketch: 'Ký hoạ',
+    'woodblock print': 'Tranh khắc gỗ',
+    impressionist: 'Ấn tượng',
     // 幻想 / 科幻
-    fantasy: '奇幻',
-    'dark fantasy': '暗黑奇幻',
-    'sci-fi': '科幻',
-    sci_fi: '科幻',
-    cyberpunk: '赛博朋克',
-    steampunk: '蒸汽朋克',
-    'post-apocalyptic': '末世废土',
+    fantasy: 'Huyền huyễn',
+    'dark fantasy': 'Huyền huyễn hắc ám',
+    'sci-fi': 'Khoa học viễn tưởng',
+    sci_fi: 'Khoa học viễn tưởng',
+    cyberpunk: 'Cyberpunk',
+    steampunk: 'Steampunk',
+    'post-apocalyptic': 'Hậu tận thế',
     // 数字 / 现代
-    '3d render': '3D渲染',
-    'pixel art': '像素风',
-    'low poly': '低多边形',
-    minimalist: '极简',
-    dreamy: '唯美梦幻',
+    '3d render': '3D render',
+    'pixel art': 'Pixel art',
+    'low poly': 'Low poly',
+    minimalist: 'Tối giản',
+    dreamy: 'Mộng mơ',
   }
   return map[style] || style
 }
 
 function formatGenre(genre) {
-  const map = { drama: '剧情', comedy: '喜剧', adventure: '冒险', romance: '爱情', thriller: '悬疑', action: '动作', horror: '恐怖' }
+  const map = { drama: 'Chính kịch', comedy: 'Hài', adventure: 'Phiêu lưu', romance: 'Tình cảm', thriller: 'Trinh thám', action: 'Hành động', horror: 'Kinh dị' }
   return map[genre] || genre
 }
 
@@ -721,11 +721,11 @@ async function submitNew() {
   try {
     const drama = await dramaAPI.create({ title, description: newForm.value.description?.trim() || undefined, metadata: { aspect_ratio: newForm.value.aspect_ratio || '16:9' } })
     showNewDialog.value = false
-    ElMessage.success('项目已创建')
+    ElMessage.success('Đã tạo dự án')
     loadList()
     router.push('/film/' + drama.id)
   } catch (e) {
-    ElMessage.error(e.message || '创建失败')
+    ElMessage.error(e.message || 'Tạo thất bại')
   } finally {
     newSaving.value = false
   }
@@ -747,10 +747,10 @@ async function submitEdit() {
   try {
     await dramaAPI.update(editForm.value.id, { title, description: editForm.value.description?.trim() || undefined })
     showEditDialog.value = false
-    ElMessage.success('已保存')
+    ElMessage.success('Đã lưu')
     loadList()
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     editSaving.value = false
   }
@@ -772,9 +772,9 @@ function onExport(d) {
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
-    ElMessage.success('开始下载')
+    ElMessage.success('Bắt đầu tải xuống')
   } catch (e) {
-    ElMessage.error(e.message || '导出失败')
+    ElMessage.error(e.message || 'Xuất thất bại')
   } finally {
     exportingId.value = null
   }
@@ -789,16 +789,16 @@ async function onImportFile(e) {
   if (!file) return
   e.target.value = ''
   if (!file.name.endsWith('.zip')) {
-    ElMessage.error('请选择 .zip 格式的文件')
+    ElMessage.error('Vui lòng chọn file định dạng .zip')
     return
   }
   importing.value = true
   try {
     const data = await dramaAPI.importDrama(file)
-    ElMessage.success(`导入成功：${data?.title || '项目'}`) 
+    ElMessage.success(`Nhập thành công: ${data?.title || 'dự án'}`)
     loadList()
   } catch (e) {
-    const msg = e.response?.data?.message || e.message || '导入失败'
+    const msg = e.response?.data?.message || e.message || 'Nhập thất bại'
     ElMessage.error(msg)
   } finally {
     importing.value = false
@@ -808,19 +808,19 @@ async function onImportFile(e) {
 async function onDelete(d) {
   try {
     await ElMessageBox.confirm(
-      `确定要删除项目「${(d.title || '未命名').slice(0, 20)}${(d.title && d.title.length > 20) ? '…' : ''}」吗？此操作不可恢复。`,
-      '删除确认',
-      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+      `Bạn có chắc muốn xoá dự án "${(d.title || 'Chưa đặt tên').slice(0, 20)}${(d.title && d.title.length > 20) ? '…' : ''}"? Thao tác này không thể hoàn tác.`,
+      'Xác nhận xoá',
+      { type: 'warning', confirmButtonText: 'Xoá', cancelButtonText: 'Huỷ' }
     )
   } catch {
     return
   }
   try {
     await dramaAPI.delete(d.id)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     loadList()
   } catch (e) {
-    ElMessage.error(e.message || '删除失败')
+    ElMessage.error(e.message || 'Xoá thất bại')
   }
 }
 

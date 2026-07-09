@@ -7,49 +7,49 @@ const router = createRouter({
       path: '/',
       name: 'list',
       component: () => import('@/views/FilmList.vue'),
-      meta: { title: '项目列表' }
+      meta: { title: 'Danh sách dự án' }
     },
     {
       path: '/drama/:id',
       name: 'drama-detail',
       component: () => import('@/views/DramaDetail.vue'),
-      meta: { title: '剧集管理' }
+      meta: { title: 'Quản lý tập phim' }
     },
     {
       path: '/film/:id',
       name: 'film',
       component: () => import('@/views/FilmCreate.vue'),
-      meta: { title: 'AI 视频生成' }
+      meta: { title: 'Tạo video bằng AI' }
     },
     {
       path: '/film/:id/canvas',
       name: 'film-canvas',
       component: () => import('@/views/DramaCanvas.vue'),
-      meta: { title: '画布模式' }
+      meta: { title: 'Chế độ Canvas' }
     },
     {
       path: '/ai-config',
       name: 'ai-config',
       component: () => import('@/views/AiConfig.vue'),
-      meta: { title: 'AI 配置' }
+      meta: { title: 'Cấu hình AI' }
     },
     {
       path: '/free-create',
       name: 'free-create',
       component: () => import('@/views/FreeCreate.vue'),
-      meta: { title: '自由创作' }
+      meta: { title: 'Sáng tạo tự do' }
     },
     {
       path: '/media-library',
       name: 'media-library',
       component: () => import('@/views/MediaLibrary.vue'),
-      meta: { title: '媒体素材库' }
+      meta: { title: 'Thư viện media' }
     },
     {
       path: '/voice-library',
       name: 'voice-library',
       component: () => import('@/views/VoiceLibrary.vue'),
-      meta: { title: '配音管理' }
+      meta: { title: 'Quản lý lồng tiếng' }
     }
   ]
 })

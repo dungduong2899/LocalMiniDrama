@@ -5,7 +5,7 @@
       class="omni-at-editor"
       contenteditable="true"
       spellcheck="false"
-      data-placeholder="输入 @ 选择素材；编辑区显示 @场景名 / @角色名，保存与提交仍为 @图片N"
+      data-placeholder="Nhập @ để chọn tư liệu; khu vực chỉnh sửa hiển thị @tên-scene / @tên-nhân-vật, khi lưu và gửi vẫn là @图片N"
       @input="onInput"
       @blur="onBlur"
       @keydown="onKeydown"
@@ -21,7 +21,7 @@
         role="listbox"
         @mousedown.prevent
       >
-        <div v-if="!slots.length" class="omni-at-menu-empty">当前没有可用的参考图（请为场景 / 角色 / 物品选择带图素材）</div>
+        <div v-if="!slots.length" class="omni-at-menu-empty">Hiện chưa có ảnh tham chiếu (vui lòng chọn tư liệu có ảnh cho scene / nhân vật / đạo cụ)</div>
         <button
           v-for="s in slots"
           :key="s.index"
@@ -38,16 +38,16 @@
             <span class="omni-at-menu-tag" :class="'omni-at-menu-tag--' + s.kind">{{ kindLabel(s.kind) }}</span>
             <span class="omni-at-menu-name">{{ s.name }}</span>
             <span class="omni-at-menu-at">{{ menuPrimaryAt(s) }}</span>
-            <span class="omni-at-menu-at-sub">提交 {{ canonicalAt(s.index) }}</span>
+            <span class="omni-at-menu-at-sub">Gửi {{ canonicalAt(s.index) }}</span>
           </span>
         </button>
       </div>
     </teleport>
     <div class="omni-at-footer">
-      <el-tooltip content="复制为 @图片N 格式（与提交视频一致）" placement="top">
+      <el-tooltip content="Sao chép ở định dạng @图片N (giống video khi gửi)" placement="top">
         <el-button type="default" text size="small" class="omni-at-copy-btn" @click="onCopyCanonical">
           <el-icon><DocumentCopy /></el-icon>
-          复制提示词
+          Sao chép prompt
         </el-button>
       </el-tooltip>
     </div>
@@ -83,10 +83,10 @@ let skipNextModelWatch = false
 const CHIP_CLASS = 'omni-at-chip'
 
 function kindLabel(kind) {
-  if (kind === 'scene') return '场景'
-  if (kind === 'character') return '角色'
-  if (kind === 'prop') return '物品'
-  return '参考'
+  if (kind === 'scene') return 'scene'
+  if (kind === 'character') return 'nhân vật'
+  if (kind === 'prop') return 'đạo cụ'
+  return 'tham chiếu'
 }
 
 function slotByIndex(index) {
@@ -100,7 +100,7 @@ function canonicalAt(index) {
   return `@图片${n}`
 }
 
-/** 编辑区展示用 @token；与存库/提交的 @图片N 一一对应 */
+/** @token dùng để hiển thị trong khu vực chỉnh sửa; tương ứng 1-1 với @图片N khi lưu/gửi */
 function makeDisplayAtToken(index) {
   const n = Number(index)
   const slot = slotByIndex(n)
@@ -109,7 +109,7 @@ function makeDisplayAtToken(index) {
   const list = props.slots || []
   const dup = list.filter((x) => String(x.name || '').trim() === name).length > 1
   if (!dup) return `@${name}`
-  const prefix = slot.kind === 'scene' ? '场景' : slot.kind === 'prop' ? '物品' : '角色'
+  const prefix = slot.kind === 'scene' ? 'scene' : slot.kind === 'prop' ? 'đạo cụ' : 'nhân vật'
   return `@${prefix}·${name}`
 }
 
@@ -138,7 +138,7 @@ function applyPlainTextToEditor(el, text) {
     span.textContent = disp
     span.setAttribute('role', 'button')
     span.setAttribute('tabindex', '0')
-    span.setAttribute('aria-label', `${disp}（提交为 ${canonicalAt(m[1])}），点击可更换`)
+    span.setAttribute('aria-label', `${disp} (gửi dưới dạng ${canonicalAt(m[1])}), nhấp để đổi`)
     span.addEventListener('mousedown', onChipMouseDown)
     span.addEventListener('click', onChipClick)
     el.appendChild(span)
@@ -147,7 +147,7 @@ function applyPlainTextToEditor(el, text) {
   if (last < raw.length) el.appendChild(document.createTextNode(raw.slice(last)))
 }
 
-/** 规范串：仅含 @图片N，供 v-model / 存库 / 提交视频 / 复制 */
+/** Chuỗi chuẩn hoá: chỉ chứa @图片N, dùng cho v-model / lưu / gửi video / sao chép */
 function serializeEditor(el) {
   if (!el) return ''
   let out = ''
@@ -173,7 +173,7 @@ function chipCanonicalLength(node) {
   return canonicalAt(node.dataset?.n).length
 }
 
-/** 光标在「规范串」中的偏移（与 serializeEditor 一致） */
+/** Vị trí con trỏ trong "chuỗi chuẩn hoá" (đồng nhất với serializeEditor) */
 function getCaretCanonicalOffset(el) {
   const win = el?.ownerDocument?.defaultView || window
   const sel = win.getSelection()
@@ -369,7 +369,7 @@ function onPickSlot(index) {
     replaceChipEl.dataset.n = String(index)
     const disp = makeDisplayAtToken(index)
     replaceChipEl.textContent = disp
-    replaceChipEl.setAttribute('aria-label', `${disp}（提交为 ${canonicalAt(index)}），点击可更换`)
+    replaceChipEl.setAttribute('aria-label', `${disp} (gửi dưới dạng ${canonicalAt(index)}), nhấp để đổi`)
     const next = serializeEditor(el)
     skipNextModelWatch = true
     emit('update:modelValue', next)
@@ -426,7 +426,7 @@ watch(
       if (n == null) return
       const disp = makeDisplayAtToken(n)
       chip.textContent = disp
-      chip.setAttribute('aria-label', `${disp}（提交为 ${canonicalAt(n)}），点击可更换`)
+      chip.setAttribute('aria-label', `${disp} (gửi dưới dạng ${canonicalAt(n)}), nhấp để đổi`)
     })
   },
   { deep: true }
@@ -445,7 +445,7 @@ async function onCopyCanonical() {
   const text = serializeEditor(el)
   try {
     await navigator.clipboard.writeText(text)
-    ElMessage.success('已复制（@图片N 格式，与提交一致）')
+    ElMessage.success('Đã sao chép (định dạng @图片N, giống khi gửi)')
   } catch (_) {
     try {
       const ta = document.createElement('textarea')
@@ -456,9 +456,9 @@ async function onCopyCanonical() {
       ta.select()
       document.execCommand('copy')
       document.body.removeChild(ta)
-      ElMessage.success('已复制（@图片N 格式）')
+      ElMessage.success('Đã sao chép (định dạng @图片N)')
     } catch (e2) {
-      ElMessage.error(e2?.message || '复制失败')
+      ElMessage.error(e2?.message || 'Sao chép thất bại')
     }
   }
 }

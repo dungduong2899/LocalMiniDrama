@@ -4,31 +4,31 @@
       <div class="header-left">
         <el-button text @click="$router.back()">
           <el-icon><ArrowLeft /></el-icon>
-          返回
+          Quay lại
         </el-button>
-        <h2 class="page-title">配音管理</h2>
+        <h2 class="page-title">Quản lý lồng tiếng</h2>
       </div>
     </header>
 
     <el-tabs v-model="activeTab" class="voice-tabs">
-      <el-tab-pane label="语音库" name="library">
+      <el-tab-pane label="Thư viện voice" name="library">
         <div class="filter-bar">
-          <el-select v-model="filterGender" placeholder="性别" clearable style="width: 120px" @change="loadVoices">
-            <el-option label="男" value="male" />
-            <el-option label="女" value="female" />
-            <el-option label="中性" value="neutral" />
+          <el-select v-model="filterGender" placeholder="Giới tính" clearable style="width: 120px" @change="loadVoices">
+            <el-option label="Nam" value="male" />
+            <el-option label="Nữ" value="female" />
+            <el-option label="Trung tính" value="neutral" />
           </el-select>
-          <el-select v-model="filterSource" placeholder="来源" clearable style="width: 140px" @change="loadVoices">
-            <el-option label="ElevenLabs 克隆" value="elevenlabs" />
-            <el-option label="语音设计" value="design" />
-            <el-option label="上传" value="upload" />
+          <el-select v-model="filterSource" placeholder="Nguồn" clearable style="width: 140px" @change="loadVoices">
+            <el-option label="ElevenLabs clone" value="elevenlabs" />
+            <el-option label="Voice design" value="design" />
+            <el-option label="Tải lên" value="upload" />
           </el-select>
         </div>
         <div v-loading="voicesLoading" class="voice-grid">
           <div v-for="v in voices" :key="v.id" class="voice-card">
             <div class="voice-card-name">
               {{ v.name }}
-              <el-tag v-if="v.id === defaultNarrationId" size="small" type="warning" class="narr-badge">🎙 默认旁白</el-tag>
+              <el-tag v-if="v.id === defaultNarrationId" size="small" type="warning" class="narr-badge">🎙 Narration mặc định</el-tag>
             </div>
             <div class="voice-card-meta">
               <el-tag v-if="v.gender" size="small">{{ v.gender }}</el-tag>
@@ -38,108 +38,108 @@
             <div class="voice-card-desc">{{ v.description }}</div>
             <div class="voice-card-actions">
               <el-button size="small" @click="playAudio(v.sample_url)">
-                <el-icon><VideoPlay /></el-icon>试听
+                <el-icon><VideoPlay /></el-icon>Nghe thử
               </el-button>
               <el-button size="small" @click="downloadVoiceMp3(v)">
-                <el-icon><Download /></el-icon>下载 MP3
+                <el-icon><Download /></el-icon>Tải MP3
               </el-button>
               <el-button
                 size="small"
                 :type="v.id === defaultNarrationId ? 'warning' : 'default'"
                 @click="toggleDefaultNarration(v)"
               >
-                {{ v.id === defaultNarrationId ? '取消默认旁白' : '设为默认旁白' }}
+                {{ v.id === defaultNarrationId ? 'Bỏ narration mặc định' : 'Đặt làm narration mặc định' }}
               </el-button>
-              <el-button size="small" type="danger" plain @click="confirmDeleteVoice(v)">删除</el-button>
+              <el-button size="small" type="danger" plain @click="confirmDeleteVoice(v)">Xoá</el-button>
             </div>
           </div>
-          <div v-if="!voicesLoading && voices.length === 0" class="voice-empty">暂无语音，请前往「克隆导入」或「语音设计」添加</div>
+          <div v-if="!voicesLoading && voices.length === 0" class="voice-empty">Chưa có voice, vui lòng vào «Clone import» hoặc «Voice design» để thêm</div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="克隆导入（ElevenLabs）" name="import">
+      <el-tab-pane label="Clone import (ElevenLabs)" name="import">
         <el-form :model="importForm" label-width="90px" class="voice-form">
           <el-form-item label="Voice ID"><el-input v-model="importForm.voice_id" placeholder="ElevenLabs voice_id" /></el-form-item>
-          <el-form-item label="名称"><el-input v-model="importForm.name" placeholder="展示名，如 Rachel（英式温柔）" /></el-form-item>
-          <el-form-item label="描述"><el-input v-model="importForm.description" type="textarea" :rows="2" placeholder="自由描述，供 AI 匹配角色时参考" /></el-form-item>
-          <el-form-item label="性别">
-            <el-select v-model="importForm.gender" placeholder="选择性别" style="width: 160px">
-              <el-option label="男" value="male" />
-              <el-option label="女" value="female" />
-              <el-option label="中性" value="neutral" />
+          <el-form-item label="Tên"><el-input v-model="importForm.name" placeholder="Tên hiển thị, ví dụ Rachel (giọng Anh nhẹ nhàng)" /></el-form-item>
+          <el-form-item label="Mô tả"><el-input v-model="importForm.description" type="textarea" :rows="2" placeholder="Mô tả tự do, dùng để AI match nhân vật" /></el-form-item>
+          <el-form-item label="Giới tính">
+            <el-select v-model="importForm.gender" placeholder="Chọn giới tính" style="width: 160px">
+              <el-option label="Nam" value="male" />
+              <el-option label="Nữ" value="female" />
+              <el-option label="Trung tính" value="neutral" />
             </el-select>
           </el-form-item>
-          <el-form-item label="年龄段">
-            <el-select v-model="importForm.age_range" placeholder="选择年龄段" style="width: 160px">
-              <el-option label="儿童" value="child" />
-              <el-option label="青年" value="young" />
-              <el-option label="成年" value="adult" />
-              <el-option label="老年" value="elderly" />
+          <el-form-item label="Độ tuổi">
+            <el-select v-model="importForm.age_range" placeholder="Chọn độ tuổi" style="width: 160px">
+              <el-option label="Trẻ em" value="child" />
+              <el-option label="Thanh niên" value="young" />
+              <el-option label="Người lớn" value="adult" />
+              <el-option label="Người lớn tuổi" value="elderly" />
             </el-select>
           </el-form-item>
-          <el-form-item label="标签"><el-input v-model="importForm.tagsInput" placeholder="逗号分隔，如 gentle,mature" /></el-form-item>
+          <el-form-item label="Tag"><el-input v-model="importForm.tagsInput" placeholder="Ngăn bởi dấu phẩy, ví dụ gentle,mature" /></el-form-item>
           <el-form-item>
-            <el-button type="primary" :loading="importing" @click="doImport">导入并克隆</el-button>
+            <el-button type="primary" :loading="importing" @click="doImport">Nhập và clone</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="语音设计" name="design">
+      <el-tab-pane label="Voice design" name="design">
         <el-form :model="designForm" label-width="90px" class="voice-form">
           <el-form-item label="Attributes">
-            <el-input v-model="designForm.instruct" type="textarea" :rows="2" placeholder='例如："female, low pitch, gentle, british accent"' />
+            <el-input v-model="designForm.instruct" type="textarea" :rows="2" placeholder='Ví dụ: "female, low pitch, gentle, british accent"' />
           </el-form-item>
-          <el-form-item label="试听文本"><el-input v-model="designForm.sample_text" placeholder="留空使用默认试听文本" /></el-form-item>
+          <el-form-item label="Text nghe thử"><el-input v-model="designForm.sample_text" placeholder="Để trống sẽ dùng text mặc định" /></el-form-item>
           <el-form-item>
-            <el-button :loading="designPreviewing" @click="doDesignPreview">生成试听</el-button>
+            <el-button :loading="designPreviewing" @click="doDesignPreview">Tạo bản nghe thử</el-button>
           </el-form-item>
           <template v-if="designPreview">
-            <el-form-item label="试听结果">
-              <el-button @click="playAudio(designPreview.sample_url)"><el-icon><VideoPlay /></el-icon>播放</el-button>
+            <el-form-item label="Kết quả nghe thử">
+              <el-button @click="playAudio(designPreview.sample_url)"><el-icon><VideoPlay /></el-icon>Phát</el-button>
               <el-button @click="downloadAdhocMp3(designPreview.sample_url, designForm.name || 'design_preview')">
-                <el-icon><Download /></el-icon>下载 MP3
+                <el-icon><Download /></el-icon>Tải MP3
               </el-button>
             </el-form-item>
-            <el-form-item label="名称"><el-input v-model="designForm.name" placeholder="展示名" /></el-form-item>
-            <el-form-item label="描述"><el-input v-model="designForm.description" type="textarea" :rows="2" /></el-form-item>
-            <el-form-item label="性别">
-              <el-select v-model="designForm.gender" placeholder="选择性别" style="width: 160px">
-                <el-option label="男" value="male" />
-                <el-option label="女" value="female" />
-                <el-option label="中性" value="neutral" />
+            <el-form-item label="Tên"><el-input v-model="designForm.name" placeholder="Tên hiển thị" /></el-form-item>
+            <el-form-item label="Mô tả"><el-input v-model="designForm.description" type="textarea" :rows="2" /></el-form-item>
+            <el-form-item label="Giới tính">
+              <el-select v-model="designForm.gender" placeholder="Chọn giới tính" style="width: 160px">
+                <el-option label="Nam" value="male" />
+                <el-option label="Nữ" value="female" />
+                <el-option label="Trung tính" value="neutral" />
               </el-select>
             </el-form-item>
-            <el-form-item label="年龄段">
-              <el-select v-model="designForm.age_range" placeholder="选择年龄段" style="width: 160px">
-                <el-option label="儿童" value="child" />
-                <el-option label="青年" value="young" />
-                <el-option label="成年" value="adult" />
-                <el-option label="老年" value="elderly" />
+            <el-form-item label="Độ tuổi">
+              <el-select v-model="designForm.age_range" placeholder="Chọn độ tuổi" style="width: 160px">
+                <el-option label="Trẻ em" value="child" />
+                <el-option label="Thanh niên" value="young" />
+                <el-option label="Người lớn" value="adult" />
+                <el-option label="Người lớn tuổi" value="elderly" />
               </el-select>
             </el-form-item>
-            <el-form-item label="标签"><el-input v-model="designForm.tagsInput" placeholder="逗号分隔" /></el-form-item>
+            <el-form-item label="Tag"><el-input v-model="designForm.tagsInput" placeholder="Ngăn bởi dấu phẩy" /></el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="designSaving" @click="doDesignSave">保存到语音库</el-button>
+              <el-button type="primary" :loading="designSaving" @click="doDesignSave">Lưu vào thư viện voice</el-button>
             </el-form-item>
           </template>
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="语音测试台" name="test">
+      <el-tab-pane label="Bàn test voice" name="test">
         <el-form label-width="90px" class="voice-form">
-          <el-form-item label="选择语音">
-            <el-select v-model="testVoiceId" placeholder="选择要试听的语音" style="width: 280px">
+          <el-form-item label="Chọn voice">
+            <el-select v-model="testVoiceId" placeholder="Chọn voice để nghe thử" style="width: 280px">
               <el-option v-for="v in voices" :key="v.id" :label="v.name" :value="v.id" />
             </el-select>
           </el-form-item>
-          <el-form-item label="测试文本"><el-input v-model="testText" type="textarea" :rows="3" placeholder="输入任意文本" /></el-form-item>
+          <el-form-item label="Text test"><el-input v-model="testText" type="textarea" :rows="3" placeholder="Nhập nội dung bất kỳ" /></el-form-item>
           <el-form-item>
-            <el-button type="primary" :loading="testing" @click="doTest">试听</el-button>
+            <el-button type="primary" :loading="testing" @click="doTest">Nghe thử</el-button>
             <el-button v-if="testSampleUrl" :loading="downloading" @click="downloadTestSample">
-              <el-icon><Download /></el-icon>下载 MP3
+              <el-icon><Download /></el-icon>Tải MP3
             </el-button>
           </el-form-item>
-          <el-form-item v-if="testSampleUrl" label="试听结果">
+          <el-form-item v-if="testSampleUrl" label="Kết quả">
             <audio controls :src="testSampleUrl" style="width: 100%; max-width: 480px" />
           </el-form-item>
         </el-form>
@@ -163,9 +163,9 @@ const filterSource = ref('')
 const defaultNarrationId = ref(null)
 
 function sourceLabel(source) {
-  if (source === 'elevenlabs') return 'ElevenLabs 克隆'
-  if (source === 'design') return '语音设计'
-  return '上传'
+  if (source === 'elevenlabs') return 'ElevenLabs clone'
+  if (source === 'design') return 'Voice design'
+  return 'Tải lên'
 }
 
 async function loadVoices() {
@@ -176,7 +176,7 @@ async function loadVoices() {
     const found = voices.value.find((v) => v.is_default_narration)
     defaultNarrationId.value = found ? found.id : null
   } catch (e) {
-    ElMessage.error(e.message || '加载语音库失败')
+    ElMessage.error(e.message || 'Tải thư viện voice thất bại')
   } finally {
     voicesLoading.value = false
   }
@@ -187,9 +187,9 @@ async function toggleDefaultNarration(voice) {
   try {
     const data = await voiceLibraryAPI.setDefaultNarration(isCurrent ? null : voice.id)
     defaultNarrationId.value = data?.voice?.id || null
-    ElMessage.success(isCurrent ? '已取消默认旁白' : `已设「${voice.name}」为默认旁白`)
+    ElMessage.success(isCurrent ? 'Đã bỏ narration mặc định' : `Đã đặt «${voice.name}» làm narration mặc định`)
   } catch (e) {
-    ElMessage.error(e.message || '设置默认旁白失败')
+    ElMessage.error(e.message || 'Đặt narration mặc định thất bại')
   }
 }
 
@@ -207,7 +207,7 @@ function playAudio(url) {
     if (previewAudio === a) previewAudio = null
   })
   a.play().catch(() => {
-    ElMessage.error('播放失败')
+    ElMessage.error('Phát thất bại')
     if (previewAudio === a) previewAudio = null
   })
 }
@@ -220,7 +220,7 @@ function sanitizeFilename(s) {
 // endpoint that returns real MP3 bytes (ffmpeg-transcoded server-side) so the
 // file plays on any device — no client-side ext renaming.
 async function downloadMp3FromApi(apiUrl, filename) {
-  if (!apiUrl) { ElMessage.warning('无音频可下载'); return }
+  if (!apiUrl) { ElMessage.warning('Không có audio để tải'); return }
   try {
     const resp = await fetch(apiUrl)
     if (!resp.ok) {
@@ -241,7 +241,7 @@ async function downloadMp3FromApi(apiUrl, filename) {
     document.body.removeChild(a)
     setTimeout(() => URL.revokeObjectURL(objUrl), 60_000)
   } catch (e) {
-    ElMessage.error(e.message || '下载失败')
+    ElMessage.error(e.message || 'Tải xuống thất bại')
   }
 }
 
@@ -250,7 +250,7 @@ function downloadVoiceMp3(voice) {
 }
 
 function downloadAdhocMp3(sampleUrl, filename) {
-  if (!sampleUrl) { ElMessage.warning('无音频可下载'); return Promise.resolve() }
+  if (!sampleUrl) { ElMessage.warning('Không có audio để tải'); return Promise.resolve() }
   // sample_url looks like "/static/voice_library/tmp/preview_xxxxx.wav"; extract the path after /static/.
   const m = /\/static\/(.+)$/i.exec(sampleUrl)
   const relPath = m ? m[1] : sampleUrl.replace(/^\/+/, '')
@@ -259,28 +259,28 @@ function downloadAdhocMp3(sampleUrl, filename) {
 
 async function confirmDeleteVoice(voice) {
   try {
-    await ElMessageBox.confirm(`确定删除语音「${voice.name}」吗？`, '删除确认', { type: 'warning' })
+    await ElMessageBox.confirm(`Bạn có chắc muốn xoá voice «${voice.name}»?`, 'Xác nhận xoá', { type: 'warning' })
   } catch (_) { return }
   try {
     await voiceLibraryAPI.delete(voice.id)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     loadVoices()
   } catch (e) {
     const detail = e.response?.data?.error
     if (detail?.code === 'IN_USE') {
       try {
-        await ElMessageBox.confirm(detail.message, '语音正在使用中', { type: 'warning', confirmButtonText: '仍然删除' })
+        await ElMessageBox.confirm(detail.message, 'Voice đang được sử dụng', { type: 'warning', confirmButtonText: 'Vẫn xoá' })
       } catch (_) { return }
       try {
         await voiceLibraryAPI.delete(voice.id, true)
-        ElMessage.success('已删除，相关角色的配音绑定已清除')
+        ElMessage.success('Đã xoá, đã gỡ liên kết lồng tiếng của các nhân vật liên quan')
         loadVoices()
       } catch (e2) {
-        ElMessage.error(e2.message || '删除失败')
+        ElMessage.error(e2.message || 'Xoá thất bại')
       }
       return
     }
-    ElMessage.error(e.message || '删除失败')
+    ElMessage.error(e.message || 'Xoá thất bại')
   }
 }
 
@@ -288,8 +288,8 @@ const importForm = ref({ voice_id: '', name: '', description: '', gender: '', ag
 const importing = ref(false)
 
 async function doImport() {
-  if (!importForm.value.voice_id?.trim()) { ElMessage.warning('请输入 ElevenLabs voice_id'); return }
-  if (!importForm.value.name?.trim()) { ElMessage.warning('请输入名称'); return }
+  if (!importForm.value.voice_id?.trim()) { ElMessage.warning('Vui lòng nhập ElevenLabs voice_id'); return }
+  if (!importForm.value.name?.trim()) { ElMessage.warning('Vui lòng nhập tên'); return }
   importing.value = true
   try {
     await voiceLibraryAPI.importElevenLabs({
@@ -300,12 +300,12 @@ async function doImport() {
       age_range: importForm.value.age_range || null,
       tags: importForm.value.tagsInput ? importForm.value.tagsInput.split(',').map((s) => s.trim()).filter(Boolean) : [],
     })
-    ElMessage.success('导入成功')
+    ElMessage.success('Nhập thành công')
     importForm.value = { voice_id: '', name: '', description: '', gender: '', age_range: '', tagsInput: '' }
     activeTab.value = 'library'
     loadVoices()
   } catch (e) {
-    ElMessage.error(e.message || '导入失败')
+    ElMessage.error(e.message || 'Nhập thất bại')
   } finally {
     importing.value = false
   }
@@ -317,7 +317,7 @@ const designSaving = ref(false)
 const designPreview = ref(null)
 
 async function doDesignPreview() {
-  if (!designForm.value.instruct?.trim()) { ElMessage.warning('请输入 attributes 描述'); return }
+  if (!designForm.value.instruct?.trim()) { ElMessage.warning('Vui lòng nhập mô tả attributes'); return }
   designPreviewing.value = true
   designPreview.value = null
   try {
@@ -328,15 +328,15 @@ async function doDesignPreview() {
     designPreview.value = data
     playAudio(data.sample_url)
   } catch (e) {
-    ElMessage.error(e.message || '生成试听失败')
+    ElMessage.error(e.message || 'Tạo bản nghe thử thất bại')
   } finally {
     designPreviewing.value = false
   }
 }
 
 async function doDesignSave() {
-  if (!designPreview.value) { ElMessage.warning('请先生成试听'); return }
-  if (!designForm.value.name?.trim()) { ElMessage.warning('请输入名称'); return }
+  if (!designPreview.value) { ElMessage.warning('Vui lòng tạo bản nghe thử trước'); return }
+  if (!designForm.value.name?.trim()) { ElMessage.warning('Vui lòng nhập tên'); return }
   designSaving.value = true
   try {
     await voiceLibraryAPI.designSave({
@@ -349,13 +349,13 @@ async function doDesignSave() {
       age_range: designForm.value.age_range || null,
       tags: designForm.value.tagsInput ? designForm.value.tagsInput.split(',').map((s) => s.trim()).filter(Boolean) : [],
     })
-    ElMessage.success('已保存到语音库')
+    ElMessage.success('Đã lưu vào thư viện voice')
     designForm.value = { instruct: '', sample_text: '', name: '', description: '', gender: '', age_range: '', tagsInput: '' }
     designPreview.value = null
     activeTab.value = 'library'
     loadVoices()
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     designSaving.value = false
   }
@@ -368,15 +368,15 @@ const testSampleUrl = ref('')
 const downloading = ref(false)
 
 async function doTest() {
-  if (!testVoiceId.value) { ElMessage.warning('请选择语音'); return }
-  if (!testText.value?.trim()) { ElMessage.warning('请输入测试文本'); return }
+  if (!testVoiceId.value) { ElMessage.warning('Vui lòng chọn voice'); return }
+  if (!testText.value?.trim()) { ElMessage.warning('Vui lòng nhập text test'); return }
   testing.value = true
   try {
     const data = await voiceLibraryAPI.test(testVoiceId.value, testText.value.trim())
     testSampleUrl.value = data.sample_url
     playAudio(data.sample_url)
   } catch (e) {
-    ElMessage.error(e.message || '试听失败')
+    ElMessage.error(e.message || 'Nghe thử thất bại')
   } finally {
     testing.value = false
   }

@@ -16,13 +16,13 @@ async function pollTask(taskId, onTick, maxAttempts = 450, interval = 2000) {
       const t = await taskAPI.get(taskId)
       if (t.status === 'completed') return { status: 'completed', result: t.result }
       if (t.status === 'failed') {
-        return { status: 'failed', error: t.error?.message || t.error || '任务失败' }
+        return { status: 'failed', error: t.error?.message || t.error || 'Task thất bại' }
       }
     } catch (e) {
-      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || '轮询失败' }
+      if (i === maxAttempts - 1) return { status: 'failed', error: e.message || 'Polling thất bại' }
     }
   }
-  return { status: 'timeout', error: '任务超时' }
+  return { status: 'timeout', error: 'Task timeout' }
 }
 
 export function scriptNodeId(episodeId) {
@@ -33,7 +33,7 @@ function buildEpisodesPayload(drama, episodeId, patch) {
   return (drama?.episodes || []).map((ep, i) => {
     const base = {
       episode_number: ep.episode_number ?? i + 1,
-      title: ep.title || `第${ep.episode_number ?? i + 1}集`,
+      title: ep.title || `Tập ${ep.episode_number ?? i + 1}`,
       script_content: ep.script_content || '',
       description: ep.description ?? null,
       duration: ep.duration ?? 0,
@@ -45,7 +45,7 @@ function buildEpisodesPayload(drama, episodeId, patch) {
   })
 }
 
-/** 画布：剧本编辑 + 从剧本提取角色/场景/道具 */
+/** Canvas: chỉnh sửa kịch bản + trích xuất nhân vật/scene/đạo cụ từ kịch bản */
 export function useCanvasScript(deps) {
   const { drama, dramaId, refreshCanvas, nodeStatus } = deps
   const scriptBusy = ref(false)
@@ -65,7 +65,7 @@ export function useCanvasScript(deps) {
     }
     const polled = await pollTask(taskId, () => refreshCanvas(true))
     if (polled.status !== 'completed') {
-      throw new Error(polled.error || `${label}失败`)
+      throw new Error(polled.error || `${label} thất bại`)
     }
     await refreshCanvas(true)
   }
@@ -73,7 +73,7 @@ export function useCanvasScript(deps) {
   async function saveScript(episodeId, { scriptContent, title }) {
     const did = dramaId.value
     const d = drama.value
-    if (!did || !d || !episodeId) throw new Error('缺少项目或集数')
+    if (!did || !d || !episodeId) throw new Error('Thiếu dự án hoặc tập')
 
     scriptBusy.value = true
     setScriptBusy(episodeId, 'save_script', CANVAS_NODE_STATUS_LABELS.save_script)
@@ -84,7 +84,7 @@ export function useCanvasScript(deps) {
       })
       await dramaAPI.saveEpisodes(did, payload)
       await refreshCanvas(true)
-      ElMessage.success('剧本已保存')
+      ElMessage.success('Đã lưu kịch bản')
     } finally {
       scriptBusy.value = false
       clearScriptBusy(episodeId)
@@ -98,7 +98,7 @@ export function useCanvasScript(deps) {
       episode_id: episodeId,
       outline,
     })
-    await runExtractTask(res?.task_id, '提取角色')
+    await runExtractTask(res?.task_id, 'Trích xuất nhân vật')
   }
 
   async function _extractScenes(episodeId) {
@@ -108,21 +108,21 @@ export function useCanvasScript(deps) {
       style,
       language: 'zh',
     })
-    await runExtractTask(res?.task_id, '提取场景')
+    await runExtractTask(res?.task_id, 'Trích xuất scene')
   }
 
   async function _extractProps(episodeId) {
     const res = await propAPI.extractFromScript(episodeId)
-    await runExtractTask(res?.task_id, '提取道具')
+    await runExtractTask(res?.task_id, 'Trích xuất đạo cụ')
   }
 
   async function extractCharacters(episodeId, scriptContent) {
-    if (!dramaId.value || !episodeId) throw new Error('请先选择集数')
+    if (!dramaId.value || !episodeId) throw new Error('Vui lòng chọn tập trước')
     scriptBusy.value = true
     setScriptBusy(episodeId, 'extract_chars', CANVAS_NODE_STATUS_LABELS.extract_chars)
     try {
       await _extractCharacters(episodeId, scriptContent)
-      ElMessage.success('角色提取完成')
+      ElMessage.success('Đã trích xuất nhân vật')
     } finally {
       scriptBusy.value = false
       clearScriptBusy(episodeId)
@@ -130,12 +130,12 @@ export function useCanvasScript(deps) {
   }
 
   async function extractScenes(episodeId) {
-    if (!episodeId) throw new Error('请先选择集数')
+    if (!episodeId) throw new Error('Vui lòng chọn tập trước')
     scriptBusy.value = true
     setScriptBusy(episodeId, 'extract_scenes', CANVAS_NODE_STATUS_LABELS.extract_scenes)
     try {
       await _extractScenes(episodeId)
-      ElMessage.success('场景提取完成')
+      ElMessage.success('Đã trích xuất scene')
     } finally {
       scriptBusy.value = false
       clearScriptBusy(episodeId)
@@ -143,12 +143,12 @@ export function useCanvasScript(deps) {
   }
 
   async function extractProps(episodeId) {
-    if (!episodeId) throw new Error('请先选择集数')
+    if (!episodeId) throw new Error('Vui lòng chọn tập trước')
     scriptBusy.value = true
     setScriptBusy(episodeId, 'extract_props', CANVAS_NODE_STATUS_LABELS.extract_props)
     try {
       await _extractProps(episodeId)
-      ElMessage.success('道具提取完成')
+      ElMessage.success('Đã trích xuất đạo cụ')
     } finally {
       scriptBusy.value = false
       clearScriptBusy(episodeId)
@@ -156,38 +156,38 @@ export function useCanvasScript(deps) {
   }
 
   async function extractAll(episodeId, scriptContent) {
-    if (!episodeId) throw new Error('请先选择集数')
+    if (!episodeId) throw new Error('Vui lòng chọn tập trước')
     const content = (scriptContent || '').trim()
-    if (!content) throw new Error('请先填写剧本内容')
+    if (!content) throw new Error('Vui lòng nhập nội dung kịch bản trước')
 
     scriptBusy.value = true
     let didWork = false
     try {
       if ((drama.value?.characters || []).length === 0) {
-        setScriptBusy(episodeId, 'extract_chars', '1/3 提取角色…')
+        setScriptBusy(episodeId, 'extract_chars', '1/3 Trích xuất nhân vật…')
         await _extractCharacters(episodeId, content)
         didWork = true
       }
       if ((drama.value?.scenes || []).length === 0) {
-        setScriptBusy(episodeId, 'extract_scenes', '2/3 提取场景…')
+        setScriptBusy(episodeId, 'extract_scenes', '2/3 Trích xuất scene…')
         await _extractScenes(episodeId)
         didWork = true
       }
       if ((drama.value?.props || []).length === 0) {
-        setScriptBusy(episodeId, 'extract_props', '3/3 提取道具…')
+        setScriptBusy(episodeId, 'extract_props', '3/3 Trích xuất đạo cụ…')
         await _extractProps(episodeId)
         didWork = true
       }
 
       if (!didWork) {
-        ElMessage.info('角色、场景、道具均已存在，无需重复提取')
+        ElMessage.info('Nhân vật, scene, đạo cụ đều đã có, không cần trích xuất lại')
       } else {
         ElMessage.success(
-          `提取完成：${(drama.value?.characters || []).length} 角色 · ${(drama.value?.scenes || []).length} 场景 · ${(drama.value?.props || []).length} 道具`
+          `Đã trích xuất: ${(drama.value?.characters || []).length} nhân vật · ${(drama.value?.scenes || []).length} scene · ${(drama.value?.props || []).length} đạo cụ`
         )
       }
     } catch (e) {
-      ElMessage.error(e?.message || '提取失败')
+      ElMessage.error(e?.message || 'Trích xuất thất bại')
       throw e
     } finally {
       scriptBusy.value = false

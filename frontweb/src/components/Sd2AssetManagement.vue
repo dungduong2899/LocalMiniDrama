@@ -3,15 +3,15 @@
     <el-alert type="info" :closable="false" class="sd2-intro" show-icon>
       <template #title>
         <span>
-          对接 BytePlus ModelArk / 火山方舟<strong>私有资产库</strong>（Seedance 2.0 等使用的 <code>Asset://</code> 素材）。
-          配置完成后请点击下方<strong>「保存到 AI 配置」</strong>，创作页「SD2认证」将优先使用「即梦2角色认证」；若未配置则使用此处保存的官方资产库配置。
-          官方流程：<a href="https://docs.byteplus.com/en/docs/ModelArk/2318270" target="_blank" rel="noopener">CreateAssetGroup</a>
-          → CreateAsset → List / Get / Update / Delete。
-          带 <code>?Action=</code> 的接口为<strong>控制面 OpenAPI</strong>，须使用控制台
-          <a href="https://console.volcengine.com/iam/keymanage" target="_blank" rel="noopener">访问密钥（AK/SK）</a>签名，不能用推理用的 ARK API Key 当 Bearer，否则会报 Invalid Authorization（见
-          <a href="https://docs.byteplus.com/en/docs/ModelArk/1298459" target="_blank" rel="noopener">认证说明</a>）。
-          若已能调通接口但返回 <strong>403</strong> 且含 <code>not authorized</code> / <code>ark:CreateAssetGroup</code>，说明 AK 对应 IAM 用户<strong>缺策略</strong>：在控制台为该用户绑定含 ModelArk 私有资产/资产组管理的权限（参见
-          <a href="https://docs.byteplus.com/en/docs/ModelArk/1263493" target="_blank" rel="noopener">IAM 访问控制</a>），勿仅用「能推理」的极简权限。
+          Kết nối BytePlus ModelArk / Volcano Ark <strong>thư viện tài sản riêng</strong> (tư liệu <code>Asset://</code> dùng bởi Seedance 2.0, v.v.).
+          Sau khi cấu hình xong, hãy nhấn <strong>"Lưu vào cấu hình AI"</strong> bên dưới. Trang sáng tạo "SD2 Auth" sẽ ưu tiên dùng "Jimeng2 character auth"; nếu chưa cấu hình thì dùng cấu hình thư viện tài sản chính thức lưu ở đây.
+          Luồng chính thức: <a href="https://docs.byteplus.com/en/docs/ModelArk/2318270" target="_blank" rel="noopener">CreateAssetGroup</a>
+          → CreateAsset → List / Get / Update / Delete.
+          Các endpoint có <code>?Action=</code> là <strong>OpenAPI control plane</strong>, phải dùng
+          <a href="https://console.volcengine.com/iam/keymanage" target="_blank" rel="noopener">Access Key (AK/SK)</a> trên console để ký, không dùng ARK API Key cho inference làm Bearer, nếu không sẽ báo Invalid Authorization (xem
+          <a href="https://docs.byteplus.com/en/docs/ModelArk/1298459" target="_blank" rel="noopener">hướng dẫn xác thực</a>).
+          Nếu đã gọi được API nhưng trả <strong>403</strong> có <code>not authorized</code> / <code>ark:CreateAssetGroup</code>, tức IAM user tương ứng AK <strong>thiếu policy</strong>: trên console gán cho user đó quyền quản lý ModelArk private asset / asset group (xem
+          <a href="https://docs.byteplus.com/en/docs/ModelArk/1263493" target="_blank" rel="noopener">IAM Access Control</a>), đừng dùng quyền tối giản chỉ "chạy inference".
         </span>
       </template>
     </el-alert>
@@ -20,63 +20,63 @@
       <el-form-item label="Base URL">
         <el-input
           v-model="baseUrl"
-          placeholder="须含 /api/v3，如 https://ark.ap-southeast-1.byteplusapi.com/api/v3（仅域名时后端会尝试自动补全）"
+          placeholder="Phải chứa /api/v3, ví dụ https://ark.ap-southeast-1.byteplusapi.com/api/v3 (nếu chỉ điền domain, backend sẽ thử tự bổ sung)"
           clearable
         />
-        <p class="field-hint">OpenAPI 与推理共用前缀一般为 <code>/api/v3</code>；若只填域名可能导致路由不对、工程名不生效。</p>
+        <p class="field-hint">OpenAPI và inference thường dùng chung prefix <code>/api/v3</code>; nếu chỉ điền domain có thể dẫn tới sai route, ProjectName không có hiệu lực.</p>
       </el-form-item>
-      <el-form-item label="鉴权方式">
+      <el-form-item label="Kiểu xác thực">
         <el-radio-group v-model="authMode">
-          <el-radio-button value="volc_sign">AK/SK 签名（官方 OpenAPI）</el-radio-button>
-          <el-radio-button value="bearer">Bearer 推理 Key</el-radio-button>
+          <el-radio-button value="volc_sign">Ký AK/SK (OpenAPI chính thức)</el-radio-button>
+          <el-radio-button value="bearer">Bearer Inference Key</el-radio-button>
         </el-radio-group>
-        <p class="field-hint">选「官方 OpenAPI」路径时，请用本项并填写 AK/SK；选「Bearer」仅适合 <code>/asset/…</code> 等中转。</p>
+        <p class="field-hint">Khi chọn path "OpenAPI chính thức", dùng mục này và điền AK/SK; chọn "Bearer" chỉ phù hợp với proxy <code>/asset/…</code>.</p>
       </el-form-item>
       <el-form-item v-if="authMode === 'bearer'" label="API Key">
-        <el-input v-model="apiKey" type="password" show-password placeholder="推理用 ARK / 中转 API Key" clearable />
+        <el-input v-model="apiKey" type="password" show-password placeholder="ARK inference / proxy API Key" clearable />
       </el-form-item>
       <template v-else>
         <el-form-item label="Access Key ID">
-          <el-input v-model="accessKeyId" placeholder="控制台 IAM Access Key ID" clearable />
+          <el-input v-model="accessKeyId" placeholder="IAM Access Key ID trên console" clearable />
         </el-form-item>
         <el-form-item label="Secret Key">
           <el-input v-model="secretAccessKey" type="password" show-password placeholder="Secret Access Key" clearable />
         </el-form-item>
         <el-form-item label="Region">
-          <el-input v-model="signRegion" placeholder="可空：国内 ark 多为 cn-beijing；BytePlus 国际多为 ap-southeast-1" clearable />
+          <el-input v-model="signRegion" placeholder="Có thể trống: ark nội địa thường là cn-beijing; BytePlus quốc tế thường là ap-southeast-1" clearable />
         </el-form-item>
       </template>
-      <el-form-item label="路径模式">
+      <el-form-item label="Path mode">
         <el-select v-model="pathMode" style="width: 100%">
-          <el-option label="官方 OpenAPI：POST {Base}?Action=…&Version=…（火山/BytePlus 默认）" value="open_api_query" />
-          <el-option label="路径：POST {Base}/asset/{Action}（部分中转）" value="asset_subpath" />
-          <el-option label="扁平：POST {Base}/{Action}" value="flat" />
+          <el-option label="OpenAPI chính thức: POST {Base}?Action=…&Version=… (mặc định Volcano/BytePlus)" value="open_api_query" />
+          <el-option label="Path: POST {Base}/asset/{Action} (một số proxy)" value="asset_subpath" />
+          <el-option label="Phẳng: POST {Base}/{Action}" value="flat" />
         </el-select>
-        <p class="field-hint">官方接口必须在 Query 里带 <code>Action</code>；若用 AnyFast 等自建路径再选中转模式。</p>
+        <p class="field-hint">API chính thức phải có <code>Action</code> trong Query; nếu dùng AnyFast hoặc proxy tự xây thì chọn chế độ proxy.</p>
       </el-form-item>
       <el-form-item label="API Version">
-        <el-input v-model="apiVersion" placeholder="默认 2024-01-01（仅官方 OpenAPI 模式使用）" clearable />
+        <el-input v-model="apiVersion" placeholder="Mặc định 2024-01-01 (chỉ dùng cho OpenAPI chính thức)" clearable />
       </el-form-item>
-      <el-form-item v-if="pathMode === 'open_api_query'" label="工程 / 项目名">
+      <el-form-item v-if="pathMode === 'open_api_query'" label="Tên project">
         <el-input
           v-model="projectName"
-          placeholder="与控制台「项目」标识完全一致（区分大小写、下划线等）"
+          placeholder='Trùng chính xác với định danh "project" trên console (phân biệt hoa/thường, dấu gạch dưới, v.v.)'
           clearable
         />
         <p class="field-hint">
-          会写入 <strong>Query</strong> 与 <strong>JSON Body</strong> 的 <code>ProjectName</code>（与 Action 一并签名）。
-          若仍报 403 且文案里是 <code>project/*</code>，多为 IAM 未授权该动作；请确认策略里资源是否包含你的工程（或 <code>project/*</code>），错误提示不一定替换为具体工程名。
+          Sẽ ghi vào <code>ProjectName</code> ở <strong>Query</strong> và <strong>JSON Body</strong> (ký cùng với Action).
+          Nếu vẫn báo 403 và trong text có <code>project/*</code>, thường do IAM chưa cấp quyền cho action này; hãy kiểm tra policy có bao gồm project của bạn (hoặc <code>project/*</code>) không, thông báo lỗi có thể không thay thế bằng tên project cụ thể.
         </p>
       </el-form-item>
-      <el-form-item label="model（可选）">
-        <el-input v-model="billingModel" placeholder="部分中转要求计费模型，如 volc-asset；官方直连可留空" clearable />
+      <el-form-item label="model (tuỳ chọn)">
+        <el-input v-model="billingModel" placeholder="Một số proxy yêu cầu billing model, ví dụ volc-asset; kết nối trực tiếp chính thức có thể để trống" clearable />
       </el-form-item>
-      <el-form-item label="从配置填入">
+      <el-form-item label="Điền từ cấu hình">
         <el-select
           v-model="fillConfigId"
           filterable
           clearable
-          placeholder="选择已保存的视频类配置（火山等）"
+          placeholder="Chọn cấu hình video đã lưu (Volcano, v.v.)"
           style="width: 100%"
           @change="onFillFromSaved"
         >
@@ -88,21 +88,21 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="默认资产组 Id">
+      <el-form-item label="Asset Group Id mặc định">
         <el-input
           v-model="assetGroupIdForCert"
-          placeholder="创作页 SD2 认证写入此组；可左侧点选资产组自动填入"
+          placeholder="SD2 auth ở trang sáng tạo sẽ ghi vào group này; có thể chọn asset group bên trái để tự điền"
           clearable
         />
-        <p class="field-hint">保存到 AI 配置时必填。与下方「资产」列表使用的组 Id 一致。</p>
+        <p class="field-hint">Bắt buộc khi lưu vào cấu hình AI. Cùng group Id với danh sách "Asset" bên dưới.</p>
       </el-form-item>
       <el-form-item label=" ">
         <div class="sd2-save-row">
           <el-button type="primary" :loading="savingConfig" @click="saveToAiConfig">
-            保存到 AI 配置
+            Lưu vào cấu hình AI
           </el-button>
           <span v-if="savedConfigId" class="sd2-saved-hint">
-            已关联配置 #{{ savedConfigId }}（创作页 SD2 认证在未配置「即梦2角色认证」时使用）
+            Đã liên kết cấu hình #{{ savedConfigId }} (SD2 auth trang sáng tạo dùng khi chưa cấu hình "Jimeng2 character auth")
           </span>
         </div>
       </el-form-item>
@@ -110,10 +110,10 @@
 
     <el-row :gutter="16">
       <el-col :span="11">
-        <div class="panel-title">资产组</div>
+        <div class="panel-title">Asset Group</div>
         <div class="panel-actions">
-          <el-button type="primary" size="small" :loading="loadingGroups" @click="refreshGroups">刷新列表</el-button>
-          <el-button type="success" size="small" @click="openCreateGroup">新建组</el-button>
+          <el-button type="primary" size="small" :loading="loadingGroups" @click="refreshGroups">Làm mới danh sách</el-button>
+          <el-button type="success" size="small" @click="openCreateGroup">Tạo group</el-button>
         </div>
         <el-table
           :data="groupRows"
@@ -124,60 +124,60 @@
           @current-change="onGroupRowChange"
         >
           <el-table-column prop="Id" label="Id" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="Name" label="名称" min-width="100" show-overflow-tooltip />
-          <el-table-column label="操作" width="168" fixed="right">
+          <el-table-column prop="Name" label="Tên" min-width="100" show-overflow-tooltip />
+          <el-table-column label="Thao tác" width="168" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="getGroupDetail(row)">详情</el-button>
-              <el-button link type="primary" size="small" @click="openEditGroup(row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click="deleteGroup(row)">删除</el-button>
+              <el-button link type="primary" size="small" @click="getGroupDetail(row)">Chi tiết</el-button>
+              <el-button link type="primary" size="small" @click="openEditGroup(row)">Sửa</el-button>
+              <el-button link type="danger" size="small" @click="deleteGroup(row)">Xoá</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
       <el-col :span="13">
-        <div class="panel-title">资产（需组 Id）</div>
+        <div class="panel-title">Asset (cần Group Id)</div>
         <div class="panel-actions row-gap">
-          <el-input v-model="assetGroupIdInput" placeholder="组 Id，或左侧点选一行" clearable style="flex: 1; min-width: 140px" />
-          <el-button type="primary" size="small" :loading="loadingAssets" @click="refreshAssets">刷新</el-button>
-          <el-button type="success" size="small" @click="openCreateAsset">新建资产</el-button>
+          <el-input v-model="assetGroupIdInput" placeholder="Group Id, hoặc chọn một dòng bên trái" clearable style="flex: 1; min-width: 140px" />
+          <el-button type="primary" size="small" :loading="loadingAssets" @click="refreshAssets">Làm mới</el-button>
+          <el-button type="success" size="small" @click="openCreateAsset">Tạo asset</el-button>
         </div>
         <el-table :data="assetRows" size="small" stripe max-height="320">
           <el-table-column prop="Id" label="Id" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="Name" label="名称" min-width="90" show-overflow-tooltip />
-          <el-table-column prop="AssetType" label="类型" width="88" />
-          <el-table-column label="操作" width="168" fixed="right">
+          <el-table-column prop="Name" label="Tên" min-width="90" show-overflow-tooltip />
+          <el-table-column prop="AssetType" label="Loại" width="88" />
+          <el-table-column label="Thao tác" width="168" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="getAssetDetail(row)">详情</el-button>
-              <el-button link type="primary" size="small" @click="openEditAsset(row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click="deleteAsset(row)">删除</el-button>
+              <el-button link type="primary" size="small" @click="getAssetDetail(row)">Chi tiết</el-button>
+              <el-button link type="primary" size="small" @click="openEditAsset(row)">Sửa</el-button>
+              <el-button link type="danger" size="small" @click="deleteAsset(row)">Xoá</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
     </el-row>
 
-    <div class="panel-title" style="margin-top: 16px">最近一次响应（调试）</div>
+    <div class="panel-title" style="margin-top: 16px">Response gần nhất (debug)</div>
     <el-input v-model="lastRawJson" type="textarea" :rows="6" readonly class="mono" />
 
-    <!-- 新建资产组 -->
+    <!-- Tạo asset group -->
     <el-dialog v-model="dlgGroupCreate" title="CreateAssetGroup" width="480px" destroy-on-close>
       <el-form label-width="100px">
         <el-form-item label="Name" required>
-          <el-input v-model="formGroupName" placeholder="资产组名称" />
+          <el-input v-model="formGroupName" placeholder="Tên asset group" />
         </el-form-item>
-        <el-form-item label="扩展 JSON">
-          <el-input v-model="formGroupExtraJson" type="textarea" :rows="3" placeholder='可选，合并进请求体，如 {"Description":"..."}' />
+        <el-form-item label="JSON mở rộng">
+          <el-input v-model="formGroupExtraJson" type="textarea" :rows="3" placeholder='Tuỳ chọn, merge vào request body, ví dụ {"Description":"..."}' />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dlgGroupCreate = false">取消</el-button>
-        <el-button type="primary" :loading="dlgLoading" @click="submitCreateGroup">提交</el-button>
+        <el-button @click="dlgGroupCreate = false">Huỷ</el-button>
+        <el-button type="primary" :loading="dlgLoading" @click="submitCreateGroup">Gửi</el-button>
       </template>
     </el-dialog>
 
-    <!-- 编辑资产组 -->
+    <!-- Sửa asset group -->
     <el-dialog v-model="dlgGroupEdit" title="UpdateAssetGroup" width="520px" destroy-on-close>
-      <el-alert type="warning" :closable="false" title="按官方文档填写需更新的字段；以下为常用名称修改。" style="margin-bottom: 12px" />
+      <el-alert type="warning" :closable="false" title="Điền các field cần cập nhật theo tài liệu chính thức; bên dưới là sửa tên thông dụng." style="margin-bottom: 12px" />
       <el-form label-width="100px">
         <el-form-item label="Id" required>
           <el-input v-model="editGroupId" disabled />
@@ -185,21 +185,21 @@
         <el-form-item label="Name">
           <el-input v-model="editGroupName" />
         </el-form-item>
-        <el-form-item label="完整 JSON">
-          <el-input v-model="editGroupFullJson" type="textarea" :rows="6" placeholder='若填写则优先整段作为请求体（须含 Id）' />
+        <el-form-item label="JSON đầy đủ">
+          <el-input v-model="editGroupFullJson" type="textarea" :rows="6" placeholder='Nếu điền thì sẽ ưu tiên dùng nguyên đoạn làm request body (phải có Id)' />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dlgGroupEdit = false">取消</el-button>
-        <el-button type="primary" :loading="dlgLoading" @click="submitUpdateGroup">提交</el-button>
+        <el-button @click="dlgGroupEdit = false">Huỷ</el-button>
+        <el-button type="primary" :loading="dlgLoading" @click="submitUpdateGroup">Gửi</el-button>
       </template>
     </el-dialog>
 
-    <!-- 新建资产 -->
+    <!-- Tạo asset -->
     <el-dialog v-model="dlgAssetCreate" title="CreateAsset" width="520px" destroy-on-close>
       <el-form label-width="110px">
         <el-form-item label="GroupId" required>
-          <el-input v-model="formAssetGroupId" placeholder="资产组 Id" />
+          <el-input v-model="formAssetGroupId" placeholder="Asset Group Id" />
         </el-form-item>
         <el-form-item label="Name" required>
           <el-input v-model="formAssetName" />
@@ -212,19 +212,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="model">
-          <el-input v-model="formAssetModel" placeholder="视频建议 volc-asset-video；音频 volc-asset-audio；图片可空" clearable />
+          <el-input v-model="formAssetModel" placeholder="Video nên dùng volc-asset-video; audio dùng volc-asset-audio; ảnh có thể để trống" clearable />
         </el-form-item>
         <el-form-item label="URL">
-          <el-input v-model="formAssetUrl" type="textarea" :rows="2" placeholder="公网 URL / data:image/...;base64,..." />
+          <el-input v-model="formAssetUrl" type="textarea" :rows="2" placeholder="URL public / data:image/...;base64,..." />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dlgAssetCreate = false">取消</el-button>
-        <el-button type="primary" :loading="dlgLoading" @click="submitCreateAsset">提交</el-button>
+        <el-button @click="dlgAssetCreate = false">Huỷ</el-button>
+        <el-button type="primary" :loading="dlgLoading" @click="submitCreateAsset">Gửi</el-button>
       </template>
     </el-dialog>
 
-    <!-- 编辑资产 -->
+    <!-- Sửa asset -->
     <el-dialog v-model="dlgAssetEdit" title="UpdateAsset" width="520px" destroy-on-close>
       <el-form label-width="100px">
         <el-form-item label="Id" required>
@@ -233,21 +233,21 @@
         <el-form-item label="Name">
           <el-input v-model="editAssetName" />
         </el-form-item>
-        <el-form-item label="完整 JSON">
-          <el-input v-model="editAssetFullJson" type="textarea" :rows="6" placeholder="若填写则整段作为请求体（须含 Id）" />
+        <el-form-item label="JSON đầy đủ">
+          <el-input v-model="editAssetFullJson" type="textarea" :rows="6" placeholder="Nếu điền thì dùng nguyên đoạn làm request body (phải có Id)" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dlgAssetEdit = false">取消</el-button>
-        <el-button type="primary" :loading="dlgLoading" @click="submitUpdateAsset">提交</el-button>
+        <el-button @click="dlgAssetEdit = false">Huỷ</el-button>
+        <el-button type="primary" :loading="dlgLoading" @click="submitUpdateAsset">Gửi</el-button>
       </template>
     </el-dialog>
 
-    <!-- 详情 JSON -->
-    <el-dialog v-model="dlgDetail" title="详情" width="640px" destroy-on-close>
+    <!-- JSON chi tiết -->
+    <el-dialog v-model="dlgDetail" title="Chi tiết" width="640px" destroy-on-close>
       <el-input :model-value="detailJson" type="textarea" :rows="16" readonly class="mono" />
       <template #footer>
-        <el-button type="primary" @click="dlgDetail = false">关闭</el-button>
+        <el-button type="primary" @click="dlgDetail = false">Đóng</el-button>
       </template>
     </el-dialog>
   </div>
@@ -259,7 +259,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { aiAPI } from '@/api/ai'
 
 const props = defineProps({
-  /** AI 配置列表（与 AI 配置页同源），用于一键填入 Base / Key */
+  /** Danh sách cấu hình AI (đồng nguồn với trang AI Config), dùng để điền nhanh Base / Key */
   configs: { type: Array, default: () => [] },
 })
 
@@ -269,18 +269,18 @@ const baseUrl = ref('')
 const apiKey = ref('')
 const pathMode = ref('open_api_query')
 const apiVersion = ref('2024-01-01')
-/** OpenAPI 可选查询参数 ProjectName（与控制台项目对应，便于 IAM 精确到 project/某工程 而非 project/*） */
+/** Query param tuỳ chọn ProjectName cho OpenAPI (ứng với project trên console, giúp IAM chính xác tới project/tên_project cụ thể thay vì project/*) */
 const projectName = ref('')
 const authMode = ref('volc_sign')
 const accessKeyId = ref('')
 const secretAccessKey = ref('')
 const signRegion = ref('')
-/** 仅合并到 List / Create 类请求，避免影响 Get/Update/Delete */
+/** Chỉ merge vào request List / Create, tránh ảnh hưởng Get/Update/Delete */
 const billingModel = ref('')
 const fillConfigId = ref(null)
 const savedConfigId = ref(null)
 const savingConfig = ref(false)
-/** 创作页 SD2 认证默认写入的资产组 */
+/** Asset group mà SD2 auth trang sáng tạo ghi vào mặc định */
 const assetGroupIdForCert = ref('')
 const loadingGroups = ref(false)
 const loadingAssets = ref(false)
@@ -389,11 +389,11 @@ onMounted(() => {
 async function saveToAiConfig() {
   const w = connWarn()
   if (!connReady() || w) {
-    ElMessage.warning(w || '请先完成连接信息')
+    ElMessage.warning(w || 'Vui lòng hoàn tất thông tin kết nối trước')
     return
   }
   if (!assetGroupIdForCert.value.trim()) {
-    ElMessage.warning('请填写默认资产组 Id（创作页 SD2 认证需要）')
+    ElMessage.warning('Vui lòng điền Asset Group Id mặc định (SD2 auth trang sáng tạo cần)')
     return
   }
   const settings = {
@@ -411,7 +411,7 @@ async function saveToAiConfig() {
   }
   const payload = {
     service_type: 'model_ark_asset',
-    name: 'SD2 资产库',
+    name: 'SD2 Asset Library',
     provider: 'model_ark',
     base_url: baseUrl.value.trim(),
     api_key: authMode.value === 'bearer' ? apiKey.value : '',
@@ -425,15 +425,15 @@ async function saveToAiConfig() {
   try {
     if (savedConfigId.value) {
       await aiAPI.update(savedConfigId.value, payload)
-      ElMessage.success('已更新 AI 配置')
+      ElMessage.success('Đã cập nhật cấu hình AI')
     } else {
       const created = await aiAPI.create(payload)
       savedConfigId.value = created?.id ?? null
-      ElMessage.success('已保存到 AI 配置')
+      ElMessage.success('Đã lưu vào cấu hình AI')
     }
     emit('saved')
   } catch (_) {
-    /* request 已统一报错 */
+    /* request đã báo lỗi thống nhất */
   } finally {
     savingConfig.value = false
   }
@@ -479,7 +479,7 @@ function onFillFromSaved(id) {
   if (!c) return
   baseUrl.value = (c.base_url || '').replace(/\/$/, '')
   apiKey.value = c.api_key || ''
-  ElMessage.success('已填入所选配置的 Base URL 与 API Key')
+  ElMessage.success('Đã điền Base URL và API Key từ cấu hình đã chọn')
 }
 
 function onGroupRowChange(row) {
@@ -506,16 +506,16 @@ function connReady() {
 }
 
 function connWarn() {
-  if (!baseUrl.value.trim()) return '请先填写 Base URL'
+  if (!baseUrl.value.trim()) return 'Vui lòng điền Base URL trước'
   if (authMode.value === 'volc_sign') {
     if (!accessKeyId.value.trim() || !secretAccessKey.value.trim()) {
-      return '官方 OpenAPI 请填写 Access Key ID 与 Secret Access Key（控制台 IAM，非推理 API Key）'
+      return 'OpenAPI chính thức cần điền Access Key ID và Secret Access Key (IAM trên console, không phải API Key inference)'
     }
   } else if (!apiKey.value.trim()) {
-    return '请先填写 API Key'
+    return 'Vui lòng điền API Key trước'
   }
   if (authMode.value === 'volc_sign' && pathMode.value !== 'open_api_query') {
-    return 'AK/SK 签名请配合「官方 OpenAPI」路径模式'
+    return 'Ký AK/SK cần đi kèm với path mode "OpenAPI chính thức"'
   }
   return ''
 }
@@ -546,7 +546,7 @@ async function call(action, payload, opts = {}) {
 async function refreshGroups() {
   const w = connWarn()
   if (!connReady() || w) {
-    ElMessage.warning(w || '请先完成连接信息')
+    ElMessage.warning(w || 'Vui lòng hoàn tất thông tin kết nối trước')
     return
   }
   loadingGroups.value = true
@@ -554,7 +554,7 @@ async function refreshGroups() {
     const body = {
       PageNumber: 1,
       PageSize: 50,
-      /** Filter、Filter.GroupType 均为官方 ListAssetGroups 必填；AIGC 为私有资产库常用类型 */
+      /** Filter, Filter.GroupType đều bắt buộc cho ListAssetGroups chính thức; AIGC là loại thường dùng cho private asset library */
       Filter: {
         GroupType: 'AIGC',
       },
@@ -573,11 +573,11 @@ async function refreshAssets() {
   const gid = assetGroupIdInput.value.trim()
   const w = connWarn()
   if (!connReady() || w) {
-    ElMessage.warning(w || '请先完成连接信息')
+    ElMessage.warning(w || 'Vui lòng hoàn tất thông tin kết nối trước')
     return
   }
   if (!gid) {
-    ElMessage.warning('请填写或选择资产组 Id')
+    ElMessage.warning('Vui lòng điền hoặc chọn Asset Group Id')
     return
   }
   loadingAssets.value = true
@@ -608,7 +608,7 @@ function openCreateGroup() {
 
 async function submitCreateGroup() {
   if (!formGroupName.value.trim()) {
-    ElMessage.warning('请填写 Name')
+    ElMessage.warning('Vui lòng điền Name')
     return
   }
   dlgLoading.value = true
@@ -618,14 +618,14 @@ async function submitCreateGroup() {
       try {
         extra = JSON.parse(formGroupExtraJson.value)
       } catch (_) {
-        ElMessage.error('扩展 JSON 格式无效')
+        ElMessage.error('JSON mở rộng không hợp lệ')
         return
       }
     }
     const payload = { Name: formGroupName.value.trim(), ...extra }
     const data = await call('CreateAssetGroup', payload, { withBillingModel: true })
     setLastJson(data)
-    ElMessage.success('已创建')
+    ElMessage.success('Đã tạo')
     dlgGroupCreate.value = false
     await refreshGroups()
   } finally {
@@ -660,7 +660,7 @@ async function submitUpdateGroup() {
       try {
         payload = JSON.parse(editGroupFullJson.value)
       } catch (_) {
-        ElMessage.error('完整 JSON 无效')
+        ElMessage.error('JSON đầy đủ không hợp lệ')
         return
       }
     } else {
@@ -668,7 +668,7 @@ async function submitUpdateGroup() {
     }
     const data = await call('UpdateAssetGroup', payload)
     setLastJson(data)
-    ElMessage.success('已更新')
+    ElMessage.success('Đã cập nhật')
     dlgGroupEdit.value = false
     await refreshGroups()
   } finally {
@@ -678,7 +678,7 @@ async function submitUpdateGroup() {
 
 async function deleteGroup(row) {
   try {
-    await ElMessageBox.confirm(`确定删除资产组「${row.Name || row.Id}」？`, 'DeleteAssetGroup', {
+    await ElMessageBox.confirm(`Bạn có chắc muốn xoá asset group "${row.Name || row.Id}"?`, 'DeleteAssetGroup', {
       type: 'warning',
     })
   } catch (_) {
@@ -688,7 +688,7 @@ async function deleteGroup(row) {
   try {
     const data = await call('DeleteAssetGroup', { Id: row.Id })
     setLastJson(data)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     if (assetGroupIdInput.value === row.Id) assetGroupIdInput.value = ''
     await refreshGroups()
   } finally {
@@ -707,7 +707,7 @@ function openCreateAsset() {
 
 async function submitCreateAsset() {
   if (!formAssetGroupId.value.trim() || !formAssetName.value.trim()) {
-    ElMessage.warning('请填写 GroupId 与 Name')
+    ElMessage.warning('Vui lòng điền GroupId và Name')
     return
   }
   dlgLoading.value = true
@@ -721,7 +721,7 @@ async function submitCreateAsset() {
     if (formAssetModel.value.trim()) payload.model = formAssetModel.value.trim()
     const data = await call('CreateAsset', payload, { withBillingModel: true })
     setLastJson(data)
-    ElMessage.success('已创建')
+    ElMessage.success('Đã tạo')
     dlgAssetCreate.value = false
     await refreshAssets()
   } finally {
@@ -756,7 +756,7 @@ async function submitUpdateAsset() {
       try {
         payload = JSON.parse(editAssetFullJson.value)
       } catch (_) {
-        ElMessage.error('完整 JSON 无效')
+        ElMessage.error('JSON đầy đủ không hợp lệ')
         return
       }
     } else {
@@ -764,7 +764,7 @@ async function submitUpdateAsset() {
     }
     const data = await call('UpdateAsset', payload)
     setLastJson(data)
-    ElMessage.success('已更新')
+    ElMessage.success('Đã cập nhật')
     dlgAssetEdit.value = false
     await refreshAssets()
   } finally {
@@ -774,7 +774,7 @@ async function submitUpdateAsset() {
 
 async function deleteAsset(row) {
   try {
-    await ElMessageBox.confirm(`确定删除资产「${row.Name || row.Id}」？`, 'DeleteAsset', { type: 'warning' })
+    await ElMessageBox.confirm(`Bạn có chắc muốn xoá asset "${row.Name || row.Id}"?`, 'DeleteAsset', { type: 'warning' })
   } catch (_) {
     return
   }
@@ -782,7 +782,7 @@ async function deleteAsset(row) {
   try {
     const data = await call('DeleteAsset', { Id: row.Id })
     setLastJson(data)
-    ElMessage.success('已删除')
+    ElMessage.success('Đã xoá')
     await refreshAssets()
   } finally {
     dlgLoading.value = false

@@ -3,13 +3,13 @@
     <header class="header">
       <div class="header-inner">
         <h1 class="logo" @click="goList">
-          <span class="logo-main">本地短剧助手</span>
+          <span class="logo-main">Trợ lý phim ngắn local</span>
           <span class="logo-sub">LocalMiniDrama</span>
         </h1>
-        <span class="page-title">AI 配置</span>
+        <span class="page-title">Cấu hình AI</span>
         <el-button class="btn-back" @click="goList">
           <el-icon><ArrowLeft /></el-icon>
-          返回
+          Quay lại
         </el-button>
       </div>
     </header>

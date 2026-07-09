@@ -11,16 +11,16 @@
       <Handle type="source" :position="Position.Right" />
       <CanvasNodeStatusOverlay :node-id="id" />
       <div class="head">
-        <span class="badge">📜 剧本</span>
-        <span class="ep">第 {{ data.episode?.episode_number ?? '?' }} 集</span>
+        <span class="badge">📜 Kịch bản</span>
+        <span class="ep">Tập {{ data.episode?.episode_number ?? '?' }}</span>
       </div>
       <div class="preview">{{ previewText }}</div>
       <div class="meta">
-        <span>{{ charCount }} 角色</span>
-        <span>{{ sceneCount }} 场景</span>
-        <span>{{ propCount }} 道具</span>
+        <span>{{ charCount }} nhân vật</span>
+        <span>{{ sceneCount }} scene</span>
+        <span>{{ propCount }} đạo cụ</span>
       </div>
-      <div class="hint">{{ showPanel ? '下方可编辑与提取' : '单击展开 · 创作起点' }}</div>
+      <div class="hint">{{ showPanel ? 'Có thể sửa và trích xuất bên dưới' : 'Nhấn để mở · điểm bắt đầu' }}</div>
     </div>
     <CanvasScriptPanel
       v-if="showPanel"
@@ -48,7 +48,7 @@ const showPanel = computed(() => ctx?.focusedNodeId?.value === props.id)
 const hasScript = computed(() => !!(props.data.episode?.script_content || '').trim())
 const previewText = computed(() => {
   if (props.data.summary) return props.data.summary
-  return hasScript.value ? '（剧本已填写）' : '暂无剧本，点击编辑'
+  return hasScript.value ? '(Kịch bản đã được điền)' : 'Chưa có kịch bản, nhấn để sửa'
 })
 
 const charCount = computed(() => (ctx?.drama?.value?.characters || []).length)

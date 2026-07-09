@@ -3,7 +3,7 @@ import request from '@/utils/request'
 export const generationAPI = {
   /**
    * @param {string|number} dramaId
-   * @param {{ episode_id?: string|number, outline?: string, count?: number, model?: string }} [options] - episode_id 用于关联本集，outline 为梗概/剧本摘要
+   * @param {{ episode_id?: string|number, outline?: string, count?: number, model?: string }} [options] - episode_id dùng để liên kết với tập này, outline là tóm tắt/kịch bản
    */
   generateCharacters(dramaId, options = {}) {
     const body = { drama_id: dramaId }
@@ -13,7 +13,7 @@ export const generationAPI = {
     if (options.model != null) body.model = options.model
     return request.post('/generation/characters', body)
   },
-  /** 根据故事梗概 + 风格/类型/集数 生成剧本；传 drama_id 时异步生成并入库，返回 { task_id, status } */
+  /** Tạo kịch bản từ outline + phong cách/thể loại/số tập; khi truyền drama_id sẽ tạo bất đồng bộ và lưu DB, trả về { task_id, status } */
   generateStory(body) {
     return request.post('/generation/story', body)
   }

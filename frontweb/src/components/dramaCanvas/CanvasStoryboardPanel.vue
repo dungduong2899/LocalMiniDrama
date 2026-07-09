@@ -8,28 +8,28 @@
     @wheel.stop
   >
     <div class="panel-head">
-      <span>分镜 #{{ storyboard?.storyboard_number ?? storyboard?.id }}</span>
+      <span>Storyboard #{{ storyboard?.storyboard_number ?? storyboard?.id }}</span>
       <div class="head-actions">
         <span v-if="busyLabel" class="busy-tag">{{ busyLabel }}</span>
-        <el-button link size="small" type="primary" @click.stop="openListMode">列表详情</el-button>
-        <el-button link size="small" @click.stop="closePanel">收起</el-button>
+        <el-button link size="small" type="primary" @click.stop="openListMode">Chi tiết dạng list</el-button>
+        <el-button link size="small" @click.stop="closePanel">Thu gọn</el-button>
       </div>
     </div>
 
     <el-form label-position="left" label-width="36px" size="small" class="panel-form compact-form">
-      <el-form-item label="标题">
-        <el-input v-model="form.title" placeholder="分镜标题" @blur="saveMeta" />
+      <el-form-item label="Tiêu đề">
+        <el-input v-model="form.title" placeholder="Tiêu đề storyboard" @blur="saveMeta" />
       </el-form-item>
 
       <div class="relation-row">
-        <el-form-item label="角色" class="rel-item">
+        <el-form-item label="Nhân vật" class="rel-item">
           <el-select
             v-model="characterIds"
             multiple
             collapse-tags
             collapse-tags-tooltip
             filterable
-            placeholder="角色"
+            placeholder="Nhân vật"
             teleported
             popper-class="canvas-panel-popper"
             @visible-change="onSelectVisibleChange"
@@ -38,17 +38,17 @@
             <el-option
               v-for="c in characters"
               :key="c.id"
-              :label="c.name || '未命名'"
+              :label="c.name || 'Chưa đặt tên'"
               :value="normalizeEntityId(c.id)"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="场景" class="rel-item">
+        <el-form-item label="Scene" class="rel-item">
           <el-select
             v-model="sceneId"
             clearable
             filterable
-            placeholder="场景"
+            placeholder="Scene"
             teleported
             popper-class="canvas-panel-popper"
             @visible-change="onSelectVisibleChange"
@@ -57,19 +57,19 @@
             <el-option
               v-for="s in scenes"
               :key="s.id"
-              :label="s.location || '未命名'"
+              :label="s.location || 'Chưa đặt tên'"
               :value="normalizeEntityId(s.id)"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="道具" class="rel-item">
+        <el-form-item label="Đạo cụ" class="rel-item">
           <el-select
             v-model="propIds"
             multiple
             collapse-tags
             collapse-tags-tooltip
             filterable
-            placeholder="道具"
+            placeholder="Đạo cụ"
             teleported
             popper-class="canvas-panel-popper"
             @visible-change="onSelectVisibleChange"
@@ -78,96 +78,96 @@
             <el-option
               v-for="p in propsList"
               :key="p.id"
-              :label="p.name || '未命名'"
+              :label="p.name || 'Chưa đặt tên'"
               :value="normalizeEntityId(p.id)"
             />
           </el-select>
         </el-form-item>
       </div>
       <div class="inline-add-row">
-        <el-button link type="primary" size="small" @click.stop="createAsset('character')">+角色</el-button>
-        <el-button link type="primary" size="small" @click.stop="createAsset('scene')">+场景</el-button>
-        <el-button link type="primary" size="small" @click.stop="createAsset('prop')">+道具</el-button>
+        <el-button link type="primary" size="small" @click.stop="createAsset('character')">+ Nhân vật</el-button>
+        <el-button link type="primary" size="small" @click.stop="createAsset('scene')">+ Scene</el-button>
+        <el-button link type="primary" size="small" @click.stop="createAsset('prop')">+ Đạo cụ</el-button>
       </div>
 
       <div class="meta-row">
-        <el-form-item label="景别" class="meta-item">
-          <el-input v-model="form.shot_type" placeholder="特写" @blur="saveMeta" />
+        <el-form-item label="Cỡ cảnh" class="meta-item">
+          <el-input v-model="form.shot_type" placeholder="Cận cảnh" @blur="saveMeta" />
         </el-form-item>
-        <el-form-item label="时长" class="meta-item narrow">
+        <el-form-item label="Thời lượng" class="meta-item narrow">
           <el-input-number v-model="form.duration" :min="1" :max="120" controls-position="right" @change="saveMeta" />
         </el-form-item>
       </div>
 
       <template v-if="isUniversal">
-        <el-form-item label="全能词">
+        <el-form-item label="Universal prompt">
           <el-input
             v-model="form.universal_segment_text"
             type="textarea"
             :rows="2"
             resize="vertical"
-            placeholder="全能模式片段描述"
+            placeholder="Mô tả phân đoạn chế độ universal"
           />
         </el-form-item>
-        <el-form-item label="视频词">
+        <el-form-item label="Video prompt">
           <el-input
             v-model="form.video_prompt"
             type="textarea"
             :rows="2"
             resize="vertical"
-            placeholder="生视频提示词"
+            placeholder="Prompt tạo video"
           />
         </el-form-item>
       </template>
       <template v-else>
         <div class="text-row-2">
-          <el-form-item label="动作" class="flex-1">
+          <el-form-item label="Hành động" class="flex-1">
             <el-input
               v-model="form.action"
               type="textarea"
               :rows="2"
               resize="vertical"
-              placeholder="画面动作"
+              placeholder="Hành động trong khung hình"
             />
           </el-form-item>
-          <el-form-item label="对白" class="flex-1">
+          <el-form-item label="Lời thoại" class="flex-1">
             <el-input
               v-model="form.dialogue"
               type="textarea"
               :rows="2"
               resize="vertical"
-              placeholder="角色对白"
+              placeholder="Lời thoại của nhân vật"
             />
           </el-form-item>
         </div>
-        <el-form-item label="生图词">
+        <el-form-item label="Image prompt">
           <el-input
             v-model="form.image_prompt"
             type="textarea"
             :rows="2"
             resize="vertical"
-            placeholder="图片提示词"
+            placeholder="Prompt tạo ảnh"
           />
         </el-form-item>
-        <el-form-item label="视频词">
+        <el-form-item label="Video prompt">
           <el-input
             v-model="form.video_prompt"
             type="textarea"
             :rows="2"
             resize="vertical"
-            placeholder="视频提示词"
+            placeholder="Prompt tạo video"
           />
         </el-form-item>
       </template>
     </el-form>
 
     <div class="panel-actions">
-      <el-button size="small" :loading="saving" @click.stop="saveFields">保存</el-button>
-      <el-button v-if="!isUniversal" size="small" :loading="busyStep === 'polish'" @click.stop="polishPrompt">润色</el-button>
-      <el-button v-if="!isUniversal" size="small" type="primary" :loading="busyStep === 'image'" @click.stop="runStep('image')">生图</el-button>
-      <el-button size="small" type="primary" :loading="busyStep === 'video'" @click.stop="runStep('video')">生视频</el-button>
-      <el-button size="small" type="warning" :loading="busyStep === 'audio'" @click.stop="runStep('audio')">配音</el-button>
-      <el-button size="small" type="danger" plain @click.stop="deleteStoryboard">删除</el-button>
+      <el-button size="small" :loading="saving" @click.stop="saveFields">Lưu</el-button>
+      <el-button v-if="!isUniversal" size="small" :loading="busyStep === 'polish'" @click.stop="polishPrompt">Trau chuốt</el-button>
+      <el-button v-if="!isUniversal" size="small" type="primary" :loading="busyStep === 'image'" @click.stop="runStep('image')">Tạo ảnh</el-button>
+      <el-button size="small" type="primary" :loading="busyStep === 'video'" @click.stop="runStep('video')">Tạo video</el-button>
+      <el-button size="small" type="warning" :loading="busyStep === 'audio'" @click.stop="runStep('audio')">Lồng tiếng</el-button>
+      <el-button size="small" type="danger" plain @click.stop="deleteStoryboard">Xoá</el-button>
     </div>
   </div>
 </template>
@@ -274,7 +274,7 @@ async function onRelationChange() {
     })
     await ctx?.refreshDrama?.(true)
   } catch (e) {
-    ElMessage.error(e?.message || '关联保存失败')
+    ElMessage.error(e?.message || 'Lưu liên kết thất bại')
   }
 }
 
@@ -288,7 +288,7 @@ async function saveMeta() {
     })
     await ctx?.refreshDrama?.(true)
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElMessage.error(e?.message || 'Lưu thất bại')
   }
 }
 
@@ -312,7 +312,7 @@ async function persistForm(silent = false) {
         duration: form.duration ?? 5,
       }
   await storyboardsAPI.update(props.storyboard.id, payload)
-  if (!silent) ElMessage.success('已保存')
+  if (!silent) ElMessage.success('Đã lưu')
 }
 
 async function saveFields() {
@@ -323,7 +323,7 @@ async function saveFields() {
     await persistForm(false)
     await ctx?.refreshDrama?.(true)
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElMessage.error(e?.message || 'Lưu thất bại')
   } finally {
     saving.value = false
     if (!busyStep.value) ctx?.nodeStatus?.clear(sbNodeId.value)
@@ -333,18 +333,18 @@ async function saveFields() {
 async function deleteStoryboard() {
   if (!props.storyboard?.id) return
   try {
-    await ElMessageBox.confirm('确定删除该分镜？此操作不可恢复。', '删除分镜', {
+    await ElMessageBox.confirm('Bạn có chắc muốn xoá storyboard này? Thao tác này không thể hoàn tác.', 'Xoá storyboard', {
       type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
     })
     await storyboardsAPI.delete(props.storyboard.id)
     ctx?.clearFocusedNode?.()
-    ElMessage.success('分镜已删除')
+    ElMessage.success('Đã xoá storyboard')
     await ctx?.refresh?.()
   } catch (e) {
     if (e === 'cancel') return
-    ElMessage.error(e?.message || '删除失败')
+    ElMessage.error(e?.message || 'Xoá thất bại')
   }
 }
 
@@ -355,10 +355,10 @@ async function polishPrompt() {
   try {
     const res = await storyboardsAPI.polishPrompt(props.storyboard.id)
     if (res?.polished_prompt) form.image_prompt = res.polished_prompt
-    ElMessage.success('提示词已润色')
+    ElMessage.success('Prompt đã được trau chuốt')
     await ctx?.refreshDrama?.(true)
   } catch (e) {
-    ElMessage.error(e?.message || '润色失败')
+    ElMessage.error(e?.message || 'Trau chuốt thất bại')
   } finally {
     busyStep.value = ''
     ctx?.nodeStatus?.clear(sbNodeId.value)
@@ -374,13 +374,13 @@ async function runStep(step) {
     try {
       await persistForm(true)
     } catch (e) {
-      ElMessage.error(e?.message || '保存失败')
+      ElMessage.error(e?.message || 'Lưu thất bại')
       return
     }
   }
 
   busyStep.value = step
-  const statusMsg = CANVAS_NODE_STATUS_LABELS[step] || '处理中…'
+  const statusMsg = CANVAS_NODE_STATUS_LABELS[step] || 'Đang xử lý…'
   ctx?.nodeStatus?.set(sbNodeId.value, { step, message: statusMsg })
   if (step === 'image') ctx?.nodeStatus?.set(`sbimg:${sbId}`, { step, message: statusMsg })
   if (step === 'video') ctx?.nodeStatus?.set(`sbvid:${sbId}`, { step, message: statusMsg })
@@ -393,14 +393,14 @@ async function runStep(step) {
     else if (step === 'audio') {
       const res = await runAudioStep(sb)
       if (res?.skipped) {
-        ElMessage.info(res.reason || '已跳过')
+        ElMessage.info(res.reason || 'Đã bỏ qua')
         return
       }
     }
-    ElMessage.success(step === 'image' ? '生图完成' : step === 'video' ? '视频生成完成' : '配音完成')
+    ElMessage.success(step === 'image' ? 'Đã tạo ảnh xong' : step === 'video' ? 'Đã tạo video xong' : 'Đã lồng tiếng xong')
     await ctx?.refresh?.()
   } catch (e) {
-    ElMessage.error(e?.message || '生成失败')
+    ElMessage.error(e?.message || 'Tạo thất bại')
   } finally {
     busyStep.value = ''
     ctx?.nodeStatus?.clear(sbNodeId.value)

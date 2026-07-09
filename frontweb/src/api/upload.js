@@ -2,9 +2,9 @@ import request from '@/utils/request'
 
 export const uploadAPI = {
   /**
-   * 上传图片文件，返回 { url, local_path }。需传 File 对象。
+   * Tải ảnh lên, trả về { url, local_path }. Cần truyền đối tượng File.
    * @param {File} file
-   * @param {{ dramaId?: number|string|null }} [opts] 有剧集 id 时写入 projects/…/uploads/，否则仍为根目录 uploads/
+   * @param {{ dramaId?: number|string|null }} [opts] khi có drama id sẽ ghi vào projects/…/uploads/, ngược lại vẫn dùng uploads/ ở gốc
    */
   uploadImage(file, opts = {}) {
     const form = new FormData()
@@ -18,9 +18,9 @@ export const uploadAPI = {
     })
   },
   /**
-   * 从图片（base64 data URL 或 http URL）提取实体特征描述，不依赖已有实体 ID。
+   * Trích xuất mô tả đặc trưng của entity từ ảnh (base64 data URL hoặc http URL), không phụ thuộc entity ID có sẵn.
    * entityType: 'character' | 'scene' | 'prop'
-   * imageUrl: data:image/xxx;base64,... 或 http URL
+   * imageUrl: data:image/xxx;base64,... hoặc http URL
    */
   extractDescriptionFromImage(entityType, imageUrl, entityName) {
     return request.post('/extract-description-from-image', {

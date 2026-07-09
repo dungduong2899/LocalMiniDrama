@@ -1,11 +1,11 @@
 <template>
   <div class="canvas-floating-toolbar nodrag nopan">
-    <span class="toolbar-label">快速新建</span>
-    <el-button size="small" @click="create('storyboard')">分镜</el-button>
-    <el-button size="small" @click="create('character')">角色</el-button>
-    <el-button size="small" @click="create('scene')">场景</el-button>
-    <el-button size="small" @click="create('prop')">道具</el-button>
-    <el-button size="small" @click="create('episode')">集</el-button>
+    <span class="toolbar-label">Tạo nhanh</span>
+    <el-button size="small" @click="create('storyboard')">Storyboard</el-button>
+    <el-button size="small" @click="create('character')">Nhân vật</el-button>
+    <el-button size="small" @click="create('scene')">Scene</el-button>
+    <el-button size="small" @click="create('prop')">Đạo cụ</el-button>
+    <el-button size="small" @click="create('episode')">Tập</el-button>
   </div>
 </template>
 

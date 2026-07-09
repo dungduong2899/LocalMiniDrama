@@ -1,19 +1,19 @@
 <template>
   <div class="film-create" :class="{ 'sidebar-collapsed': navCollapsed }">
-    <!-- 顶部 -->
+    <!-- Header -->
     <header class="header">
       <div class="header-inner">
         <h1 class="logo" @click="goList">
-          <span class="logo-main">本地短剧助手</span>
+          <span class="logo-main">LocalMiniDrama Assistant</span>
           <span class="logo-sub">LocalMiniDrama</span>
         </h1>
         <span class="breadcrumb-sep">›</span>
-        <span class="page-title">{{ dramaId ? (store.drama?.title || '项目') : '新建故事' }}</span>
+        <span class="page-title">{{ dramaId ? (store.drama?.title || 'Dự án') : 'Tạo phim mới' }}</span>
         <el-select
           v-if="dramaId"
           v-model="selectedEpisodeId"
           class="header-episode-select"
-          placeholder="选择集数"
+          placeholder="Chọn tập"
           clearable
           size="small"
           style="width: 130px"
@@ -22,40 +22,40 @@
           <el-option
             v-for="ep in (store.drama?.episodes || [])"
             :key="ep.id"
-            :label="ep.title || '第' + (ep.episode_number || 0) + '集'"
+            :label="ep.title || 'Tập ' + (ep.episode_number || 0)"
             :value="ep.id"
           />
         </el-select>
         <el-button v-if="dramaId" class="btn-back-drama" @click="router.push('/drama/' + dramaId)">
           <el-icon><ArrowLeft /></el-icon>
-          返回剧集
+          Quay lại phim
         </el-button>
         <el-button v-if="dramaId" type="primary" plain class="btn-canvas-mode" @click="goCanvasMode">
           <el-icon><Grid /></el-icon>
-          画布模式
+          Chế độ Canvas
         </el-button>
         <div class="header-actions">
-          <el-button class="btn-theme" :title="isDark ? '切换到浅色模式' : '切换到暗色模式'" @click="toggleTheme">
+          <el-button class="btn-theme" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
             <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? '浅色' : '暗色' }}
+            {{ isDark ? 'Sáng' : 'Tối' }}
           </el-button><el-button class="btn-ai-config" @click="showAiConfigDialog = true">
             <el-icon><Setting /></el-icon>
-            AI配置
+            Cấu hình AI
           </el-button>
         </div>
       </div>
     </header>
 
-    <!-- 左侧固定侧边栏 -->
-    <nav class="quick-nav" :class="{ collapsed: navCollapsed }" aria-label="快捷导航">
+    <!-- Left fixed sidebar -->
+    <nav class="quick-nav" :class="{ collapsed: navCollapsed }" aria-label="Điều hướng nhanh">
       <div class="nav-sidebar-header">
-        <span v-if="!navCollapsed" class="nav-sidebar-title">导航</span>
-        <div class="nav-toggle" :title="navCollapsed ? '展开导航' : '收起导航'" @click="toggleNav()">
+        <span v-if="!navCollapsed" class="nav-sidebar-title">Điều hướng</span>
+        <div class="nav-toggle" :title="navCollapsed ? 'Mở rộng điều hướng' : 'Thu gọn điều hướng'" @click="toggleNav()">
           <el-icon><Expand v-if="navCollapsed" /><Fold v-else /></el-icon>
         </div>
       </div>
 
-      <!-- 步骤列表 -->
+      <!-- Step list -->
       <div class="nav-steps">
         <div
           v-for="(step, idx) in navSteps"
@@ -64,7 +64,7 @@
           :class="['status-' + step.status]"
           @click="scrollToAnchor(step.anchor)"
         >
-          <!-- 左侧连接线 -->
+          <!-- Left connector line -->
           <div class="step-connector-wrap">
             <div v-if="idx > 0" class="step-line step-line-top" :class="{ filled: navSteps[idx - 1].status === 'done' }" />
             <div
@@ -78,29 +78,29 @@
             <div v-if="idx < navSteps.length - 1" class="step-line step-line-bottom" :class="{ filled: step.status === 'done' }" />
           </div>
 
-          <!-- 右侧文字 + 状态徽章 -->
+          <!-- Right text + status badge -->
           <div class="step-body">
             <span class="step-label">{{ step.label }}</span>
             <span v-if="step.count > 0 && step.status !== 'done'" class="step-count">{{ step.count }}</span>
-            <span v-if="step.status === 'partial'" class="step-badge partial-badge" title="部分完成">
+            <span v-if="step.status === 'partial'" class="step-badge partial-badge" title="Hoàn tất một phần">
               <el-icon><WarningFilled /></el-icon>
             </span>
-            <span v-else-if="step.status === 'generating'" class="step-badge gen-badge" title="生成中">
+            <span v-else-if="step.status === 'generating'" class="step-badge gen-badge" title="Đang tạo">
               <el-icon class="spin"><Loading /></el-icon>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- 分镜子列表 -->
+      <!-- Storyboard sub-list -->
       <div v-if="!navCollapsed && storyboards.length > 0" class="nav-group">
         <div class="nav-sub-toggle" @click="storyboardMenuExpanded = !storyboardMenuExpanded">
           <el-icon><Minus v-if="storyboardMenuExpanded" /><Plus v-else /></el-icon>
-          <span>分镜列表</span>
+          <span>Danh sách storyboard</span>
         </div>
         <div v-show="storyboardMenuExpanded" class="nav-sub-list">
           <template v-for="(sb, i) in storyboards" :key="sb.id">
-            <!-- 段落标题行 -->
+            <!-- Segment header row -->
             <div
               v-if="sb.segment_title && (i === 0 || sb.segment_index !== storyboards[i - 1].segment_index)"
               class="nav-segment-label"
@@ -110,27 +110,27 @@
             </div>
             <div
               class="nav-sub-item"
-              :title="sb.title || '分镜 ' + (i + 1)"
+              :title="sb.title || 'Storyboard ' + (i + 1)"
               @click="scrollToAnchor('sb-' + sb.id)"
             >
-              {{ i + 1 }}. {{ sb.title || '分镜' }}
+              {{ i + 1 }}. {{ sb.title || 'Storyboard' }}
             </div>
           </template>
         </div>
       </div>
 
-      <!-- 当前任务面板 -->
+      <!-- Active task panel -->
       <div v-if="allActiveTaskItems.length > 0" class="atp-panel">
-        <!-- 折叠态：只显示旋转点和数量 -->
+        <!-- Collapsed: only show spinner and count -->
         <div v-if="navCollapsed" class="atp-collapsed-badge" :title="allActiveTaskLabels.join('\n')">
           <span class="atp-spin-dot" />
           <span class="atp-collapsed-count">{{ allActiveTaskItems.length }}</span>
         </div>
-        <!-- 展开态：标题 + 任务列表 -->
+        <!-- Expanded: title + task list -->
         <template v-else>
           <div class="atp-header">
             <span class="atp-spin-dot" />
-            <span class="atp-title">进行中</span>
+            <span class="atp-title">Đang xử lý</span>
             <span class="atp-count-badge">{{ allActiveTaskItems.length }}</span>
           </div>
           <div class="atp-list">
@@ -146,8 +146,8 @@
               <button
                 type="button"
                 class="atp-item-close"
-                title="取消任务"
-                aria-label="取消任务"
+                title="Huỷ task"
+                aria-label="Huỷ task"
                 @click.stop="cancelActiveTask(item)"
               >
                 <el-icon :size="12"><Close /></el-icon>
@@ -160,7 +160,7 @@
               :show-after="200"
             >
               <div class="atp-more">
-                还有 {{ allActiveTaskItems.length - 8 }} 个任务...
+                Còn {{ allActiveTaskItems.length - 8 }} task khác...
               </div>
             </el-tooltip>
           </div>
@@ -169,7 +169,7 @@
     </nav>
 
     <main class="main">
-      <!-- 角色/道具/场景上传图片用，单例放在外层避免 v-for 导致 ref 为数组 -->
+      <!-- File input for uploading character/prop/scene images (singleton to avoid v-for causing array refs) -->
       <input
         ref="resourceImageFileInput"
         type="file"
@@ -177,7 +177,7 @@
         style="display: none"
         @change="onResourceImageFileChange"
       />
-      <!-- 分镜图上传图片用，单例放在外层避免 v-for 导致 ref 为数组 -->
+      <!-- File input for uploading storyboard images (singleton to avoid v-for causing array refs) -->
       <input
         ref="sbImageFileInput"
         type="file"
@@ -185,35 +185,35 @@
         style="display: none"
         @change="onSbImageFileChange"
       />
-      <!-- 剧本工作台：单卡片 + 选项卡（创作 / 选择） -->
+      <!-- Script workbench: single card + tabs (create / select) -->
       <section class="section card script-workbench-unified">
         <el-tabs v-model="scriptWorkbenchMode" class="script-workbench-tabs">
-          <el-tab-pane label="创作剧本" name="create">
+          <el-tab-pane label="Sáng tác kịch bản" name="create">
             <div class="script-pane-inner">
               <div class="script-sub-block">
-                <h2 class="section-title">故事生成</h2>
-                <p class="section-desc">输入一段故事梗概，AI 帮你扩写成完整剧本，或直接导入小说章节</p>
+                <h2 class="section-title">Tạo cốt truyện</h2>
+                <p class="section-desc">Nhập một đoạn tóm tắt câu chuyện, AI sẽ mở rộng thành kịch bản hoàn chỉnh, hoặc bạn có thể nhập chương tiểu thuyết trực tiếp</p>
                 <el-input
                   v-model="storyInput"
                   type="textarea"
                   :rows="4"
-                  placeholder="例如：一个少女在森林里遇见会说话的狐狸，一起寻找失落的宝石..."
+                  placeholder="Ví dụ: Một thiếu nữ gặp con cáo biết nói trong rừng, cùng nhau đi tìm viên đá quý bị thất lạc..."
                   class="story-textarea"
                 />
                 <div class="row gap" style="margin-top: 10px; flex-wrap: wrap;">
-                  <el-select v-model="storyStyle" placeholder="故事风格" clearable style="width: 120px" @change="() => saveProjectSettings(false)">
-                    <el-option label="现代" value="modern" />
-                    <el-option label="古风" value="ancient" />
-                    <el-option label="奇幻" value="fantasy" />
-                    <el-option label="日常" value="daily" />
+                  <el-select v-model="storyStyle" placeholder="Phong cách" clearable style="width: 120px" @change="() => saveProjectSettings(false)">
+                    <el-option label="Hiện đại" value="modern" />
+                    <el-option label="Cổ trang" value="ancient" />
+                    <el-option label="Kỳ ảo" value="fantasy" />
+                    <el-option label="Đời thường" value="daily" />
                   </el-select>
-                  <el-select v-model="storyType" placeholder="剧本类型" clearable style="width: 120px" @change="() => saveProjectSettings(false)">
-                    <el-option label="剧情" value="drama" />
-                    <el-option label="喜剧" value="comedy" />
-                    <el-option label="冒险" value="adventure" />
+                  <el-select v-model="storyType" placeholder="Thể loại" clearable style="width: 120px" @change="() => saveProjectSettings(false)">
+                    <el-option label="Chính kịch" value="drama" />
+                    <el-option label="Hài" value="comedy" />
+                    <el-option label="Phiêu lưu" value="adventure" />
                   </el-select>
                   <div style="display:flex;align-items:center;gap:6px;font-size:13px">
-                    <span>集数</span>
+                    <span>Số tập</span>
                     <el-input-number
                       v-model="storyEpisodeCount"
                       :min="1"
@@ -224,21 +224,21 @@
                     />
                   </div>
                   <el-button type="primary" :loading="isStoryGenRunning" @click="onGenerateStory">
-                    生成剧本
+                    Tạo kịch bản
                   </el-button>
                   <el-button plain @click="showNovelImport = true">
                     <el-icon><DocumentAdd /></el-icon>
-                    导入小说
+                    Nhập tiểu thuyết
                   </el-button>
                 </div>
               </div>
               <div class="script-sub-divider" />
               <div id="anchor-script" class="script-sub-block">
-                <h2 class="section-title">剧本</h2>
+                <h2 class="section-title">Kịch bản</h2>
                 <div class="row gap" style="margin-bottom: 10px; flex-wrap: wrap;">
                   <el-select
                     v-model="selectedEpisodeId"
-                    placeholder="选择集数"
+                    placeholder="Chọn tập"
                     clearable
                     style="width: 130px"
                     :disabled="!dramaId"
@@ -247,20 +247,20 @@
                     <el-option
                       v-for="ep in (store.drama?.episodes || [])"
                       :key="ep.id"
-                      :label="ep.title || '第' + (ep.episode_number || 0) + '集'"
+                      :label="ep.title || 'Tập ' + (ep.episode_number || 0)"
                       :value="ep.id"
                     />
                   </el-select>
-                  <el-input v-model="scriptTitle" placeholder="集标题" style="width: 150px" />
+                  <el-input v-model="scriptTitle" placeholder="Tiêu đề tập" style="width: 150px" />
                   <el-button v-if="dramaId" style="margin-left: auto" @click="onAddEpisode">
-                    <el-icon><Plus /></el-icon>添加一集
+                    <el-icon><Plus /></el-icon>Thêm tập
                   </el-button>
                 </div>
                 <el-input
                   v-model="scriptContent"
                   type="textarea"
                   :rows="8"
-                  placeholder="剧本内容将显示在这里，可直接编辑..."
+                  placeholder="Nội dung kịch bản sẽ hiển thị ở đây, có thể chỉnh sửa trực tiếp..."
                   class="story-textarea"
                 />
                 <div class="row gap" style="margin-top: 8px; flex-wrap: wrap;">
@@ -269,22 +269,22 @@
                     :disabled="!!dramaId && (store.drama?.episodes?.length > 0) && !currentEpisodeId"
                     @click="onGenerateScript"
                   >
-                    保存当前集
+                    Lưu tập hiện tại
                   </el-button>
                 </div>
               </div>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="选择剧本" name="select">
+          <el-tab-pane label="Chọn kịch bản" name="select">
             <p class="section-desc script-mode-hint">
-              从剧本库选择后，仅把「故事梗概」与「各集剧本正文」写入当前工程，不会导入角色、分镜、图片或视频。
+              Khi chọn từ thư viện kịch bản, chỉ tóm tắt truyện và nội dung từng tập sẽ được nhập vào dự án hiện tại, không nhập nhân vật, storyboard, ảnh hay video.
             </p>
             <el-button type="primary" @click="openSelectScriptDialog">
               <el-icon><Document /></el-icon>
-              从已有剧本中选择…
+              Chọn từ kịch bản có sẵn…
             </el-button>
             <div v-if="dramaId && (store.drama?.episodes?.length || storyInput)" class="script-preview-wrap">
-              <h3 class="preview-block-title">故事梗概</h3>
+              <h3 class="preview-block-title">Tóm tắt truyện</h3>
               <el-input
                 :model-value="storyInput"
                 type="textarea"
@@ -293,12 +293,12 @@
                 class="story-textarea"
               />
               <template v-if="(store.drama?.episodes || []).length > 1">
-                <h3 class="preview-block-title">分集剧本</h3>
+                <h3 class="preview-block-title">Kịch bản từng tập</h3>
                 <el-tabs v-model="selectPreviewEpisodeId" class="preview-ep-tabs">
                   <el-tab-pane
                     v-for="ep in (store.drama?.episodes || [])"
                     :key="ep.id"
-                    :label="ep.title || ('第' + (ep.episode_number || 0) + '集')"
+                    :label="ep.title || ('Tập ' + (ep.episode_number || 0))"
                     :name="String(ep.id)"
                   >
                     <el-input
@@ -312,7 +312,7 @@
                 </el-tabs>
               </template>
               <template v-else>
-                <h3 class="preview-block-title">剧本正文</h3>
+                <h3 class="preview-block-title">Nội dung kịch bản</h3>
                 <el-input
                   :model-value="scriptContent"
                   type="textarea"
@@ -322,17 +322,17 @@
                 />
               </template>
               <div class="preview-actions">
-                <el-button type="primary" plain @click="scriptWorkbenchMode = 'create'">切换到创作剧本以编辑</el-button>
+                <el-button type="primary" plain @click="scriptWorkbenchMode = 'create'">Chuyển sang tab Sáng tác để chỉnh sửa</el-button>
               </div>
             </div>
-            <p v-else class="script-select-empty">尚未选择剧本，请点击上方按钮</p>
+            <p v-else class="script-select-empty">Chưa chọn kịch bản, vui lòng bấm nút phía trên</p>
           </el-tab-pane>
         </el-tabs>
       </section>
 
       <el-dialog
         v-model="showSelectScriptDialog"
-        title="从剧本库导入"
+        title="Nhập từ thư viện kịch bản"
         width="640px"
         destroy-on-close
         @open="loadSelectScriptList"
@@ -345,37 +345,37 @@
             :class="{ disabled: selectScriptImporting }"
             @click="!selectScriptImporting && onPickScriptFromDialog(d.id)"
           >
-            <div class="select-script-title">{{ d.title || '未命名' }}</div>
-            <div class="select-script-desc">{{ (d.description || '暂无简介').slice(0, 200) }}{{ (d.description && d.description.length > 200) ? '…' : '' }}</div>
+            <div class="select-script-title">{{ d.title || 'Chưa đặt tên' }}</div>
+            <div class="select-script-desc">{{ (d.description || 'Chưa có mô tả').slice(0, 200) }}{{ (d.description && d.description.length > 200) ? '…' : '' }}</div>
           </div>
-          <div v-if="!selectScriptLoading && selectScriptDramas.length === 0" class="select-script-empty">剧本库为空，请先在「剧本管理」创建剧本</div>
-          <div v-else-if="!selectScriptLoading && selectableScriptDramas.length === 0" class="select-script-empty">没有可导入的其他剧本</div>
+          <div v-if="!selectScriptLoading && selectScriptDramas.length === 0" class="select-script-empty">Thư viện kịch bản trống, vui lòng tạo kịch bản ở phần Quản lý kịch bản trước</div>
+          <div v-else-if="!selectScriptLoading && selectableScriptDramas.length === 0" class="select-script-empty">Không có kịch bản khác để nhập</div>
         </div>
       </el-dialog>
 
-      <!-- 一键全流程生成 -->
+      <!-- One-click full pipeline -->
       <section class="section card pipeline-section">
         <div class="one-click-actions">
-          <span class="one-click-label">🚀 一键全流程</span>
+          <span class="one-click-label">🚀 Toàn quy trình 1 click</span>
           <el-select v-model="projectAspectRatio" style="width: 130px" @change="() => saveProjectSettings(false)">
-            <el-option label="16:9 横屏" value="16:9" />
-            <el-option label="9:16 竖屏" value="9:16" />
-            <el-option label="3:4 竖版" value="3:4" />
-            <el-option label="1:1 方形" value="1:1" />
+            <el-option label="16:9 Ngang" value="16:9" />
+            <el-option label="9:16 Dọc" value="9:16" />
+            <el-option label="3:4 Dọc" value="3:4" />
+            <el-option label="1:1 Vuông" value="1:1" />
             <el-option label="4:3" value="4:3" />
-            <el-option label="21:9 宽银幕" value="21:9" />
+            <el-option label="21:9 Ultrawide" value="21:9" />
           </el-select>
           <el-select v-model="videoClipDuration" style="width: 105px" @change="() => saveProjectSettings(false)">
-            <el-option label="4秒/段" :value="4" />
-            <el-option label="5秒/段" :value="5" />
-            <el-option label="8秒/段" :value="8" />
-            <el-option label="10秒/段" :value="10" />
-            <el-option label="12秒/段" :value="12" />
-            <el-option label="15秒/段" :value="15" />
+            <el-option label="4s/đoạn" :value="4" />
+            <el-option label="5s/đoạn" :value="5" />
+            <el-option label="8s/đoạn" :value="8" />
+            <el-option label="10s/đoạn" :value="10" />
+            <el-option label="12s/đoạn" :value="12" />
+            <el-option label="15s/đoạn" :value="15" />
           </el-select>
-          <el-select v-model="scriptLanguage" placeholder="分镜语言" clearable style="width: 105px">
-            <el-option label="中文" value="zh" />
-            <el-option label="英文" value="en" />
+          <el-select v-model="scriptLanguage" placeholder="Ngôn ngữ storyboard" clearable style="width: 105px">
+            <el-option label="Tiếng Trung" value="zh" />
+            <el-option label="Tiếng Anh" value="en" />
           </el-select>
           <StylePickerButton
             v-model="generationStyle"
@@ -388,38 +388,38 @@
             :disabled="!currentEpisodeId || pipelineRunning"
             @click="startOneClickPipeline"
           >
-            一键成片带图片视频
+            Tạo phim hoàn chỉnh (ảnh + video)
           </el-button>
           <el-button
             :loading="pipelineRunning && !pipelinePaused"
             :disabled="!currentEpisodeId || pipelineRunning"
-            title="仅提取角色、场景、道具与生成分镜文本，不生成图片与视频"
+            title="Chỉ trích xuất nhân vật, scene, đạo cụ và tạo text storyboard, không tạo ảnh và video"
             @click="startTextFrameworkPipeline"
           >
-            生成文本框架
+            Tạo khung văn bản
           </el-button>
           <template v-if="pipelineRunning">
-            <el-button v-if="!pipelinePaused" type="warning" @click="pipelinePaused = true">⏸ 暂停</el-button>
-            <el-button v-else type="success" @click="onPipelineResume">▶ 继续</el-button>
+            <el-button v-if="!pipelinePaused" type="warning" @click="pipelinePaused = true">⏸ Tạm dừng</el-button>
+            <el-button v-else type="success" @click="onPipelineResume">▶ Tiếp tục</el-button>
           </template>
         </div>
         <div v-if="pipelineRunning || pipelineErrorLog.length > 0" class="pipeline-status">
           <div v-if="pipelineCurrentStep" class="pipeline-current-step">
             <span v-if="pipelineStepIndex > 0" class="pipeline-step-badge">{{ pipelineStepIndex }}/{{ pipelineStepTotal }}</span>
-            {{ pipelineCurrentStep.replace(/^\[步骤 \d+\/\d+\] /, '') }}
+            {{ pipelineCurrentStep.replace(/^\[Bước \d+\/\d+\] /, '') }}
           </div>
-          <!-- 阶段间倒计时 -->
+          <!-- Countdown between stages -->
           <div v-if="pipelineCountdown > 0" class="pipeline-countdown">
             <div class="pipeline-countdown-ring">
               <span class="pipeline-countdown-num">{{ pipelineCountdown }}</span>
-              <span class="pipeline-countdown-unit">秒</span>
+              <span class="pipeline-countdown-unit">giây</span>
             </div>
             <div class="pipeline-countdown-body">
               <p class="pipeline-countdown-msg">{{ pipelineCountdownMsg }}</p>
               <div class="pipeline-countdown-actions">
-                <el-button size="small" type="success" @click="skipPipelineCountdown">⚡ 立即开始下一阶段</el-button>
-                <el-button v-if="!pipelinePaused" size="small" type="warning" @click="pipelinePaused = true">⏸ 暂停倒计时</el-button>
-                <span v-else class="pipeline-countdown-paused">已暂停 — 点击右上角"继续"恢复</span>
+                <el-button size="small" type="success" @click="skipPipelineCountdown">⚡ Bắt đầu giai đoạn tiếp theo ngay</el-button>
+                <el-button v-if="!pipelinePaused" size="small" type="warning" @click="pipelinePaused = true">⏸ Tạm dừng đếm ngược</el-button>
+                <span v-else class="pipeline-countdown-paused">Đã tạm dừng — bấm "Tiếp tục" phía trên bên phải để khôi phục</span>
               </div>
             </div>
           </div>
@@ -433,7 +433,7 @@
             </span>
           </div>
           <div v-if="pipelineErrorLog.length > 0" class="pipeline-error-log">
-            <div class="pipeline-error-title">执行过程中的错误：</div>
+            <div class="pipeline-error-title">Lỗi trong quá trình chạy:</div>
             <div v-for="(entry, idx) in pipelineErrorLog" :key="idx" class="pipeline-error-line">
               [{{ entry.step }}] {{ entry.message }}
             </div>
@@ -441,26 +441,26 @@
         </div>
       </section>
 
-      <!-- 资源管理：角色 / 道具 / 场景 -->
+      <!-- Resource management: characters / props / scenes -->
       <section class="section card resource-panel">
         <div class="collapse-header" @click="resourcePanelCollapsed = !resourcePanelCollapsed">
-          <h2 class="section-title">资源管理</h2>
+          <h2 class="section-title">Quản lý tài nguyên</h2>
           <el-icon class="collapse-icon"><ArrowUp v-if="!resourcePanelCollapsed" /><ArrowDown v-else /></el-icon>
         </div>
         <div v-show="!resourcePanelCollapsed" class="resource-panel-body">
-          <!-- 角色生成 -->
+          <!-- Character generation -->
           <div id="anchor-characters" class="resource-block card">
             <div class="collapse-header resource-block-header" @click="charactersBlockCollapsed = !charactersBlockCollapsed">
-              <h3 class="resource-block-title">角色生成</h3>
+              <h3 class="resource-block-title">Tạo nhân vật</h3>
               <el-icon class="collapse-icon"><ArrowUp v-if="!charactersBlockCollapsed" /><ArrowDown v-else /></el-icon>
             </div>
             <div v-show="!charactersBlockCollapsed" class="resource-block-body">
               <div class="asset-actions">
                 <el-button type="primary" size="small" :loading="charactersGenerating" :disabled="!dramaId" @click="onGenerateCharacters">
-                  剧本自动提取角色
+                  Trích xuất nhân vật từ kịch bản
                 </el-button>
-                <el-button size="small" :disabled="!dramaId" @click="openAddCharacter">添加角色</el-button>
-                <el-button size="small" @click="showCharLibrary = true">本剧角色库</el-button>
+                <el-button size="small" :disabled="!dramaId" @click="openAddCharacter">Thêm nhân vật</el-button>
+                <el-button size="small" @click="showCharLibrary = true">Thư viện nhân vật phim này</el-button>
               </div>
               <div class="asset-list asset-list-two">
                 <div v-for="char in characters" :key="char.id" class="asset-item asset-item-left-right">
@@ -470,18 +470,18 @@
                         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ char.name }}</span>
                         <el-tag v-if="char.role" size="small" effect="plain" :type="char.role === 'main' ? 'danger' : char.role === 'supporting' ? 'warning' : 'info'" style="flex-shrink:0;padding:0 5px;font-size:11px;height:18px;line-height:18px">{{ charRoleLabel(char.role) }}</el-tag>
                       </span>
-                      <el-button type="danger" text size="small" class="btn-delete-icon" title="删除" @click="onDeleteCharacter(char)">
+                      <el-button type="danger" text size="small" class="btn-delete-icon" title="Xoá" @click="onDeleteCharacter(char)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <div class="asset-desc-full">{{ char.appearance || char.description || '暂无描述' }}</div>
+                    <div class="asset-desc-full">{{ char.appearance || char.description || 'Chưa có mô tả' }}</div>
                     <div class="asset-btns">
-                      <el-button size="small" @click="editCharacter(char)">编辑</el-button>
+                      <el-button size="small" @click="editCharacter(char)">Sửa</el-button>
                       <el-button size="small" :loading="addingCharToLibraryId === char.id" :disabled="!hasAssetImage(char)" @click="onAddCharacterToLibrary(char)">
-                        加入本剧库
+                        Thêm vào thư viện phim
                       </el-button>
                       <el-button size="small" :loading="addingCharToMaterialId === char.id" :disabled="!hasAssetImage(char)" @click="onAddCharacterToMaterialLibrary(char)">
-                        加入素材库
+                        Thêm vào thư viện tư liệu
                       </el-button><el-button
                         size="small"
                         :type="char.seedance2_asset?.status === 'active' ? 'success' : 'warning'"
@@ -494,10 +494,10 @@
                       </el-button>
                     </div>
 
-                    <!-- Seedance 2.0 音色参考（仅该模型有效，其他模型不生效） -->
+                    <!-- Seedance 2.0 voice reference (chỉ áp dụng cho model này) -->
                     <div class="sd2-voice-row" style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                       <template v-if="char.seedance2_voice_asset?.status === 'active'">
-                        <!-- 音色参考已设置：显示试听 + 更换 -->
+                        <!-- Voice reference đã đặt: hiển thị nghe thử + thay đổi -->
                         <el-button
                           size="small"
                           type="success"
@@ -505,7 +505,7 @@
                           @click="playSd2Voice(char)"
                         >
                           <el-icon><VideoPlay /></el-icon>
-                          <span style="margin-left:4px">试听</span>
+                          <span style="margin-left:4px">Nghe thử</span>
                         </el-button>
                         <el-button
                           size="small"
@@ -514,9 +514,9 @@
                           :loading="sd2VoiceUploadingId === char.id"
                           @click="onSd2VoiceReplace(char)"
                         >
-                          更换
+                          Thay đổi
                         </el-button>
-                        <span style="font-size:11px;color:#67c23a">音色已设置</span>
+                        <span style="font-size:11px;color:#67c23a">Voice đã đặt</span>
                       </template>
                       <template v-else>
                         <el-button
@@ -528,17 +528,17 @@
                         >
                           {{ sd2VoiceActionLabel(char) }}
                         </el-button>
-                        <span v-if="char.seedance2_voice_asset?.status === 'stale'" style="font-size:11px;color:#e6a23c">需刷新</span>
+                        <span v-if="char.seedance2_voice_asset?.status === 'stale'" style="font-size:11px;color:#e6a23c">Cần làm mới</span>
                       </template>
-                      <span style="font-size:10px;color:#909399">仅 Seedance 2.0 模型生效</span>
+                      <span style="font-size:10px;color:#909399">Chỉ áp dụng cho model Seedance 2.0</span>
                     </div>
                     <div v-if="getCharAffectedStoryboards(char.id).length" class="asset-storyboard-link">
-                      <span class="asl-label">影响的分镜：</span>
+                      <span class="asl-label">Storyboard ảnh hưởng:</span>
                       <span
                         v-for="sb in getCharAffectedStoryboards(char.id)"
                         :key="sb.id"
                         class="asl-chip"
-                        title="点击跳转到该分镜"
+                        title="Bấm để chuyển đến storyboard này"
                         @click="scrollToStoryboard(sb.id)"
                       >#{{ sb.storyboard_number }}</span>
                       <span v-if="regenSbImagesForAsset.has('char-' + char.id) && regenSbImagesProgress['char-' + char.id]" class="asl-progress">
@@ -550,7 +550,7 @@
                         :loading="regenSbImagesForAsset.has('char-' + char.id)"
                         @click="onRegenAffectedSbImages('char-' + char.id, getCharAffectedStoryboards(char.id))"
                       >
-                        <span v-if="!regenSbImagesForAsset.has('char-' + char.id)">↻ 重新生成分镜图</span>
+                        <span v-if="!regenSbImagesForAsset.has('char-' + char.id)">↻ Tạo lại ảnh storyboard</span>
                       </el-button>
                     </div>
                   </div>
@@ -567,76 +567,76 @@
                     >
                       <img v-if="hasAssetImage(char)" :src="assetImageUrl(char)" class="cover-img" alt="" />
                       <div v-else-if="char.error_msg || char.errorMsg" class="cover-placeholder error" :title="char.error_msg || char.errorMsg">{{ char.error_msg || char.errorMsg }}</div>
-                      <div v-else class="cover-placeholder">暂无图</div>
-                      <div v-if="dragOverResourceKey === 'char-' + char.id" class="asset-cover-drop-hint">松开上传</div>
+                      <div v-else class="cover-placeholder">Chưa có ảnh</div>
+                      <div v-if="dragOverResourceKey === 'char-' + char.id" class="asset-cover-drop-hint">Thả để tải lên</div>
                     </div>
-                    <!-- 额外参考图条 -->
+                    <!-- Extra reference images strip -->
                     <div v-if="parseExtraImages(char).length" class="extra-images-strip">
-                      <div v-for="ep in parseExtraImages(char)" :key="ep" class="extra-thumb" :title="'点击设为主图（悬停左上角可放大预览）'">
+                      <div v-for="ep in parseExtraImages(char)" :key="ep" class="extra-thumb" :title="'Bấm để đặt làm ảnh chính (hover góc trên để xem trước)'">
                         <img :src="localPathToUrl(ep)" alt="" @click="onSetPrimaryImage('character', char, ep)" />
-                        <button class="thumb-preview-btn" title="放大预览" @click.stop="openImagePreview(localPathToUrl(ep))">
+                        <button class="thumb-preview-btn" title="Xem trước" @click.stop="openImagePreview(localPathToUrl(ep))">
                           <el-icon :size="10"><ZoomIn /></el-icon>
                         </button>
-                        <button class="extra-thumb-remove" title="移除" @click.stop="onRemoveExtraImage('character', char, ep)">×</button>
+                        <button class="extra-thumb-remove" title="Xoá" @click.stop="onRemoveExtraImage('character', char, ep)">×</button>
                       </div>
                     </div>
                     <div class="asset-cover-actions">
                       <el-button type="primary" size="small" :loading="generatingCharIds.has(char.id)" @click="onGenerateCharacterImage(char)">
                         <el-icon v-if="!generatingCharIds.has(char.id)"><MagicStick /></el-icon>
-                        AI 生成
+                        AI tạo
                       </el-button>
                       <el-button type="success" size="small" :loading="uploadingResourceId === 'char-' + char.id" @click="onUploadResourceClick('character', char.id)">
                         <el-icon v-if="uploadingResourceId !== 'char-' + char.id"><Upload /></el-icon>
-                        上传
+                        Tải lên
                       </el-button>
                     </div>
                   </div>
                 </div>
-                <div v-if="characters.length === 0" class="empty-tip">暂无角色，请先「AI 生成角色」或在上一步保存剧本后提取</div>
+                <div v-if="characters.length === 0" class="empty-tip">Chưa có nhân vật, vui lòng bấm "Trích xuất nhân vật từ kịch bản" hoặc lưu kịch bản ở bước trước để trích xuất</div>
               </div>
             </div>
           </div>
 
-          <!-- 道具生成 -->
+          <!-- Prop generation -->
           <div id="anchor-props" class="resource-block card">
             <div class="collapse-header resource-block-header" @click="propsBlockCollapsed = !propsBlockCollapsed">
-              <h3 class="resource-block-title">道具生成</h3>
+              <h3 class="resource-block-title">Tạo đạo cụ</h3>
               <el-icon class="collapse-icon"><ArrowUp v-if="!propsBlockCollapsed" /><ArrowDown v-else /></el-icon>
             </div>
             <div v-show="!propsBlockCollapsed" class="resource-block-body">
               <div class="asset-actions">
-                <el-button type="primary" size="small" :loading="propsExtracting" :disabled="!currentEpisodeId" @click="onExtractProps">从剧本提取道具</el-button>
-                <el-button size="small" :disabled="!dramaId" @click="showAddProp = true">添加道具</el-button>
-                <el-button size="small" @click="showPropLibrary = true">本剧道具库</el-button>
+                <el-button type="primary" size="small" :loading="propsExtracting" :disabled="!currentEpisodeId" @click="onExtractProps">Trích xuất đạo cụ từ kịch bản</el-button>
+                <el-button size="small" :disabled="!dramaId" @click="showAddProp = true">Thêm đạo cụ</el-button>
+                <el-button size="small" @click="showPropLibrary = true">Thư viện đạo cụ phim này</el-button>
               </div>
               <div class="prop-gen-mode" style="margin: 8px 0; font-size: 13px;">
-                <el-checkbox v-model="propUseQuadGrid">生成四视图道具（默认单图，纯色无缝背景）</el-checkbox>
+                <el-checkbox v-model="propUseQuadGrid">Tạo đạo cụ 4 view (mặc định 1 ảnh, nền đồng màu liền mạch)</el-checkbox>
               </div>
               <div class="asset-list asset-list-two">
                 <div v-for="prop in props" :key="prop.id" class="asset-item asset-item-left-right">
                   <div class="asset-info">
                     <div class="asset-name">
                       <span>{{ prop.name }}</span>
-                      <el-button type="danger" text size="small" class="btn-delete-icon" title="删除" @click="onDeleteProp(prop)">
+                      <el-button type="danger" text size="small" class="btn-delete-icon" title="Xoá" @click="onDeleteProp(prop)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <div class="asset-desc-full">{{ prop.description || prop.prompt || '暂无描述' }}</div>
+                    <div class="asset-desc-full">{{ prop.description || prop.prompt || 'Chưa có mô tả' }}</div>
                     <div class="asset-btns">
-                      <el-button size="small" @click="editProp(prop)">编辑</el-button>
+                      <el-button size="small" @click="editProp(prop)">Sửa</el-button>
                       <el-button size="small" :loading="addingPropToLibraryId === prop.id" :disabled="!hasAssetImage(prop)" @click="onAddPropToLibrary(prop)">
-                        加入本剧库
+                        Thêm vào thư viện phim
                       </el-button>
                       <el-button size="small" :loading="addingPropToMaterialId === prop.id" :disabled="!hasAssetImage(prop)" @click="onAddPropToMaterialLibrary(prop)">
-                        加入素材库
+                        Thêm vào thư viện tư liệu
                       </el-button></div>
                     <div v-if="getPropAffectedStoryboards(prop.id).length" class="asset-storyboard-link">
-                      <span class="asl-label">影响的分镜：</span>
+                      <span class="asl-label">Storyboard ảnh hưởng:</span>
                       <span
                         v-for="sb in getPropAffectedStoryboards(prop.id)"
                         :key="sb.id"
                         class="asl-chip"
-                        title="点击跳转到该分镜"
+                        title="Bấm để chuyển đến storyboard này"
                         @click="scrollToStoryboard(sb.id)"
                       >#{{ sb.storyboard_number }}</span>
                       <span v-if="regenSbImagesForAsset.has('prop-' + prop.id) && regenSbImagesProgress['prop-' + prop.id]" class="asl-progress">
@@ -648,7 +648,7 @@
                         :loading="regenSbImagesForAsset.has('prop-' + prop.id)"
                         @click="onRegenAffectedSbImages('prop-' + prop.id, getPropAffectedStoryboards(prop.id))"
                       >
-                        <span v-if="!regenSbImagesForAsset.has('prop-' + prop.id)">↻ 重新生成分镜图</span>
+                        <span v-if="!regenSbImagesForAsset.has('prop-' + prop.id)">↻ Tạo lại ảnh storyboard</span>
                       </el-button>
                     </div>
                   </div>
@@ -665,79 +665,79 @@
                     >
                       <img v-if="hasAssetImage(prop)" :src="assetImageUrl(prop)" class="cover-img" alt="" />
                       <div v-else-if="prop.error_msg || prop.errorMsg" class="cover-placeholder error" :title="prop.error_msg || prop.errorMsg">{{ prop.error_msg || prop.errorMsg }}</div>
-                      <div v-else class="cover-placeholder">暂无图</div>
-                      <div v-if="dragOverResourceKey === 'prop-' + prop.id" class="asset-cover-drop-hint">松开上传</div>
+                      <div v-else class="cover-placeholder">Chưa có ảnh</div>
+                      <div v-if="dragOverResourceKey === 'prop-' + prop.id" class="asset-cover-drop-hint">Thả để tải lên</div>
                     </div>
                     <div v-if="parseExtraImages(prop).length" class="extra-images-strip">
-                      <div v-for="ep in parseExtraImages(prop)" :key="ep" class="extra-thumb" title="点击设为主图（悬停左上角可放大预览）">
+                      <div v-for="ep in parseExtraImages(prop)" :key="ep" class="extra-thumb" title="Bấm để đặt làm ảnh chính (hover góc trên để xem trước)">
                         <img :src="localPathToUrl(ep)" alt="" @click="onSetPrimaryImage('prop', prop, ep)" />
-                        <button class="thumb-preview-btn" title="放大预览" @click.stop="openImagePreview(localPathToUrl(ep))">
+                        <button class="thumb-preview-btn" title="Xem trước" @click.stop="openImagePreview(localPathToUrl(ep))">
                           <el-icon :size="10"><ZoomIn /></el-icon>
                         </button>
-                        <button class="extra-thumb-remove" title="移除" @click.stop="onRemoveExtraImage('prop', prop, ep)">×</button>
+                        <button class="extra-thumb-remove" title="Xoá" @click.stop="onRemoveExtraImage('prop', prop, ep)">×</button>
                       </div>
                     </div>
                     <div class="asset-cover-actions">
-                      <el-tooltip :content="propUseQuadGrid ? '四视图道具（前/侧/后/顶，纯色无缝背景）' : '单图道具（纯色无缝背景）'" placement="top">
+                      <el-tooltip :content="propUseQuadGrid ? 'Đạo cụ 4 view (trước/bên/sau/trên, nền đồng màu)' : 'Đạo cụ 1 ảnh (nền đồng màu)'" placement="top">
                         <el-button type="primary" size="small" :loading="generatingPropIds.has(prop.id)" @click="onGeneratePropImage(prop, propUseQuadGrid)">
                           <el-icon v-if="!generatingPropIds.has(prop.id)"><MagicStick /></el-icon>
-                          AI 生成
+                          AI tạo
                         </el-button>
                       </el-tooltip>
                       <el-button type="success" size="small" :loading="uploadingResourceId === 'prop-' + prop.id" @click="onUploadResourceClick('prop', prop.id)">
                         <el-icon v-if="uploadingResourceId !== 'prop-' + prop.id"><Upload /></el-icon>
-                        上传
+                        Tải lên
                       </el-button>
                     </div>
                   </div>
                 </div>
-                <div v-if="props.length === 0" class="empty-tip">暂无道具，可从剧本提取或添加</div>
+                <div v-if="props.length === 0" class="empty-tip">Chưa có đạo cụ, có thể trích xuất từ kịch bản hoặc thêm mới</div>
               </div>
             </div>
           </div>
 
-          <!-- 场景生成 -->
+          <!-- Scene generation -->
           <div id="anchor-scenes" class="resource-block card">
             <div class="collapse-header resource-block-header" @click="scenesBlockCollapsed = !scenesBlockCollapsed">
-              <h3 class="resource-block-title">场景生成</h3>
+              <h3 class="resource-block-title">Tạo scene</h3>
               <el-icon class="collapse-icon"><ArrowUp v-if="!scenesBlockCollapsed" /><ArrowDown v-else /></el-icon>
             </div>
             <div v-show="!scenesBlockCollapsed" class="resource-block-body">
               <div class="asset-actions">
                 <el-button type="primary" size="small" :loading="scenesExtracting" :disabled="!currentEpisodeId" @click="onExtractScenes">
-                  从剧本提取场景
+                  Trích xuất scene từ kịch bản
                 </el-button>
-                <el-button size="small" :disabled="!dramaId" @click="openAddScene">添加场景</el-button>
-                <el-button size="small" @click="showSceneLibrary = true">本剧场景库</el-button>
+                <el-button size="small" :disabled="!dramaId" @click="openAddScene">Thêm scene</el-button>
+                <el-button size="small" @click="showSceneLibrary = true">Thư viện scene phim này</el-button>
               </div>
               <div class="scene-gen-mode" style="margin: 8px 0; font-size: 13px;">
-                <el-checkbox v-model="sceneUseQuadGrid">生成四宫格场景（默认单图）</el-checkbox>
+                <el-checkbox v-model="sceneUseQuadGrid">Tạo scene 4 view (mặc định 1 ảnh)</el-checkbox>
               </div>
               <div class="asset-list asset-list-two">
                 <div v-for="scene in scenes" :key="scene.id" class="asset-item asset-item-left-right">
                   <div class="asset-info">
                     <div class="asset-name">
                       <span>{{ scene.location }}</span>
-                      <el-button type="danger" text size="small" class="btn-delete-icon" title="删除" @click="onDeleteScene(scene)">
+                      <el-button type="danger" text size="small" class="btn-delete-icon" title="Xoá" @click="onDeleteScene(scene)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <div class="asset-desc-full">{{ scene.description || scene.prompt || scene.time || '暂无描述' }}</div>
+                    <div class="asset-desc-full">{{ scene.description || scene.prompt || scene.time || 'Chưa có mô tả' }}</div>
                     <div class="asset-btns">
-                      <el-button size="small" @click="editScene(scene)">编辑</el-button>
+                      <el-button size="small" @click="editScene(scene)">Sửa</el-button>
                       <el-button size="small" :loading="addingSceneToLibraryId === scene.id" :disabled="!hasAssetImage(scene)" @click="onAddSceneToLibrary(scene)">
-                        加入本剧库
+                        Thêm vào thư viện phim
                       </el-button>
                       <el-button size="small" :loading="addingSceneToMaterialId === scene.id" :disabled="!hasAssetImage(scene)" @click="onAddSceneToMaterialLibrary(scene)">
-                        加入素材库
+                        Thêm vào thư viện tư liệu
                       </el-button></div>
                     <div v-if="getSceneAffectedStoryboards(scene.id).length" class="asset-storyboard-link">
-                      <span class="asl-label">影响的分镜：</span>
+                      <span class="asl-label">Storyboard ảnh hưởng:</span>
                       <span
                         v-for="sb in getSceneAffectedStoryboards(scene.id)"
                         :key="sb.id"
                         class="asl-chip"
-                        title="点击跳转到该分镜"
+                        title="Bấm để chuyển đến storyboard này"
                         @click="scrollToStoryboard(sb.id)"
                       >#{{ sb.storyboard_number }}</span>
                       <span v-if="regenSbImagesForAsset.has('scene-' + scene.id) && regenSbImagesProgress['scene-' + scene.id]" class="asl-progress">
@@ -749,7 +749,7 @@
                         :loading="regenSbImagesForAsset.has('scene-' + scene.id)"
                         @click="onRegenAffectedSbImages('scene-' + scene.id, getSceneAffectedStoryboards(scene.id))"
                       >
-                        <span v-if="!regenSbImagesForAsset.has('scene-' + scene.id)">↻ 重新生成分镜图</span>
+                        <span v-if="!regenSbImagesForAsset.has('scene-' + scene.id)">↻ Tạo lại ảnh storyboard</span>
                       </el-button>
                     </div>
                   </div>
@@ -766,77 +766,77 @@
                     >
                       <img v-if="hasAssetImage(scene)" :src="assetImageUrl(scene)" class="cover-img" alt="" />
                       <div v-else-if="scene.error_msg || scene.errorMsg" class="cover-placeholder error" :title="scene.error_msg || scene.errorMsg">{{ scene.error_msg || scene.errorMsg }}</div>
-                      <div v-else class="cover-placeholder">暂无图</div>
-                      <div v-if="dragOverResourceKey === 'scene-' + scene.id" class="asset-cover-drop-hint">松开上传</div>
+                      <div v-else class="cover-placeholder">Chưa có ảnh</div>
+                      <div v-if="dragOverResourceKey === 'scene-' + scene.id" class="asset-cover-drop-hint">Thả để tải lên</div>
                     </div>
                     <div v-if="parseExtraImages(scene).length" class="extra-images-strip">
-                      <div v-for="ep in parseExtraImages(scene)" :key="ep" class="extra-thumb" title="点击设为主图（悬停左上角可放大预览）">
+                      <div v-for="ep in parseExtraImages(scene)" :key="ep" class="extra-thumb" title="Bấm để đặt làm ảnh chính (hover góc trên để xem trước)">
                         <img :src="localPathToUrl(ep)" alt="" @click="onSetPrimaryImage('scene', scene, ep)" />
-                        <button class="thumb-preview-btn" title="放大预览" @click.stop="openImagePreview(localPathToUrl(ep))">
+                        <button class="thumb-preview-btn" title="Xem trước" @click.stop="openImagePreview(localPathToUrl(ep))">
                           <el-icon :size="10"><ZoomIn /></el-icon>
                         </button>
-                        <button class="extra-thumb-remove" title="移除" @click.stop="onRemoveExtraImage('scene', scene, ep)">×</button>
+                        <button class="extra-thumb-remove" title="Xoá" @click.stop="onRemoveExtraImage('scene', scene, ep)">×</button>
                       </div>
                     </div>
                     <div class="asset-cover-actions">
-                      <el-tooltip :content="sceneUseQuadGrid ? '四宫格场景（正/侧/俯/仰）' : '单图场景'" placement="top">
+                      <el-tooltip :content="sceneUseQuadGrid ? 'Scene 4 view (chính/bên/trên/dưới)' : 'Scene 1 ảnh'" placement="top">
                         <el-button type="primary" size="small" :loading="generatingSceneIds.has(scene.id)" @click="onGenerateSceneImage(scene, sceneUseQuadGrid)">
                           <el-icon v-if="!generatingSceneIds.has(scene.id)"><MagicStick /></el-icon>
-                          AI 生成
+                          AI tạo
                         </el-button>
                       </el-tooltip>
                       <el-button type="success" size="small" :loading="uploadingResourceId === 'scene-' + scene.id" @click="onUploadResourceClick('scene', scene.id)">
                         <el-icon v-if="uploadingResourceId !== 'scene-' + scene.id"><Upload /></el-icon>
-                        上传
+                        Tải lên
                       </el-button>
                     </div>
                   </div>
                 </div>
-                <div v-if="scenes.length === 0" class="empty-tip">暂无场景，请从剧本提取</div>
+                <div v-if="scenes.length === 0" class="empty-tip">Chưa có scene, vui lòng trích xuất từ kịch bản</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 6. 分镜生成 -->
+      <!-- 6. Storyboard generation -->
       <section id="anchor-storyboard" class="section card">
         <h2 class="section-title">
-          <span>5. 分镜生成</span>
-          <span class="step-desc">根据剧本、角色、场景自动生成分镜头脚本</span>
+          <span>5. Tạo storyboard</span>
+          <span class="step-desc">Tự động tạo kịch bản storyboard từ kịch bản, nhân vật, scene</span>
         </h2>
         <div class="sb-config-row">
           <label class="sb-config-item">
-            <span class="sb-config-label">分镜数量</span>
-            <el-input-number v-model="storyboardCount" :min="1" :max="200" :step="5" placeholder="自动" class="sb-config-input" />
-            <span class="sb-config-hint sb-config-hint--estimate" :title="scriptEstimateStoryboardTitle">留空由 AI 决定{{ scriptEstimateStoryboardHint }}</span>
+            <span class="sb-config-label">Số storyboard</span>
+            <el-input-number v-model="storyboardCount" :min="1" :max="200" :step="5" placeholder="Tự động" class="sb-config-input" />
+            <span class="sb-config-hint sb-config-hint--estimate" :title="scriptEstimateStoryboardTitle">Để trống AI tự quyết định{{ scriptEstimateStoryboardHint }}</span>
           </label>
           <span class="sb-config-divider">｜</span>
           <label class="sb-config-item">
-            <span class="sb-config-label">视频总时长(秒)</span>
-            <el-input-number v-model="videoDuration" :min="10" :max="600" :step="5" placeholder="自动" class="sb-config-input" />
-            <span class="sb-config-hint sb-config-hint--estimate" :title="scriptEstimateVideoDurationTitle">留空由 AI 决定{{ scriptEstimateVideoDurationHint }}</span>
+            <span class="sb-config-label">Tổng thời lượng video (giây)</span>
+            <el-input-number v-model="videoDuration" :min="10" :max="600" :step="5" placeholder="Tự động" class="sb-config-input" />
+            <span class="sb-config-hint sb-config-hint--estimate" :title="scriptEstimateVideoDurationTitle">Để trống AI tự quyết định{{ scriptEstimateVideoDurationHint }}</span>
           </label>
           <span class="sb-config-divider">｜</span>
           <label class="sb-config-item">
-            <span class="sb-config-label">序列图模式</span>
+            <span class="sb-config-label">Chế độ ảnh chuỗi</span>
             <el-select v-model="gridMode" size="small" style="width:110px" :disabled="storyboardUseFirstLastFrame">
-              <el-option label="单张" value="single" />
-              <el-option label="四宫格" value="quad_grid" />
-              <el-option label="九宫格" value="nine_grid" />
+              <el-option label="Đơn" value="single" />
+              <el-option label="4 ô" value="quad_grid" />
+              <el-option label="9 ô" value="nine_grid" />
             </el-select>
-            <span class="sb-config-hint">四/九宫格自动按视角拆分</span>
+            <span class="sb-config-hint">4/9 ô tự tách theo góc nhìn</span>
           </label>
         </div>
         <div class="sb-config-row sb-narration-export-row" style="margin-top:10px;flex-wrap:wrap;align-items:center;gap:12px">
           <el-checkbox v-model="storyboardUseFirstLastFrame" @change="onStoryboardUseFirstLastFrameChange">
-            首尾帧参考图（经典模式双槽；图生前先走专业帧提示词模块 first/last，再生图；视频绑定 first/last_frame_url）
+            Ảnh tham chiếu frame đầu/cuối (chế độ cổ điển 2 slot; trước khi tạo ảnh đi qua module prompt chuyên nghiệp first/last, rồi tạo ảnh; video bind first/last_frame_url)
           </el-checkbox>
           <el-checkbox v-model="storyboardUniversalOmni" @change="() => saveProjectSettings(false)">
-            全能分镜模式（每镜输出多子分镜段落式 universal_segment_text，与「生成/润色全能提示词」同版式）
+            Chế độ storyboard OmniVoice (mỗi cảnh output nhiều đoạn universal_segment_text, cùng format với "Tạo/Tinh chỉnh prompt Omni")
           </el-checkbox>
           <el-checkbox v-model="storyboardIncludeNarration" @change="() => saveProjectSettings(false)">
-            生成分镜时生成解说旁白（narration，与对白分开，便于后期 TTS）
+            Tạo narration khi tạo storyboard (narration, tách khỏi lời thoại, tiện cho TTS về sau)
           </el-checkbox>
           <el-button
             v-if="storyboards.length > 0"
@@ -848,7 +848,7 @@
             :loading="exportingStoryboardSheet"
             @click="onExportStoryboardSheet"
           >
-            导出分镜表excel
+            Xuất bảng storyboard Excel
           </el-button>
           <el-button
             v-if="storyboards.length > 0"
@@ -859,7 +859,7 @@
             :disabled="!currentEpisodeId"
             @click="onExportNarrationSrt"
           >
-            导出解说 SRT
+            Xuất SRT narration
           </el-button>
         </div>
         <div class="asset-actions sb-batch-actions">
@@ -871,10 +871,10 @@
               :disabled="!currentEpisodeId || storyboardGenerating || universalOmniPolishRunning"
               @click="onGenerateStoryboard"
             >
-              {{ storyboards.length > 0 ? '重新生成分镜' : 'AI 生成分镜' }}
+              {{ storyboards.length > 0 ? 'Tạo lại storyboard' : 'AI tạo storyboard' }}
             </el-button>
             <ElButton type="info" plain size="large" @click="onAddSingleStoryboard">
-            添加一个分镜
+            Thêm 1 storyboard
             </ElButton>
           </div>
           <template v-if="storyboards.length > 0">
@@ -887,7 +887,7 @@
                 :disabled="!currentEpisodeId || batchImageRunning || batchVideoRunning || pipelineRunning || storyboardGenerating || universalOmniPolishRunning"
                 @click="startBatchImageGeneration"
               >
-                批量生成分镜图
+                Tạo ảnh storyboard hàng loạt
               </el-button>
               <el-button
                 type="warning"
@@ -897,27 +897,27 @@
                 :disabled="!currentEpisodeId || batchImageRunning || batchVideoRunning || pipelineRunning || storyboardGenerating || universalOmniPolishRunning"
                 @click="startBatchVideoGeneration"
               >
-                批量生成分镜视频
+                Tạo video storyboard hàng loạt
               </el-button>
-              <el-button v-if="batchImageRunning" size="large" type="danger" plain @click="batchImageStopping = true">停止图片</el-button>
-              <el-button v-if="batchVideoRunning" size="large" type="danger" plain @click="batchVideoStopping = true">停止视频</el-button>
+              <el-button v-if="batchImageRunning" size="large" type="danger" plain @click="batchImageStopping = true">Dừng tạo ảnh</el-button>
+              <el-button v-if="batchVideoRunning" size="large" type="danger" plain @click="batchVideoStopping = true">Dừng tạo video</el-button>
             </div>
-            <!-- 连贯帧模式 UI 暂时隐藏（保留变量与批量生成逻辑，后续可快速恢复） -->
+            <!-- Chế độ frame liên tục UI tạm ẩn -->
             <div v-if="false" class="batch-video-options" style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:13px;">
               <el-checkbox v-model="videoFrameContiguity" size="small">
-                连贯帧模式（自动衔接相邻视频帧）
+                Chế độ frame liên tục (tự động nối frame video liền kề)
               </el-checkbox>
               <el-tooltip placement="top" :show-after="100">
                 <template #content>
                   <div style="max-width:320px;line-height:1.7">
-                    <div style="font-weight:600;margin-bottom:4px">连贯帧模式说明</div>
-                    <div>启用后批量视频顺序生成，每条视频的<b>末帧</b>自动截取并作为下一条视频的<b>首帧参考图</b>，减少镜头切换的跳跃感。</div>
-                    <div style="margin-top:8px;font-weight:600">⚠️ 需要模型支持图生视频（i2v）</div>
+                    <div style="font-weight:600;margin-bottom:4px">Giải thích chế độ frame liên tục</div>
+                    <div>Khi bật, các video sẽ được tạo tuần tự, <b>frame cuối</b> của mỗi video sẽ tự động trích xuất và dùng làm <b>ảnh tham chiếu frame đầu</b> của video kế tiếp, giảm cảm giác nhảy cảnh.</div>
+                    <div style="margin-top:8px;font-weight:600">⚠️ Cần model hỗ trợ image-to-video (i2v)</div>
                     <div style="margin-top:4px">
-                      ✅ 支持：kling-video、kling-omni-video、wan2.2-kf2v-flash、wan2.6-i2v-flash<br/>
-                      ❌ 不支持（末帧将被忽略）：wan2.6-t2v、wan2.6-r2v-flash、wanx2.1-vace-plus 等纯文生视频模型
+                      ✅ Hỗ trợ: kling-video, kling-omni-video, wan2.2-kf2v-flash, wan2.6-i2v-flash<br/>
+                      ❌ Không hỗ trợ (frame cuối bị bỏ qua): wan2.6-t2v, wan2.6-r2v-flash, wanx2.1-vace-plus và các model text-to-video thuần
                     </div>
-                    <div style="margin-top:8px;color:#faad14">如当前视频模型不支持 i2v，启用此选项不会报错，但末帧衔接不会生效。</div>
+                    <div style="margin-top:8px;color:#faad14">Nếu model video hiện tại không hỗ trợ i2v, bật tuỳ chọn này sẽ không lỗi, nhưng nối frame sẽ không có tác dụng.</div>
                   </div>
                 </template>
                 <el-icon style="color:#9ca3af;cursor:help"><QuestionFilled /></el-icon>
@@ -925,55 +925,55 @@
             </div>
           </template>
         </div>
-        <!-- 批量生成进度 -->
+        <!-- Batch generation progress -->
         <div v-if="batchImageRunning || batchVideoRunning || batchImageErrors.length || batchVideoErrors.length" class="batch-status">
           <div v-if="batchImageRunning" class="batch-progress">
             <el-icon class="is-loading"><Loading /></el-icon>
-            <span>批量生成分镜图：{{ batchImageProgress.current }}/{{ batchImageProgress.total }}</span>
-            <span v-if="batchImageProgress.failed > 0" class="batch-failed">{{ batchImageProgress.failed }} 条失败</span>
-            <span v-if="batchImageStopping" class="batch-stopping">（正在停止...）</span>
+            <span>Tạo ảnh storyboard hàng loạt: {{ batchImageProgress.current }}/{{ batchImageProgress.total }}</span>
+            <span v-if="batchImageProgress.failed > 0" class="batch-failed">{{ batchImageProgress.failed }} lỗi</span>
+            <span v-if="batchImageStopping" class="batch-stopping">(Đang dừng...)</span>
           </div>
           <div v-if="batchVideoRunning" class="batch-progress">
             <el-icon class="is-loading"><Loading /></el-icon>
-            <span>批量生成分镜视频：{{ batchVideoProgress.current }}/{{ batchVideoProgress.total }}</span>
-            <span v-if="batchVideoProgress.failed > 0" class="batch-failed">{{ batchVideoProgress.failed }} 条失败</span>
-            <span v-if="batchVideoStopping" class="batch-stopping">（正在停止...）</span>
+            <span>Tạo video storyboard hàng loạt: {{ batchVideoProgress.current }}/{{ batchVideoProgress.total }}</span>
+            <span v-if="batchVideoProgress.failed > 0" class="batch-failed">{{ batchVideoProgress.failed }} lỗi</span>
+            <span v-if="batchVideoStopping" class="batch-stopping">(Đang dừng...)</span>
           </div>
           <div v-if="batchImageErrors.length > 0" class="batch-error-log">
-            <div class="batch-error-title">分镜图生成失败记录：</div>
+            <div class="batch-error-title">Lỗi tạo ảnh storyboard:</div>
             <div v-for="(e, i) in batchImageErrors" :key="i" class="batch-error-line">{{ e }}</div>
           </div>
           <div v-if="batchVideoErrors.length > 0" class="batch-error-log">
-            <div class="batch-error-title">分镜视频生成失败记录：</div>
+            <div class="batch-error-title">Lỗi tạo video storyboard:</div>
             <div v-for="(e, i) in batchVideoErrors" :key="i" class="batch-error-line">{{ e }}</div>
           </div>
         </div>
         <div v-if="storyboardGenerating || universalOmniPolishRunning" class="storyboard-generating-tip">
           <el-icon class="is-loading"><Loading /></el-icon>
           <span v-if="universalOmniPolishRunning">
-            正在润色全能提示词：第 {{ universalOmniPolishProgress.current }} / {{ universalOmniPolishProgress.total }} 镜
-            <template v-if="universalOmniPolishProgress.label">（{{ universalOmniPolishProgress.label }}）</template>
+            Đang tinh chỉnh prompt Omni: cảnh {{ universalOmniPolishProgress.current }} / {{ universalOmniPolishProgress.total }}
+            <template v-if="universalOmniPolishProgress.label">({{ universalOmniPolishProgress.label }})</template>
             …
           </span>
-          <span v-else>正在分析剧本并拆解分镜，请稍候...</span>
+          <span v-else>Đang phân tích kịch bản và tách storyboard, vui lòng đợi...</span>
         </div>
         <div v-if="sbTruncatedWarning && !sbTruncatedDismissed && storyboards.length > 0" class="sb-truncated-warning">
           <el-icon><WarningFilled /></el-icon>
-          <span>检测到分镜可能不完整（AI 输出被截断），请确认分镜数量是否符合预期，必要时可重新生成。</span>
-          <el-button size="small" text @click="sbTruncatedDismissed = true">关闭</el-button>
+          <span>Phát hiện storyboard có thể không đầy đủ (output AI bị cắt), vui lòng kiểm tra số lượng storyboard, nếu cần có thể tạo lại.</span>
+          <el-button size="small" text @click="sbTruncatedDismissed = true">Đóng</el-button>
         </div>
         <template v-if="storyboards.length > 0">
           <template v-for="(sb, i) in storyboards" :key="sb.id">
-            <!-- 段落分隔标头：segment_title 存在且是新段落的第一个镜头时显示 -->
+            <!-- Segment header khi segment_title tồn tại và là cảnh đầu của phân đoạn mới -->
             <div
               v-if="sb.segment_title && (i === 0 || sb.segment_index !== storyboards[i - 1].segment_index)"
               class="segment-header"
             >
               <div class="segment-header-inner">
-                <span class="segment-index-badge">第 {{ (sb.segment_index ?? 0) + 1 }} 幕</span>
+                <span class="segment-index-badge">Chương {{ (sb.segment_index ?? 0) + 1 }}</span>
                 <span class="segment-title-text">{{ sb.segment_title }}</span>
                 <span class="segment-shot-range">
-                  镜头 {{ i + 1 }}–{{ (() => {
+                  Cảnh {{ i + 1 }}–{{ (() => {
                     let end = i
                     while (end + 1 < storyboards.length && storyboards[end + 1].segment_index === sb.segment_index) end++
                     return end + 1
@@ -981,40 +981,40 @@
                 </span>
               </div>
             </div>
-          <!-- 分镜控制栏（卡片外，缩进表示属于当前幕） -->
+          <!-- Storyboard control bar -->
           <div class="sb-ctrl-bar">
             <span class="sb-ctrl-num">{{ i + 1 }}</span>
-            <span class="sb-ctrl-title">{{ sb.title || '未命名分镜' }}</span>
+            <span class="sb-ctrl-title">{{ sb.title || 'Storyboard chưa đặt tên' }}</span>
             <el-tag v-if="sb.movement" size="small" effect="plain" type="info" class="sb-movement-tag">{{ getMovementLabel(sb.movement) }}</el-tag>
-            <el-button size="small" plain class="sb-ctrl-btn sb-ctrl-config-btn" @click="onOpenVideoParamsDialog(sb)">⚙ 分镜配置</el-button>
+            <el-button size="small" plain class="sb-ctrl-btn sb-ctrl-config-btn" @click="onOpenVideoParamsDialog(sb)">⚙ Cấu hình storyboard</el-button>
             <el-button
               size="small"
               plain
               class="sb-ctrl-btn sb-ctrl-mode-btn"
-              :title="isSbUniversalMode(sb.id) ? '切换为经典分镜（中间显示参考图）' : '切换为全能模式（中间为片段描述，经典字段保留）'"
+              :title="isSbUniversalMode(sb.id) ? 'Chuyển sang storyboard cổ điển (giữa hiển thị ảnh tham chiếu)' : 'Chuyển sang chế độ Omni (giữa là mô tả đoạn, giữ nguyên trường cổ điển)'"
               @click="onToggleSbUniversalMode(sb)"
             >
-              {{ isSbUniversalMode(sb.id) ? '经典分镜' : '全能模式' }}
+              {{ isSbUniversalMode(sb.id) ? 'Storyboard cổ điển' : 'Chế độ Omni' }}
             </el-button>
-            <el-button size="small" plain class="sb-ctrl-btn" title="在本镜头前增加一个分镜" @click="onInsertStoryboardBefore(sb)">＋ 新增</el-button>
+            <el-button size="small" plain class="sb-ctrl-btn" title="Thêm 1 storyboard trước cảnh này" @click="onInsertStoryboardBefore(sb)">＋ Thêm</el-button>
             <el-button
               class="sb-ctrl-delete"
               type="danger"
               text
               size="small"
-              :title="`删除分镜${i + 1}`"
+              :title="`Xoá storyboard ${i + 1}`"
               @click="onDeleteSingleStoryboard(sb.id)"
             >
               <el-icon><Delete /></el-icon>
             </el-button>
           </div>
           <div :id="'sb-' + sb.id" class="storyboard-row">
-            <!-- 左：分镜脚本 -->
+            <!-- Left: storyboard script -->
             <div class="sb-panel sb-script">
               <div class="sb-script-row sb-script-selects">
                 <el-select
                   :model-value="getSbCharacterIds(sb.id)"
-                  placeholder="选择角色"
+                  placeholder="Chọn nhân vật"
                   multiple
                   collapse-tags
                   collapse-tags-tooltip
@@ -1025,16 +1025,16 @@
                   <el-option
                     v-for="c in (characters || [])"
                     :key="String(c.id)"
-                    :label="c.name || '未命名'"
+                    :label="c.name || 'Chưa đặt tên'"
                     :value="c.id"
                   />
                   <template v-if="!(characters || []).length" #empty>
-                    <span class="sb-select-empty">请先在「角色生成」中添加角色</span>
+                    <span class="sb-select-empty">Vui lòng thêm nhân vật ở phần "Tạo nhân vật" trước</span>
                   </template>
                 </el-select>
                 <el-select
                   v-model="sbSceneId[sb.id]"
-                  placeholder="选择场景"
+                  placeholder="Chọn scene"
                   clearable
                   size="small"
                   class="sb-select"
@@ -1049,7 +1049,7 @@
                 </el-select>
                 <el-select
                   :model-value="getSbPropIds(sb.id)"
-                  placeholder="选择物品"
+                  placeholder="Chọn đạo cụ"
                   multiple
                   collapse-tags
                   collapse-tags-tooltip
@@ -1060,18 +1060,18 @@
                   <el-option
                     v-for="p in (props || [])"
                     :key="String(p.id)"
-                    :label="p.name || '未命名'"
+                    :label="p.name || 'Chưa đặt tên'"
                     :value="p.id"
                   />
                   <template v-if="!(props || []).length" #empty>
-                    <span class="sb-select-empty">请先在「道具生成」中添加物品</span>
+                    <span class="sb-select-empty">Vui lòng thêm đạo cụ ở phần "Tạo đạo cụ" trước</span>
                   </template>
                 </el-select>
               </div>
-              <!-- 当前选中：场景 / 角色 / 物品缩略图 -->
+              <!-- Currently selected: scene / character / prop thumbnails -->
               <div v-if="getSbSelectedScene(sb.id) || getSbSelectedCharacters(sb.id).length || getSbSelectedProps(sb.id).length || (characters || []).length" class="sb-selected-thumbs">
                 <div v-if="getSbSelectedScene(sb.id)" class="sb-thumb-row">
-                  <span class="sb-thumb-label">场景</span>
+                  <span class="sb-thumb-label">Scene</span>
                   <div class="sb-thumb-list">
                     <div
                       v-for="s in [getSbSelectedScene(sb.id)]"
@@ -1088,7 +1088,7 @@
                   </div>
                 </div>
                 <div v-if="(characters || []).length" class="sb-thumb-row">
-                  <span class="sb-thumb-label">角色</span>
+                  <span class="sb-thumb-label">Nhân vật</span>
                   <div class="sb-thumb-list">
                     <div
                       v-for="c in getSbSelectedCharacters(sb.id)"
@@ -1105,7 +1105,7 @@
                     <el-dropdown trigger="click" @command="(cmd) => onSbAddCharacterCommand(sb.id, cmd)">
                       <div
                         class="sb-thumb-item sb-thumb-avatar sb-thumb-add-char"
-                        title="添加角色"
+                        title="Thêm nhân vật"
                         role="button"
                         @click.stop
                       >
@@ -1118,10 +1118,10 @@
                             :key="c.id"
                             :command="c.id"
                           >
-                            {{ c.name || '未命名' }}
+                            {{ c.name || 'Chưa đặt tên' }}
                           </el-dropdown-item>
                           <el-dropdown-item v-if="!charactersAvailableToAddToSb(sb.id).length" disabled>
-                            已全部添加或无角色
+                            Đã thêm tất cả hoặc không có nhân vật
                           </el-dropdown-item>
                         </el-dropdown-menu>
                       </template>
@@ -1129,7 +1129,7 @@
                   </div>
                 </div>
                 <div v-if="getSbSelectedProps(sb.id).length" class="sb-thumb-row">
-                  <span class="sb-thumb-label">物品</span>
+                  <span class="sb-thumb-label">Đạo cụ</span>
                   <div class="sb-thumb-list">
                     <div
                       v-for="p in getSbSelectedProps(sb.id)"
@@ -1146,35 +1146,35 @@
                   </div>
                 </div>
               </div>
-              <!-- 首尾帧模式下隐藏“图片提示词”入口，统一收敛到首/尾帧槽位的“查看提示词” -->
+              <!-- Trong chế độ frame đầu/cuối, ẩn "prompt ảnh" -->
               <div v-if="!storyboardUseFirstLastFrame" class="sb-prompt-label">
                 <span class="sb-dot"></span>
-                <span>图片提示词</span>
+                <span>Prompt ảnh</span>
               </div>
               <div v-if="!storyboardUseFirstLastFrame" class="sb-prompt-row">
-                <span class="sb-prompt-text">{{ sb.image_prompt || '暂无图片提示词' }}</span>
-                <el-button size="small" link type="primary" @click="onOpenSbPromptDialog(sb)">编辑</el-button>
+                <span class="sb-prompt-text">{{ sb.image_prompt || 'Chưa có prompt ảnh' }}</span>
+                <el-button size="small" link type="primary" @click="onOpenSbPromptDialog(sb)">Sửa</el-button>
               </div>
               <template v-if="storyboardIncludeNarration || (sbNarration[sb.id] || '').trim() || (sb.narration || '').trim()">
                 <div class="sb-prompt-label">
                   <span class="sb-dot"></span>
-                  <span>解说旁白</span>
+                  <span>Narration</span>
                 </div>
                 <el-input
                   v-model="sbNarration[sb.id]"
                   type="textarea"
                   :rows="2"
-                  placeholder="本镜解说文案（画外音 / 纪录片式旁白，供 TTS 或导出 SRT）"
+                  placeholder="Lời dẫn cảnh này (voiceover / narration kiểu tài liệu, dùng cho TTS hoặc xuất SRT)"
                   class="sb-narration-input"
                   @blur="() => onSaveSbNarrationField(sb)"
                 />
                 <div v-if="(sbNarration[sb.id] || sb.narration || '').toString().trim()" class="sb-narration-actions">
-                  <el-tooltip content="解说旁白配音（TTS）" placement="top">
+                  <el-tooltip content="TTS lồng tiếng narration" placement="top">
                     <el-button size="small" :loading="ttsSbNarrationIds.has(sb.id)" @click="onTtsSbNarration(sb)">
-                      解说配音
+                      Lồng tiếng narration
                     </el-button>
                   </el-tooltip>
-                  <el-tooltip v-if="sbNarrationAudioRelPath(sb)" content="播放解说旁白配音" placement="top">
+                  <el-tooltip v-if="sbNarrationAudioRelPath(sb)" content="Phát audio narration" placement="top">
                     <el-button size="small" @click="playSbNarrationTts(sb)">
                       <el-icon><VideoPlay /></el-icon>
                     </el-button>
@@ -1182,20 +1182,20 @@
                 </div>
               </template>
             </div>
-            <!-- 中：经典模式=分镜参考图；全能模式=片段描述（独立字段，与参考图并存） -->
+            <!-- Middle: cổ điển = ảnh tham chiếu storyboard; Omni = mô tả đoạn -->
             <div class="sb-panel sb-image" :class="{ 'sb-image--universal': isSbUniversalMode(sb.id) }">
               <template v-if="isSbUniversalMode(sb.id)">
                 <div class="sb-prompt-label sb-universal-label-row">
                   <div class="sb-universal-label-left">
                     <span class="sb-dot"></span>
-                    <span>片段描述</span>
+                    <span>Mô tả đoạn</span>
                     <el-tooltip placement="top" :show-after="280" :show-arrow="false" popper-class="sb-universal-tooltip-popper">
                       <template #content>
                         <div class="sb-universal-tooltip">
-                          全能生视频链路（<strong>AI 配置 · 视频</strong> 中选接口规范：<code>kling_omni</code> 可灵 Omni，或 <code>volcengine_omni</code> 火山即梦 Seedance 2.0 多图参考；模型如 <code>kling-video-o1</code>、<code>doubao-seedance-2-0-260128</code> 等以控制台为准）：此处为提交主提示词；只要本框有内容，生视频时<strong>只</strong>发送这段，不会拼接下方「视频提示词」里的动作/对话/旁白。参考图顺序一般为：场景 → 角色（多张）→ 物品（<strong>不含</strong>经典分镜中间主图）；请用 <strong>@图片1</strong>、<strong>@图片2</strong>…（<strong>@图片N 后建议加半角空格</strong>）对应参考图，勿用 @姓名 指图；有场景图时 <strong>@图片1</strong> 只表环境，人物从 <strong>@图片2</strong> 起。若场景参考是<strong>四宫格/多视角拼图</strong>，仅借空间与氛围，须在文案中写明<strong>单镜头完整画幅、禁止分屏宫格</strong>，避免成片模仿拼图布局。全能提示词下拉中「生成」会按<strong>本条分镜总时长</strong>与本集剧本、镜序、邻镜信息，自动决定子分镜数 M（第2行「由以下M个分镜…」），第4行起为「分镜1：T1秒:」…多行，且各段秒数之和等于本镜时长；第3行仍为环境/参考图约束；「生成」与「润色」均为<strong>流式输出</strong>到本框；「润色」在此基础上增强。若本框留空，则退回仅用「视频提示词」。
+                          Luồng Omni tạo video (chọn API ở <strong>Cấu hình AI · Video</strong>: <code>kling_omni</code> Kling Omni, hoặc <code>volcengine_omni</code> Volcengine Seedance 2.0 multi-image ref; model như <code>kling-video-o1</code>, <code>doubao-seedance-2-0-260128</code> theo console): đây là prompt chính; chỉ cần khung này có nội dung, khi tạo video sẽ <strong>chỉ</strong> gửi đoạn này, không ghép với "Prompt video" phía dưới (hành động/lời thoại/narration). Thứ tự ảnh tham chiếu thường là: scene → nhân vật (nhiều ảnh) → đạo cụ (<strong>không</strong> gồm ảnh chính storyboard cổ điển); dùng <strong>@image1</strong>, <strong>@image2</strong>… (<strong>sau @imageN nên có space half-width</strong>) để chỉ đến ảnh tham chiếu, không dùng @tên nhân vật; khi có ảnh scene thì <strong>@image1</strong> chỉ chỉ môi trường, nhân vật bắt đầu từ <strong>@image2</strong>. Nếu scene tham chiếu là <strong>4 ô/multi-view</strong>, chỉ mượn không gian và không khí, phải ghi rõ trong prompt <strong>khung hình đơn hoàn chỉnh, không chia màn hình dạng grid</strong>, tránh phim mô phỏng layout ghép. Trong dropdown "Prompt Omni", "Tạo" sẽ tự quyết định số sub-storyboard M dựa trên <strong>tổng thời lượng cảnh này</strong> và kịch bản tập, thứ tự cảnh, thông tin cảnh liền kề (dòng 2 "Gồm M storyboard…"), từ dòng 4 trở đi là "Storyboard 1: T1s:"… nhiều dòng, tổng giây các đoạn bằng thời lượng cảnh này; dòng 3 vẫn là ràng buộc môi trường/ảnh tham chiếu; "Tạo" và "Tinh chỉnh" đều là <strong>streaming output</strong> vào khung này; "Tinh chỉnh" tăng cường trên nền có sẵn. Nếu khung này trống, sẽ quay về chỉ dùng "Prompt video".
                         </div>
                       </template>
-                      <el-icon class="sb-universal-hint-icon" tabindex="0" role="img" aria-label="片段说明">
+                      <el-icon class="sb-universal-hint-icon" tabindex="0" role="img" aria-label="Mô tả đoạn">
                         <QuestionFilled />
                       </el-icon>
                     </el-tooltip>
@@ -1212,25 +1212,25 @@
                       class="sb-universal-gen-btn"
                       :loading="generatingUniversalSegmentIds.has(sb.id)"
                     >
-                      全能提示词
+                      Prompt Omni
                       <el-icon class="sb-universal-dd-caret"><ArrowDown /></el-icon>
                     </el-button>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item command="generate">生成全能提示词</el-dropdown-item>
-                        <el-dropdown-item command="generate-force">不查图片强制生成</el-dropdown-item>
+                        <el-dropdown-item command="generate">Tạo prompt Omni</el-dropdown-item>
+                        <el-dropdown-item command="generate-force">Tạo cưỡng bức (bỏ qua kiểm tra ảnh)</el-dropdown-item>
                         <el-dropdown-item command="polish" :disabled="!sbUniversalSegmentTrimmed(sb)">
-                          润色全能提示词
+                          Tinh chỉnh prompt Omni
                         </el-dropdown-item>
                         <el-dropdown-item command="polish-force" :disabled="!sbUniversalSegmentTrimmed(sb)">
-                          不查图片强制润色
+                          Tinh chỉnh cưỡng bức (bỏ qua kiểm tra ảnh)
                         </el-dropdown-item>
                         <el-dropdown-item
                           command="to-grok-video-tags"
                           divided
                           :disabled="!sbUniversalSegmentTrimmed(sb)"
                         >
-                          改为 grok视频格式
+                          Chuyển sang format Grok video
                         </el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
@@ -1250,7 +1250,7 @@
                     type="textarea"
                     :rows="10"
                     :autosize="{ minRows: 10, maxRows: 22 }"
-                    placeholder="例如：@图片1 为夜景街道，@图片2 从餐厅冲出停在光斑里，低头操作手机…"
+                    placeholder="Ví dụ: @image1 là đường phố về đêm, @image2 chạy ra khỏi nhà hàng dừng trong ánh đèn, cúi đầu thao tác điện thoại…"
                     class="sb-universal-textarea"
                     @blur="() => onSaveUniversalSegmentField(sb)"
                   />
@@ -1268,11 +1268,11 @@
                 @dragleave="onSbImageDragLeave($event, sb.id)"
                 @drop="onSbImageDrop($event, sb)"
               >
-                <!-- 首尾帧双槽 -->
+                <!-- 2 slot frame đầu/cuối -->
                 <template v-if="storyboardUseFirstLastFrame">
                   <div class="sb-fl-dual">
                     <div class="sb-fl-slot">
-                      <div class="sb-fl-slot-label">首帧</div>
+                      <div class="sb-fl-slot-label">Frame đầu</div>
                       <div class="sb-fl-slot-body">
                         <template v-if="getSbFirstImage(sb.id)">
                           <img
@@ -1291,24 +1291,24 @@
                           />
                         </template>
                         <template v-else>
-                          <span class="sb-fl-empty">动作前静止</span>
+                          <span class="sb-fl-empty">Tĩnh trước hành động</span>
                         </template>
                       </div>
                       <div v-if="getSbFirstImage(sb.id)?.prompt" class="sb-fl-slot-prompt" :title="getSbFirstImage(sb.id).prompt">
                         {{ getSbFirstImage(sb.id).prompt }}
                       </div>
                       <div class="sb-fl-slot-actions">
-                        <el-button type="primary" size="small" :loading="generatingSbFirstImageIds.has(sb.id)" @click="onGenerateSbFrameImage(sb, 'first')">生成</el-button>
-                        <el-tooltip v-if="canUsePrevTailAsFirst(sb)" content="直接使用上一分镜的尾帧图片（高清原图）替换本首帧，画面更清晰" placement="top">
-                          <el-button size="small" :loading="usingPrevTailAsFirstIds.has(sb.id)" @click="onUsePrevTailAsFirst(sb)">上镜尾帧</el-button>
+                        <el-button type="primary" size="small" :loading="generatingSbFirstImageIds.has(sb.id)" @click="onGenerateSbFrameImage(sb, 'first')">Tạo</el-button>
+                        <el-tooltip v-if="canUsePrevTailAsFirst(sb)" content="Dùng trực tiếp ảnh frame cuối của storyboard trước (ảnh gốc HD) thay cho frame đầu này, hình ảnh rõ hơn" placement="top">
+                          <el-button size="small" :loading="usingPrevTailAsFirstIds.has(sb.id)" @click="onUsePrevTailAsFirst(sb)">Frame cuối của cảnh trước</el-button>
                         </el-tooltip>
-                        <el-button size="small" :loading="uploadingSbImageSlot(sb.id) === 'first'" @click="onUploadSbImageClick(sb, 'first')">上传</el-button>
-                        <el-button type="primary" link size="small" @click="showSbFramePromptPreview(sb, 'first')">查看提示词</el-button>
+                        <el-button size="small" :loading="uploadingSbImageSlot(sb.id) === 'first'" @click="onUploadSbImageClick(sb, 'first')">Tải lên</el-button>
+                        <el-button type="primary" link size="small" @click="showSbFramePromptPreview(sb, 'first')">Xem prompt</el-button>
                       </div>
                     </div>
                     <div class="sb-fl-arrow" aria-hidden="true">→</div>
                     <div class="sb-fl-slot">
-                      <div class="sb-fl-slot-label">尾帧</div>
+                      <div class="sb-fl-slot-label">Frame cuối</div>
                       <div class="sb-fl-slot-body">
                         <template v-if="getSbLastImage(sb.id)">
                           <img
@@ -1320,29 +1320,29 @@
                           />
                         </template>
                         <template v-else>
-                          <span class="sb-fl-empty">动作后结果</span>
+                          <span class="sb-fl-empty">Kết quả sau hành động</span>
                         </template>
                       </div>
                       <div v-if="getSbLastImage(sb.id)?.prompt" class="sb-fl-slot-prompt" :title="getSbLastImage(sb.id).prompt">
                         {{ getSbLastImage(sb.id).prompt }}
                       </div>
                       <div class="sb-fl-slot-actions">
-                        <el-button type="primary" size="small" :loading="generatingSbLastImageIds.has(sb.id)" @click="onGenerateSbFrameImage(sb, 'last')">生成</el-button>
+                        <el-button type="primary" size="small" :loading="generatingSbLastImageIds.has(sb.id)" @click="onGenerateSbFrameImage(sb, 'last')">Tạo</el-button>
                         <el-checkbox
                           v-model="lastFrameUseFirstLayoutLock"
                           class="sb-fl-first-lock-opt"
-                          title="勾选时尾帧生成会附带首帧图作构图与左右站位参考；取消后仅使用场景/角色/道具参考，便于调整出场人物"
+                          title="Khi tick, tạo frame cuối sẽ kèm ảnh frame đầu làm tham chiếu bố cục và vị trí trái phải; bỏ tick chỉ dùng scene/nhân vật/đạo cụ, tiện điều chỉnh nhân vật xuất hiện"
                           @change="onLastFrameLayoutLockChange"
                         >
-                          首帧站位
+                          Bố cục frame đầu
                         </el-checkbox>
-                        <el-button size="small" :loading="uploadingSbImageSlot(sb.id) === 'last'" @click="onUploadSbImageClick(sb, 'last')">上传</el-button>
-                        <el-button type="primary" link size="small" @click="showSbFramePromptPreview(sb, 'last')">查看提示词</el-button>
+                        <el-button size="small" :loading="uploadingSbImageSlot(sb.id) === 'last'" @click="onUploadSbImageClick(sb, 'last')">Tải lên</el-button>
+                        <el-button type="primary" link size="small" @click="showSbFramePromptPreview(sb, 'last')">Xem prompt</el-button>
                       </div>
                     </div>
                   </div>
                   <div v-if="getStripItems(sb.id).length" class="sb-imgs-strip">
-                    <el-tooltip content="历史图：点击设为首帧或尾帧，左上角放大预览，右上角删除" placement="top" :show-arrow="false">
+                    <el-tooltip content="Ảnh lịch sử: bấm để đặt làm frame đầu hoặc cuối, góc trên trái xem trước, góc trên phải xoá" placement="top" :show-arrow="false">
                       <el-icon class="sb-strip-hint-icon"><InfoFilled /></el-icon>
                     </el-tooltip>
                     <div
@@ -1355,14 +1355,14 @@
                       <img :src="item.src" alt="" />
                       <span v-if="item.frameBadge" class="sb-img-thumb-label">{{ item.frameBadge }}</span>
                       <span v-else-if="item.label" class="sb-img-thumb-label">{{ item.label }}</span>
-                      <button class="thumb-preview-btn" title="放大预览" @click.stop="openImagePreview(item.src)">
+                      <button class="thumb-preview-btn" title="Xem trước" @click.stop="openImagePreview(item.src)">
                         <el-icon :size="10"><ZoomIn /></el-icon>
                       </button>
-                      <button v-if="item.img?.id" class="extra-thumb-remove" title="删除历史图" @click.stop="onRemoveSbHistoryImage(sb.id, item.img.id)">×</button>
+                      <button v-if="item.img?.id" class="extra-thumb-remove" title="Xoá ảnh lịch sử" @click.stop="onRemoveSbHistoryImage(sb.id, item.img.id)">×</button>
                     </div>
                   </div>
                 </template>
-                <!-- 单主图（未勾选首尾帧） -->
+                <!-- Ảnh chính đơn (không tick frame đầu/cuối) -->
                 <template v-else>
                 <div class="sb-main-image-wrap">
                   <template v-if="getSbImage(sb.id)">
@@ -1387,67 +1387,67 @@
                     <div class="sb-image-error" :title="sb.error_msg || sb.errorMsg">{{ sb.error_msg || sb.errorMsg }}</div>
                     <el-button type="primary" size="small" class="sb-gen-btn" :loading="generatingSbImageIds.has(sb.id)" @click="onGenerateSbImage(sb)">
                       <el-icon><Refresh /></el-icon>
-                      重试
+                      Thử lại
                     </el-button>
-                    <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">上传</el-button>
+                    <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">Tải lên</el-button>
                   </template>
                   <template v-else>
                     <el-button type="primary" size="small" class="sb-gen-btn" :loading="generatingSbImageIds.has(sb.id)" @click="onGenerateSbImage(sb)">
                       <el-icon><MagicStick /></el-icon>
-                      生成分镜参考图
+                      Tạo ảnh tham chiếu storyboard
                     </el-button>
-                    <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">上传</el-button>
+                    <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">Tải lên</el-button>
                   </template>
                 </div>
                 <div v-if="getStripItems(sb.id).length" class="sb-imgs-strip">
-                  <el-tooltip content="历史图：点击设为主图，左上角放大预览，右上角删除" placement="top" :show-arrow="false">
+                  <el-tooltip content="Ảnh lịch sử: bấm để đặt làm ảnh chính, góc trên trái xem trước, góc trên phải xoá" placement="top" :show-arrow="false">
                     <el-icon class="sb-strip-hint-icon"><InfoFilled /></el-icon>
                   </el-tooltip>
                   <div
                     v-for="item in getStripItems(sb.id)"
                     :key="item.key"
                     class="sb-img-thumb"
-                    :title="[item.label, item.prompt].filter(Boolean).join('\n\n') || '点击设为主图'"
+                    :title="[item.label, item.prompt].filter(Boolean).join('\n\n') || 'Bấm để đặt làm ảnh chính'"
                     @click="onSelectStripItem(sb, item)"
                   >
                     <img :src="item.src" alt="" />
                     <span v-if="item.label" class="sb-img-thumb-label">{{ item.label }}</span>
-                    <button class="thumb-preview-btn" title="放大预览" @click.stop="openImagePreview(item.src)">
+                    <button class="thumb-preview-btn" title="Xem trước" @click.stop="openImagePreview(item.src)">
                       <el-icon :size="10"><ZoomIn /></el-icon>
                     </button>
-                    <button v-if="item.img?.id" class="extra-thumb-remove" title="删除历史图" @click.stop="onRemoveSbHistoryImage(sb.id, item.img.id)">×</button>
+                    <button v-if="item.img?.id" class="extra-thumb-remove" title="Xoá ảnh lịch sử" @click.stop="onRemoveSbHistoryImage(sb.id, item.img.id)">×</button>
                   </div>
                 </div>
                 </template>
-                <div v-if="dragOverSbId === sb.id" class="sb-image-area-drop-hint">松开上传到首帧</div>
+                <div v-if="dragOverSbId === sb.id" class="sb-image-area-drop-hint">Thả để tải lên frame đầu</div>
               </div>
               <div v-if="hasSbImage(sb) || storyboardUseFirstLastFrame" class="sb-image-actions">
                 <template v-if="storyboardUseFirstLastFrame">
-                  <el-button size="small" :loading="generatingSbFirstImageIds.has(sb.id) || generatingSbLastImageIds.has(sb.id)" @click="onGenerateSbFramePair(sb)">{{ hasSbFirstLastPair(sb) ? '重新生成首尾帧' : '一键生成首尾帧' }}</el-button>
-                  <el-tooltip content="高清放大仅作用于首帧" placement="top">
+                  <el-button size="small" :loading="generatingSbFirstImageIds.has(sb.id) || generatingSbLastImageIds.has(sb.id)" @click="onGenerateSbFramePair(sb)">{{ hasSbFirstLastPair(sb) ? 'Tạo lại frame đầu/cuối' : 'Tạo frame đầu/cuối 1 lần' }}</el-button>
+                  <el-tooltip content="Upscale HD chỉ áp dụng frame đầu" placement="top">
                     <el-button size="small" :loading="upscalingSbIds.has(sb.id)" :disabled="!getSbLocalImage(sb)" @click="onUpscaleSbImage(sb)">
-                      <el-icon><ZoomIn /></el-icon>超分(首帧)
+                      <el-icon><ZoomIn /></el-icon>Upscale (frame đầu)
                     </el-button>
                   </el-tooltip>
                 </template>
                 <template v-else>
-                <el-button size="small" :loading="generatingSbImageIds.has(sb.id)" @click="onGenerateSbImage(sb)">重新生成</el-button>
-                <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">上传</el-button>
-                <el-tooltip content="高清放大（2x超分辨率）" placement="top">
+                <el-button size="small" :loading="generatingSbImageIds.has(sb.id)" @click="onGenerateSbImage(sb)">Tạo lại</el-button>
+                <el-button size="small" :loading="uploadingSbImageId === sb.id" @click="onUploadSbImageClick(sb)">Tải lên</el-button>
+                <el-tooltip content="Upscale HD (2x super-resolution)" placement="top">
                   <el-button
                     size="small"
                     :loading="upscalingSbIds.has(sb.id)"
                     :disabled="!getSbLocalImage(sb)"
                     @click="onUpscaleSbImage(sb)"
                   >
-                    <el-icon><ZoomIn /></el-icon>超分
+                    <el-icon><ZoomIn /></el-icon>Upscale
                   </el-button>
                 </el-tooltip>
                 </template>
               </div>
               </template>
             </div>
-            <!-- 右：分镜视频（由 /videos?storyboard_id 拉取）；有视频时仍显示提示词与生成按钮便于调整后重新生成 -->
+            <!-- Right: video storyboard -->
             <div class="sb-panel sb-video">
               <div v-if="getSbVideo(sb.id)" class="sb-video-area">
                 <video
@@ -1461,19 +1461,19 @@
                 <div
                   v-else
                   class="sb-video-error"
-                  :title="getSbVideoError(sb.id) || '视频地址无效'"
+                  :title="getSbVideoError(sb.id) || 'URL video không hợp lệ'"
                 >
-                  {{ getSbVideoError(sb.id) || '视频地址无效，请重新生成' }}
+                  {{ getSbVideoError(sb.id) || 'URL video không hợp lệ, vui lòng tạo lại' }}
                 </div>
                 <span v-if="isSbVideoGenerating(sb.id)" class="sb-video-regenerating-overlay">
                   <el-icon class="is-loading"><Loading /></el-icon>
-                  正在重新生成...
+                  Đang tạo lại...
                 </span>
               </div>
               <div v-else class="sb-video-area sb-video-placeholder">
                 <span v-if="isSbVideoGenerating(sb.id)" class="sb-video-generating-text">
                   <el-icon class="is-loading"><Loading /></el-icon>
-                  正在生成视频...
+                  Đang tạo video...
                 </span>
                 <template v-else>
                   <div v-if="getSbVideoError(sb.id)" class="sb-video-error">
@@ -1487,20 +1487,20 @@
                     :disabled="!sbCanSubmitVideo(sb) || isSbVideoGenerating(sb.id)"
                     @click="onGenerateSbVideo(sb)"
                   >
-                    生成分镜视频
+                    Tạo video storyboard
                   </el-button>
                 </template>
               </div>
-              <!-- 视频历史条：有多条历史时显示，点击可切换 -->
+              <!-- Video history strip -->
               <div v-if="getVideoStripItems(sb.id).length" class="sb-videos-strip">
-                <el-tooltip content="历史视频：点击可切换为当前视频" placement="top" :show-arrow="false">
+                <el-tooltip content="Video lịch sử: bấm để chuyển sang video hiện tại" placement="top" :show-arrow="false">
                   <el-icon class="sb-strip-hint-icon"><InfoFilled /></el-icon>
                 </el-tooltip>
                 <div
                   v-for="item in getVideoStripItems(sb.id)"
                   :key="item.key"
                   class="sb-video-thumb"
-                  :title="`${item.label}（点击切换）`"
+                  :title="`${item.label} (bấm để chuyển)`"
                   @click="onSelectSbMainVideo(sb, item.video)"
                 >
                   <video :src="item.src" preload="metadata" class="sb-video-thumb-player" />
@@ -1508,16 +1508,16 @@
                 </div>
               </div>
               <div v-if="getSbVideo(sb.id)" class="sb-video-actions">
-                <el-button size="small" :loading="isSbVideoGenerating(sb.id)" :disabled="!sbCanSubmitVideo(sb) || isSbVideoGenerating(sb.id)" @click="onGenerateSbVideo(sb)">重新生成</el-button>
-                <el-tooltip v-if="getNextStoryboard(sb.id)" content="提取本视频尾帧，设为下一个分镜的首帧" placement="top">
-                  <el-button size="small" :loading="linkingTailFrameIds.has(sb.id)" @click="onLinkTailFrameToNext(sb)">尾帧衔接</el-button>
+                <el-button size="small" :loading="isSbVideoGenerating(sb.id)" :disabled="!sbCanSubmitVideo(sb) || isSbVideoGenerating(sb.id)" @click="onGenerateSbVideo(sb)">Tạo lại</el-button>
+                <el-tooltip v-if="getNextStoryboard(sb.id)" content="Trích xuất frame cuối của video này, đặt làm frame đầu cho storyboard kế tiếp" placement="top">
+                  <el-button size="small" :loading="linkingTailFrameIds.has(sb.id)" @click="onLinkTailFrameToNext(sb)">Nối frame cuối</el-button>
                 </el-tooltip>
-                <el-tooltip v-if="sb.dialogue" content="对白配音（TTS）" placement="top">
+                <el-tooltip v-if="sb.dialogue" content="TTS lồng tiếng lời thoại" placement="top">
                   <el-button size="small" :loading="ttsSbIds.has(sb.id)" @click="onTtsSbDialogue(sb)">
-                    对白配音
+                    Lồng tiếng thoại
                   </el-button>
                 </el-tooltip>
-                <el-tooltip v-if="sb.dialogue && sbDialogueAudioRelPath(sb)" content="播放对白配音" placement="top">
+                <el-tooltip v-if="sb.dialogue && sbDialogueAudioRelPath(sb)" content="Phát audio lời thoại" placement="top">
                   <el-button size="small" @click="playSbDialogueTts(sb)">
                     <el-icon><VideoPlay /></el-icon>
                   </el-button>
@@ -1525,33 +1525,33 @@
               </div>
               <div class="sb-video-prompt-label">
                 <span class="sb-dot"></span>
-                <span>视频提示词</span>
+                <span>Prompt video</span>
               </div>
               <div class="sb-video-params-bar">
-                <span class="sb-video-prompt-text sb-video-prompt-text--preview">{{ sb.video_prompt || '暂无视频提示词（在「视频配置」保存后自动生成）' }}</span>
-                <el-button size="small" link type="primary" @click="onOpenSbPromptDialog(sb)">手工编辑</el-button>
+                <span class="sb-video-prompt-text sb-video-prompt-text--preview">{{ sb.video_prompt || 'Chưa có prompt video (tự động tạo sau khi lưu "Cấu hình video")' }}</span>
+                <el-button size="small" link type="primary" @click="onOpenSbPromptDialog(sb)">Chỉnh sửa</el-button>
               </div>
             </div>
           </div>
           </template>
         </template>
-        <!-- 分镜生成中提示条 -->
+        <!-- Storyboard generating tip -->
         <div v-if="storyboardGenerating || universalOmniPolishRunning" class="sb-generating-tip">
           <span class="sb-gen-dot" /><span class="sb-gen-dot" /><span class="sb-gen-dot" />
           <span v-if="universalOmniPolishRunning" class="sb-gen-text">
-            全能片段润色中 {{ universalOmniPolishProgress.current }}/{{ universalOmniPolishProgress.total }}
+            Đang tinh chỉnh đoạn Omni {{ universalOmniPolishProgress.current }}/{{ universalOmniPolishProgress.total }}
             <template v-if="universalOmniPolishProgress.label"> · {{ universalOmniPolishProgress.label }}</template>
           </span>
-          <span v-else class="sb-gen-text">分镜持续生成中，客官稍等片刻…</span>
+          <span v-else class="sb-gen-text">Đang tạo storyboard, vui lòng đợi một chút…</span>
         </div>
-        <div v-else-if="storyboards.length === 0" class="empty-tip">请先生成分镜</div>
+        <div v-else-if="storyboards.length === 0" class="empty-tip">Vui lòng tạo storyboard trước</div>
       </section>
 
-      <!-- 7. 视频配置 + AI 模型配置 -->
+      <!-- 7. Video config + AI model config -->
       <section class="section card">
-        <h2 class="section-title">视频配置</h2>
+        <h2 class="section-title">Cấu hình video</h2>
         <div class="config-grid">
-          <el-form-item label="分辨率">
+          <el-form-item label="Độ phân giải">
             <el-select v-model="videoResolution" style="width: 160px">
               <el-option label="480p" value="480p" />
               <el-option label="720p" value="720p" />
@@ -1559,42 +1559,42 @@
             </el-select>
           </el-form-item>
           <!--
-          <el-form-item label="配乐">
-            <el-select v-model="videoMusic" placeholder="无" clearable style="width: 160px">
-              <el-option label="无" value="" />
+          <el-form-item label="Nhạc nền">
+            <el-select v-model="videoMusic" placeholder="Không" clearable style="width: 160px">
+              <el-option label="Không" value="" />
             </el-select>
           </el-form-item>
-          <el-form-item label="音效">
-            <el-select v-model="videoSfx" placeholder="无" clearable style="width: 160px">
-              <el-option label="无" value="" />
+          <el-form-item label="Hiệu ứng âm thanh">
+            <el-select v-model="videoSfx" placeholder="Không" clearable style="width: 160px">
+              <el-option label="Không" value="" />
             </el-select>
           </el-form-item>
-          <el-form-item label="画质">
+          <el-form-item label="Chất lượng">
             <el-select v-model="videoQuality" style="width: 120px">
-              <el-option label="高" value="high" />
-              <el-option label="中" value="medium" />
+              <el-option label="Cao" value="high" />
+              <el-option label="Trung" value="medium" />
             </el-select>
           </el-form-item>
           -->
-          <el-form-item label="字幕">
+          <el-form-item label="Phụ đề">
             <div class="video-option-row">
               <el-switch v-model="videoSubtitle" />
-              <span v-if="videoSubtitle" class="video-option-hint">开启后，合成整集时会检测解说旁白：若有文案则自动生成 SRT、按分镜时长合成旁白语音（过长加速 / 过短补静音）、与成片对齐后烧录字幕并混音。</span>
+              <span v-if="videoSubtitle" class="video-option-hint">Khi bật, khi hợp thành cả tập sẽ kiểm tra narration: nếu có nội dung sẽ tự động tạo SRT, tổng hợp voice narration theo thời lượng storyboard (quá dài tăng tốc / quá ngắn thêm silence), căn chỉnh với phim đã tạo rồi burn phụ đề và mix âm thanh.</span>
             </div>
           </el-form-item>
-          <el-form-item label="对白烧录">
+          <el-form-item label="Burn lời thoại">
             <div class="video-option-row">
               <el-switch v-model="videoBurnDialogue" />
-              <span v-if="videoBurnDialogue" class="video-option-hint">开启后，将把各镜「配音」生成的对白 TTS 按分镜时长对齐并混入整集成片（无对白音频的分镜为静音）。可与「字幕」旁白同时开启，两条音轨会叠混。</span>
+              <span v-if="videoBurnDialogue" class="video-option-hint">Khi bật, sẽ căn chỉnh TTS lời thoại "Lồng tiếng" của các cảnh theo thời lượng storyboard và trộn vào cả tập (cảnh không có audio thoại sẽ là silence). Có thể bật cùng "Phụ đề" narration, 2 track sẽ được mix chồng.</span>
             </div>
           </el-form-item>
-          <el-form-item label="水印">
+          <el-form-item label="Watermark">
             <div class="video-option-row">
               <el-switch v-model="videoWatermark" />
               <el-input
                 v-if="videoWatermark"
                 v-model="videoWatermarkText"
-                placeholder="右下角水印文字"
+                placeholder="Text watermark góc dưới phải"
                 maxlength="200"
                 show-word-limit
                 clearable
@@ -1603,12 +1603,12 @@
             </div>
           </el-form-item>
         </div>
-        <p class="config-tip">文本/图片/视频使用的模型以「<el-link type="primary" underline="never" @click="showAiConfigDialog = true">AI 配置</el-link>」中设为默认的为准。</p>
+        <p class="config-tip">Model dùng cho văn bản/ảnh/video theo model được đặt mặc định trong "<el-link type="primary" underline="never" @click="showAiConfigDialog = true">Cấu hình AI</el-link>".</p>
       </section>
 
-      <!-- 8. 合成视频 -->
+      <!-- 8. Video composition -->
       <section id="anchor-video" class="section card">
-        <h2 class="section-title">合成视频</h2>
+        <h2 class="section-title">Hợp thành video</h2>
         <el-button
           type="primary"
           size="large"
@@ -1616,20 +1616,20 @@
           :disabled="!currentEpisodeId || storyboards.length === 0 || videoStatus === 'generating'"
           @click="onGenerateVideo"
         >
-          合成视频
+          Hợp thành video
         </el-button>
         <div v-if="videoStatus === 'generating'" class="video-progress">
           <el-progress :percentage="videoProgress" :status="videoProgress >= 100 ? 'success' : undefined" />
-          <p>视频生成中...</p>
+          <p>Đang tạo video...</p>
         </div>
         <div v-if="videoStatus === 'done'" class="video-done">
-          <el-alert type="success" title="视频生成完成" show-icon />
+          <el-alert type="success" title="Tạo video hoàn tất" show-icon />
         </div>
         <div v-else-if="videoStatus === 'error'" class="video-error">
           <el-alert type="error" :title="videoErrorMsg" show-icon />
         </div>
         <div v-if="currentEpisodeVideoUrl" class="video-preview-wrap">
-          <p class="video-preview-label">本集合成视频预览</p>
+          <p class="video-preview-label">Xem trước video tập này</p>
           <video
             :src="currentEpisodeVideoUrl"
             controls
@@ -1640,128 +1640,128 @@
       </section>
     </main>
 
-    <!-- 添加道具弹窗 -->
-    <el-dialog v-model="showAddProp" title="添加道具" width="600px" @close="() => { addPropForm = { name: '', type: '', description: '', prompt: '' }; addPropAddRefImage = null }">
+    <!-- Add prop dialog -->
+    <el-dialog v-model="showAddProp" title="Thêm đạo cụ" width="600px" @close="() => { addPropForm = { name: '', type: '', description: '', prompt: '' }; addPropAddRefImage = null }">
       <el-form label-width="90px">
-        <el-form-item label="参考图">
+        <el-form-item label="Ảnh tham chiếu">
           <div class="ref-image-zone">
             <div class="ref-image-box" @click="addPropAddRefFileInput?.click()" @drop.prevent="onRefImageDrop2('addProp', $event)" @dragover.prevent>
               <img v-if="addPropAddRefImage" :src="addPropAddRefImage.dataUrl" class="ref-preview-img" />
-              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>点击或拖入参考图</span></div>
+              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>Bấm hoặc kéo thả ảnh tham chiếu</span></div>
             </div>
             <div v-if="addPropAddRefImage" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingPropAddDesc" @click="doExtractFromRef2('addProp')">提取特征描述</el-button>
-              <el-button size="small" @click="addPropAddRefImage = null">移除</el-button>
+              <el-button type="primary" size="small" :loading="extractingPropAddDesc" @click="doExtractFromRef2('addProp')">Trích xuất mô tả đặc điểm</el-button>
+              <el-button size="small" @click="addPropAddRefImage = null">Xoá</el-button>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="名称" required>
-          <el-input v-model="addPropForm.name" placeholder="道具名称" />
+        <el-form-item label="Tên" required>
+          <el-input v-model="addPropForm.name" placeholder="Tên đạo cụ" />
         </el-form-item>
-        <el-form-item label="类型">
-          <el-input v-model="addPropForm.type" placeholder="如：物品、建筑" />
+        <el-form-item label="Loại">
+          <el-input v-model="addPropForm.type" placeholder="Ví dụ: đồ vật, kiến trúc" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="addPropForm.description" type="textarea" :rows="3" placeholder="描述" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="addPropForm.description" type="textarea" :rows="3" placeholder="Mô tả" />
         </el-form-item>
-        <el-form-item label="图生提示词">
-          <el-input v-model="addPropForm.prompt" type="textarea" :rows="2" placeholder="用于 AI 生成图片的提示词" />
+        <el-form-item label="Prompt ảnh">
+          <el-input v-model="addPropForm.prompt" type="textarea" :rows="2" placeholder="Prompt dùng cho AI tạo ảnh" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddProp = false">取消</el-button>
-        <el-button type="primary" :loading="addPropSaving" :disabled="!addPropForm.name.trim()" @click="submitAddProp">确定</el-button>
+        <el-button @click="showAddProp = false">Huỷ</el-button>
+        <el-button type="primary" :loading="addPropSaving" :disabled="!addPropForm.name.trim()" @click="submitAddProp">Xác nhận</el-button>
       </template>
     </el-dialog>
 
-    <!-- 隐藏的文件输入框（放在弹窗外层，避免 el-form-item 干扰） -->
+    <!-- Hidden file inputs (outside dialog to avoid el-form-item interference) -->
     <input ref="addCharRefFileInput" type="file" accept="image/*" style="display:none" @change="onRefImageFileChange('character', $event)" />
     <input ref="addSceneRefFileInput" type="file" accept="image/*" style="display:none" @change="onRefImageFileChange('scene', $event)" />
     <input ref="addPropRefFileInput" type="file" accept="image/*" style="display:none" @change="onRefImageFileChange('prop', $event)" />
     <input ref="addPropAddRefFileInput" type="file" accept="image/*" style="display:none" @change="onRefImageFileChange2('addProp', $event)" />
 
-    <!-- 添加/编辑角色弹窗 -->
-    <el-dialog v-model="showEditCharacter" :title="editCharacterForm?.id ? '编辑角色' : '添加角色'" width="75%" @close="onCloseCharDialog">
+    <!-- Add/Edit character dialog -->
+    <el-dialog v-model="showEditCharacter" :title="editCharacterForm?.id ? 'Sửa nhân vật' : 'Thêm nhân vật'" width="75%" @close="onCloseCharDialog">
       <el-form v-if="editCharacterForm" label-width="90px">
-        <!-- 参考图上传区（新增/编辑均显示） -->
-        <el-form-item label="参考图">
+        <!-- Reference image upload zone -->
+        <el-form-item label="Ảnh tham chiếu">
           <div class="ref-image-zone">
             <div class="ref-image-box" @click="addCharRefFileInput?.click()" @drop.prevent="onRefImageDrop('character', $event)" @dragover.prevent>
-              <!-- 优先：刚上传的新参考图 -->
+              <!-- Ưu tiên: ảnh tham chiếu vừa tải -->
               <img v-if="addCharRefImage" :src="addCharRefImage.dataUrl" class="ref-preview-img" />
-              <!-- 次之：已保存的参考图 -->
+              <!-- Thứ hai: ảnh tham chiếu đã lưu -->
               <img v-else-if="editCharacterForm.ref_image"
                 :src="editCharacterForm.ref_image.startsWith('http') ? editCharacterForm.ref_image : '/static/' + editCharacterForm.ref_image"
                 class="ref-preview-img" />
-              <!-- 最后：主图（半透明，提示可上传参考图替代） -->
+              <!-- Cuối: ảnh chính (mờ, gợi ý có thể tải ảnh tham chiếu thay) -->
               <img v-else-if="editCharacterForm.id && (editCharacterForm.image_url || editCharacterForm.local_path)"
                 :src="assetImageUrl(editCharacterForm)"
                 class="ref-preview-img" style="opacity:0.5" />
-              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>点击或拖入参考图</span></div>
+              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>Bấm hoặc kéo thả ảnh tham chiếu</span></div>
             </div>
             <div v-if="addCharRefImage" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingCharAppearance" @click="doExtractFromRef('character')">提取特征描述</el-button>
-              <el-button size="small" @click="addCharRefImage = null">移除</el-button>
+              <el-button type="primary" size="small" :loading="extractingCharAppearance" @click="doExtractFromRef('character')">Trích xuất mô tả đặc điểm</el-button>
+              <el-button size="small" @click="addCharRefImage = null">Xoá</el-button>
             </div>
             <div v-else-if="editCharacterForm.ref_image" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingCharAppearance" @click="doExtractCharFromImage">从参考图提取描述</el-button>
-              <el-button size="small" @click="clearCharRefImage">移除参考图</el-button>
+              <el-button type="primary" size="small" :loading="extractingCharAppearance" @click="doExtractCharFromImage">Trích xuất mô tả từ ảnh tham chiếu</el-button>
+              <el-button size="small" @click="clearCharRefImage">Xoá ảnh tham chiếu</el-button>
             </div>
             <div v-else-if="editCharacterForm.id && (editCharacterForm.image_url || editCharacterForm.local_path) && !editCharacterForm.appearance" class="ref-actions">
-              <el-button size="small" :loading="extractingCharAppearance" @click="doExtractCharFromImage">从主图提取描述</el-button>
+              <el-button size="small" :loading="extractingCharAppearance" @click="doExtractCharFromImage">Trích xuất mô tả từ ảnh chính</el-button>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="名称" required>
-          <el-input v-model="editCharacterForm.name" placeholder="角色名称" />
+        <el-form-item label="Tên" required>
+          <el-input v-model="editCharacterForm.name" placeholder="Tên nhân vật" />
         </el-form-item>
-        <el-form-item label="身份/定位">
-          <el-select v-model="editCharacterForm.role" placeholder="请选择角色类型" style="width:200px">
-            <el-option value="main" label="主角" />
-            <el-option value="supporting" label="配角" />
-            <el-option value="minor" label="次要角色" />
+        <el-form-item label="Vai trò">
+          <el-select v-model="editCharacterForm.role" placeholder="Vui lòng chọn loại nhân vật" style="width:200px">
+            <el-option value="main" label="Vai chính" />
+            <el-option value="supporting" label="Vai phụ" />
+            <el-option value="minor" label="Vai thứ" />
           </el-select>
         </el-form-item>
-        <el-form-item label="外貌描述">
-          <el-input v-model="editCharacterForm.appearance" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" placeholder="用于 AI 生成图像的外貌描述，尽量详细" />
+        <el-form-item label="Mô tả ngoại hình">
+          <el-input v-model="editCharacterForm.appearance" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" placeholder="Mô tả ngoại hình dùng cho AI tạo ảnh, càng chi tiết càng tốt" />
         </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="editCharacterForm.description" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="角色背景简介，供剧本生成参考" />
+        <el-form-item label="Giới thiệu">
+          <el-input v-model="editCharacterForm.description" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="Giới thiệu tiểu sử nhân vật, dùng để tham chiếu khi tạo kịch bản" />
         </el-form-item>
         <el-form-item v-if="editCharacterForm.id">
           <template #label>
-            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">图生提示词</span>
+            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">Prompt ảnh</span>
           </template>
           <div style="width:100%">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:12px;color:#909399">AI 润色后的最终提示词，生成四视图图片时直接使用；可手动修改</span>
+              <span style="font-size:12px;color:#909399">Prompt cuối cùng đã được AI tinh chỉnh, dùng trực tiếp khi tạo ảnh 4 view; có thể chỉnh tay</span>
               <el-button
                 size="small"
                 :loading="editCharacterPromptGenerating"
                 @click="doGenerateCharacterPrompt"
-              >重新生成提示词</el-button>
+              >Tạo lại prompt</el-button>
             </div>
             <el-input
               v-model="editCharacterForm.polished_prompt"
               type="textarea"
               :autosize="{ minRows: 5, maxRows: 16 }"
-              :placeholder="editCharacterPromptGenerating ? 'AI 正在生成提示词，请稍候…' : '点击「重新生成提示词」由 AI 自动生成，或直接在此输入'"
+              :placeholder="editCharacterPromptGenerating ? 'AI đang tạo prompt, vui lòng đợi…' : 'Bấm nút Tạo lại prompt để AI tự tạo, hoặc nhập trực tiếp vào đây'"
               :disabled="editCharacterPromptGenerating"
               style="font-size:12px"
             />
           </div>
         </el-form-item>
-        <!-- P0-2: 视觉锚点（identity_anchors） -->
-        <el-form-item v-if="editCharacterForm.id" label="视觉锚点">
+        <!-- P0-2: Visual anchor (identity_anchors) -->
+        <el-form-item v-if="editCharacterForm.id" label="Neo hình ảnh">
           <div style="width:100%">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:12px;color:#909399">AI 从外貌描述提炼的6层视觉特征，用于保持生成图片角色一致性</span>
+              <span style="font-size:12px;color:#909399">6 lớp đặc điểm hình ảnh do AI trích từ mô tả ngoại hình, giữ nhất quán nhân vật khi tạo ảnh</span>
               <el-button
                 size="small"
                 :loading="extractingAnchors"
                 :disabled="!editCharacterForm.appearance"
                 @click="extractIdentityAnchors"
-              >提炼视觉锚点</el-button>
+              >Trích neo hình ảnh</el-button>
             </div>
             <el-input
               v-if="editCharacterForm.identity_anchors"
@@ -1772,69 +1772,69 @@
               :rows="4"
               readonly
               style="font-size:11px;font-family:monospace"
-              placeholder="点击「提炼视觉锚点」生成"
+              placeholder="Bấm 'Trích neo hình ảnh' để tạo"
             />
-            <div v-else style="font-size:12px;color:#c0c4cc;padding:4px 0">暂无锚点，点击「提炼视觉锚点」自动提炼</div>
+            <div v-else style="font-size:12px;color:#c0c4cc;padding:4px 0">Chưa có neo, bấm 'Trích neo hình ảnh' để tự động trích</div>
           </div>
         </el-form-item>
-        <!-- P1-3: 多阶段造型（stages） -->
-        <el-form-item v-if="editCharacterForm.id" label="多阶段造型">
+        <!-- P1-3: Multi-stage costume (stages) -->
+        <el-form-item v-if="editCharacterForm.id" label="Tạo hình đa giai đoạn">
           <div style="width:100%">
             <div style="font-size:12px;color:#909399;margin-bottom:6px">
-              不同集次的角色造型变化，格式：JSON 数组 [{"episode_range":[1,3],"appearance":"..."}]
+              Sự thay đổi tạo hình nhân vật theo tập, format: JSON array [{"episode_range":[1,3],"appearance":"..."}]
             </div>
             <el-input
               v-model="editCharacterForm.stages"
               type="textarea"
               :rows="4"
-              placeholder='例：[{"episode_range":[1,5],"appearance":"白衣少年"},{"episode_range":[6,10],"appearance":"黑衣武者"}]'
+              placeholder='Ví dụ: [{"episode_range":[1,5],"appearance":"Thiếu niên áo trắng"},{"episode_range":[6,10],"appearance":"Võ sĩ áo đen"}]'
               style="font-size:12px;font-family:monospace"
             />
           </div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditCharacter = false">取消</el-button>
-        <el-button type="primary" :loading="editCharacterSaving" :disabled="!editCharacterForm?.name?.trim()" @click="submitEditCharacter">{{ editCharacterForm?.id ? '保存' : '添加' }}</el-button>
+        <el-button @click="showEditCharacter = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editCharacterSaving" :disabled="!editCharacterForm?.name?.trim()" @click="submitEditCharacter">{{ editCharacterForm?.id ? 'Lưu' : 'Thêm' }}</el-button>
       </template>
     </el-dialog>
 
     <el-dialog
       v-model="showCharSd2Cert"
-      title="SD2 认证详情"
+      title="Chi tiết chứng nhận SD2"
       width="min(720px, 92vw)"
       destroy-on-close
       class="sd2-cert-dialog"
     >
       <template v-if="charSd2CertPayload">
         <el-descriptions :column="1" border size="small" class="sd2-cert-desc">
-          <el-descriptions-item label="素材 ID">
+          <el-descriptions-item label="ID tư liệu">
             <span class="sd2-cert-value">{{ charSd2CertPayload.hub_asset_id || '—' }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="asset_url">
             <code class="sd2-cert-value">{{ charSd2CertPayload.asset_url || '—' }}</code>
           </el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item label="Trạng thái">
             <span class="sd2-cert-value">{{ charSd2CertPayload.status || '—' }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="注册图片 URL">
+          <el-descriptions-item label="URL ảnh đăng ký">
             <span class="sd2-cert-value">{{ charSd2CertPayload.source_image_url || '—' }}</span>
           </el-descriptions-item>
-          <el-descriptions-item v-if="charSd2CertPayload.sd2_provider" label="认证提供方">
+          <el-descriptions-item v-if="charSd2CertPayload.sd2_provider" label="Nhà cung cấp chứng nhận">
             <span class="sd2-cert-value">{{ charSd2CertPayload.sd2_provider }}</span>
           </el-descriptions-item>
         </el-descriptions>
       </template>
       <template #footer>
-        <el-button @click="showCharSd2Cert = false">关闭</el-button>
+        <el-button @click="showCharSd2Cert = false">Đóng</el-button>
       </template>
     </el-dialog>
 
-    <!-- 编辑道具弹窗 -->
-    <el-dialog v-model="showEditProp" :title="editPropForm?.id ? '编辑道具' : '添加道具'" width="75%" @close="onClosePropDialog">
+    <!-- Edit prop dialog -->
+    <el-dialog v-model="showEditProp" :title="editPropForm?.id ? 'Sửa đạo cụ' : 'Thêm đạo cụ'" width="75%" @close="onClosePropDialog">
       <el-form v-if="editPropForm" label-width="90px">
-        <!-- 参考图上传区（新增/编辑均显示） -->
-        <el-form-item label="参考图">
+        <!-- Reference image upload zone -->
+        <el-form-item label="Ảnh tham chiếu">
           <div class="ref-image-zone">
             <div class="ref-image-box" @click="addPropRefFileInput?.click()" @drop.prevent="onRefImageDrop('prop', $event)" @dragover.prevent>
               <img v-if="addPropRefImage" :src="addPropRefImage.dataUrl" class="ref-preview-img" />
@@ -1843,57 +1843,57 @@
                 class="ref-preview-img" />
               <img v-else-if="editPropForm.id && (editPropForm.image_url || editPropForm.local_path)"
                 :src="assetImageUrl(editPropForm)" class="ref-preview-img" style="opacity:0.5" />
-              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>点击或拖入参考图</span></div>
+              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>Bấm hoặc kéo thả ảnh tham chiếu</span></div>
             </div>
             <div v-if="addPropRefImage" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingPropDesc" @click="doExtractFromRef('prop')">提取特征描述</el-button>
-              <el-button size="small" @click="addPropRefImage = null">移除</el-button>
+              <el-button type="primary" size="small" :loading="extractingPropDesc" @click="doExtractFromRef('prop')">Trích xuất mô tả đặc điểm</el-button>
+              <el-button size="small" @click="addPropRefImage = null">Xoá</el-button>
             </div>
             <div v-else-if="editPropForm.ref_image" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingPropDesc" @click="doExtractPropFromImage">从参考图提取描述</el-button>
-              <el-button size="small" @click="clearPropRefImage">移除参考图</el-button>
+              <el-button type="primary" size="small" :loading="extractingPropDesc" @click="doExtractPropFromImage">Trích xuất mô tả từ ảnh tham chiếu</el-button>
+              <el-button size="small" @click="clearPropRefImage">Xoá ảnh tham chiếu</el-button>
             </div>
             <div v-else-if="editPropForm.id && (editPropForm.image_url || editPropForm.local_path) && !editPropForm.description" class="ref-actions">
-              <el-button size="small" :loading="extractingPropDesc" @click="doExtractPropFromImage">从主图提取描述</el-button>
+              <el-button size="small" :loading="extractingPropDesc" @click="doExtractPropFromImage">Trích xuất mô tả từ ảnh chính</el-button>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="名称" required>
-          <el-input v-model="editPropForm.name" placeholder="道具名称" />
+        <el-form-item label="Tên" required>
+          <el-input v-model="editPropForm.name" placeholder="Tên đạo cụ" />
         </el-form-item>
-        <el-form-item label="类型">
-          <el-input v-model="editPropForm.type" placeholder="如：物品、建筑" />
+        <el-form-item label="Loại">
+          <el-input v-model="editPropForm.type" placeholder="Ví dụ: đồ vật, kiến trúc" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="editPropForm.description" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="道具描述" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="editPropForm.description" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="Mô tả đạo cụ" />
         </el-form-item>
-        <el-form-item label="图生提示词">
+        <el-form-item label="Prompt ảnh">
           <div style="width:100%">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:12px;color:#909399">AI 润色后的图片提示词，生成图片时直接使用；可手动修改</span>
-              <el-button size="small" :loading="editPropPromptGenerating" @click="doGeneratePropPrompt">重新生成提示词</el-button>
+              <span style="font-size:12px;color:#909399">Prompt ảnh sau khi được AI tinh chỉnh, dùng trực tiếp khi tạo ảnh; có thể chỉnh tay</span>
+              <el-button size="small" :loading="editPropPromptGenerating" @click="doGeneratePropPrompt">Tạo lại prompt</el-button>
             </div>
             <el-input
               v-model="editPropForm.prompt"
               type="textarea"
               :autosize="{ minRows: 5, maxRows: 16 }"
-              :placeholder="editPropPromptGenerating ? 'AI 正在生成提示词，请稍候…' : '点击「重新生成提示词」由 AI 自动生成，或直接在此输入'"
+              :placeholder="editPropPromptGenerating ? 'AI đang tạo prompt, vui lòng đợi…' : 'Bấm nút Tạo lại prompt để AI tự tạo, hoặc nhập trực tiếp vào đây'"
               :disabled="editPropPromptGenerating"
             />
           </div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditProp = false">取消</el-button>
-        <el-button type="primary" :loading="editPropSaving" :disabled="!editPropForm?.name?.trim()" @click="submitEditProp">保存</el-button>
+        <el-button @click="showEditProp = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editPropSaving" :disabled="!editPropForm?.name?.trim()" @click="submitEditProp">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 添加/编辑场景弹窗 -->
-    <el-dialog v-model="showEditScene" :title="editSceneForm?.id ? '编辑场景' : '添加场景'" width="75%" @close="onCloseSceneDialog">
+    <!-- Add/Edit scene dialog -->
+    <el-dialog v-model="showEditScene" :title="editSceneForm?.id ? 'Sửa scene' : 'Thêm scene'" width="75%" @close="onCloseSceneDialog">
       <el-form v-if="editSceneForm" label-width="90px">
-        <!-- 参考图上传区（新增/编辑均显示） -->
-        <el-form-item label="参考图">
+        <!-- Reference image upload zone -->
+        <el-form-item label="Ảnh tham chiếu">
           <div class="ref-image-zone">
             <div class="ref-image-box" @click="addSceneRefFileInput?.click()" @drop.prevent="onRefImageDrop('scene', $event)" @dragover.prevent>
               <img v-if="addSceneRefImage" :src="addSceneRefImage.dataUrl" class="ref-preview-img" />
@@ -1902,62 +1902,62 @@
                 class="ref-preview-img" />
               <img v-else-if="editSceneForm.id && (editSceneForm.image_url || editSceneForm.local_path)"
                 :src="assetImageUrl(editSceneForm)" class="ref-preview-img" style="opacity:0.5" />
-              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>点击或拖入参考图</span></div>
+              <div v-else class="ref-upload-hint"><span class="ref-upload-icon">🖼</span><span>Bấm hoặc kéo thả ảnh tham chiếu</span></div>
             </div>
             <div v-if="addSceneRefImage" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingSceneDesc" @click="doExtractFromRef('scene')">提取特征描述</el-button>
-              <el-button size="small" @click="addSceneRefImage = null">移除</el-button>
+              <el-button type="primary" size="small" :loading="extractingSceneDesc" @click="doExtractFromRef('scene')">Trích xuất mô tả đặc điểm</el-button>
+              <el-button size="small" @click="addSceneRefImage = null">Xoá</el-button>
             </div>
             <div v-else-if="editSceneForm.ref_image" class="ref-actions">
-              <el-button type="primary" size="small" :loading="extractingSceneDesc" @click="doExtractSceneFromImage">从参考图提取描述</el-button>
-              <el-button size="small" @click="clearSceneRefImage">移除参考图</el-button>
+              <el-button type="primary" size="small" :loading="extractingSceneDesc" @click="doExtractSceneFromImage">Trích xuất mô tả từ ảnh tham chiếu</el-button>
+              <el-button size="small" @click="clearSceneRefImage">Xoá ảnh tham chiếu</el-button>
             </div>
             <div v-else-if="editSceneForm.id && (editSceneForm.image_url || editSceneForm.local_path) && !editSceneForm.prompt" class="ref-actions">
-              <el-button size="small" :loading="extractingSceneDesc" @click="doExtractSceneFromImage">从主图提取描述</el-button>
+              <el-button size="small" :loading="extractingSceneDesc" @click="doExtractSceneFromImage">Trích xuất mô tả từ ảnh chính</el-button>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="地点" required>
-          <el-input v-model="editSceneForm.location" placeholder="如：森林、教室" />
+        <el-form-item label="Địa điểm" required>
+          <el-input v-model="editSceneForm.location" placeholder="Ví dụ: rừng, lớp học" />
         </el-form-item>
-        <el-form-item label="时间">
-          <el-input v-model="editSceneForm.time" placeholder="如：白天、傍晚" />
+        <el-form-item label="Thời gian">
+          <el-input v-model="editSceneForm.time" placeholder="Ví dụ: ban ngày, chạng vạng" />
         </el-form-item>
-        <el-form-item label="场景描述">
-          <el-input v-model="editSceneForm.prompt" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="场景的简要描述，供 AI 生成四视图时参考" />
+        <el-form-item label="Mô tả scene">
+          <el-input v-model="editSceneForm.prompt" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="Mô tả ngắn về scene, dùng để tham chiếu khi AI tạo ảnh 4 view" />
         </el-form-item>
         <el-form-item v-if="editSceneForm.id">
           <template #label>
-            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">单图提示词</span>
+            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">Prompt ảnh đơn</span>
           </template>
           <div style="width:100%">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:12px;color:#909399">单图场景的完整图片提示词（不含四宫格布局），生图时直接使用；可手动修改</span>
-              <el-button size="small" :loading="editScenePromptGenerating" @click="doGenerateSceneSinglePrompt">重新生成提示词</el-button>
+              <span style="font-size:12px;color:#909399">Prompt ảnh đầy đủ cho scene 1 ảnh (không có layout 4 ô), dùng trực tiếp khi tạo ảnh; có thể chỉnh tay</span>
+              <el-button size="small" :loading="editScenePromptGenerating" @click="doGenerateSceneSinglePrompt">Tạo lại prompt</el-button>
             </div>
             <el-input
               v-model="editSceneForm.polished_prompt_single"
               type="textarea"
               :autosize="{ minRows: 5, maxRows: 16 }"
-              placeholder="单图场景提示词，点击场景列表的「AI 生成」按钮（不勾选四宫格）后会自动生成"
+              placeholder="Prompt scene 1 ảnh, tự động tạo khi bấm 'AI tạo' ở list scene (không tick 4 ô)"
               style="font-size:12px"
             />
           </div>
         </el-form-item>
         <el-form-item v-if="editSceneForm.id">
           <template #label>
-            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">四视图提示词</span>
+            <span style="font-size:12px;line-height:1.4;white-space:normal;word-break:break-all;display:inline-block;width:90px">Prompt 4 view</span>
           </template>
           <div style="width:100%">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:12px;color:#909399">AI 生成的完整四视图图片提示词，生图时直接使用；可手动修改</span>
-              <el-button size="small" :loading="editScenePromptGenerating" @click="doGenerateScenePrompt">重新生成提示词</el-button>
+              <span style="font-size:12px;color:#909399">Prompt ảnh 4 view đầy đủ do AI tạo, dùng trực tiếp khi tạo ảnh; có thể chỉnh tay</span>
+              <el-button size="small" :loading="editScenePromptGenerating" @click="doGenerateScenePrompt">Tạo lại prompt</el-button>
             </div>
             <el-input
               v-model="editSceneForm.polished_prompt"
               type="textarea"
               :autosize="{ minRows: 5, maxRows: 16 }"
-              :placeholder="editScenePromptGenerating ? 'AI 正在生成四视图提示词，请稍候…' : '点击「重新生成提示词」由 AI 自动生成，或直接在此输入'"
+              :placeholder="editScenePromptGenerating ? 'AI đang tạo prompt 4 view, vui lòng đợi…' : 'Bấm nút Tạo lại prompt để AI tự tạo, hoặc nhập trực tiếp vào đây'"
               :disabled="editScenePromptGenerating"
               style="font-size:12px"
             />
@@ -1965,35 +1965,35 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditScene = false">取消</el-button>
-        <el-button type="primary" :loading="editSceneSaving" :disabled="!editSceneForm?.location?.trim()" @click="submitEditScene">{{ editSceneForm?.id ? '保存' : '添加' }}</el-button>
+        <el-button @click="showEditScene = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editSceneSaving" :disabled="!editSceneForm?.location?.trim()" @click="submitEditScene">{{ editSceneForm?.id ? 'Lưu' : 'Thêm' }}</el-button>
       </template>
     </el-dialog>
 
-    <!-- 角色资源库（本剧库 / 本剧全部角色 / 团队库） -->
-    <el-dialog v-model="showCharLibrary" title="角色资源库" width="720px" destroy-on-close class="library-dialog" @open="onCharLibraryDialogOpen">
+    <!-- Character library dialog -->
+    <el-dialog v-model="showCharLibrary" title="Thư viện nhân vật" width="720px" destroy-on-close class="library-dialog" @open="onCharLibraryDialogOpen">
       <el-tabs v-model="charLibraryTab" class="char-library-tabs" @tab-change="onCharLibraryTabChange">
-        <el-tab-pane label="本剧角色库" name="library">
+        <el-tab-pane label="Thư viện nhân vật phim này" name="library">
           <div class="library-toolbar">
-            <el-input v-model="charLibraryKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadCharLibrary()" />
+            <el-input v-model="charLibraryKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadCharLibrary()" />
           </div>
           <div v-loading="charLibraryLoading" class="library-list">
             <div v-for="item in charLibraryList" :key="'lib-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
-                <div class="library-item-name">{{ item.name || '未命名' }}</div>
+                <div class="library-item-name">{{ item.name || 'Chưa đặt tên' }}</div>
                 <div class="library-item-desc">{{ (item.description || '').slice(0, 60) }}{{ (item.description || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isCharAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddCharFromLibrary(item)">加入本集</el-button>
-                  <el-button size="small" @click="openEditCharLibrary(item)">编辑</el-button>
-                  <el-button size="small" type="danger" plain @click="onDeleteCharLibrary(item)">删除</el-button>
+                  <el-button size="small" type="primary" :loading="isCharAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddCharFromLibrary(item)">Thêm vào tập</el-button>
+                  <el-button size="small" @click="openEditCharLibrary(item)">Sửa</el-button>
+                  <el-button size="small" type="danger" plain @click="onDeleteCharLibrary(item)">Xoá</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!charLibraryLoading && charLibraryList.length === 0" class="library-empty">暂无本剧角色库记录，可将本剧角色「加入本剧库」后在此查看</div>
+            <div v-if="!charLibraryLoading && charLibraryList.length === 0" class="library-empty">Chưa có bản ghi thư viện nhân vật, có thể "Thêm vào thư viện phim" từ list nhân vật để xem tại đây</div>
           </div>
           <div class="library-pagination">
             <el-pagination
@@ -2008,28 +2008,28 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="本剧所有角色" name="drama">
+        <el-tab-pane label="Tất cả nhân vật trong phim" name="drama">
           <div class="library-toolbar">
-            <el-input v-model="dramaAllCharKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadDramaAllCharList()" />
+            <el-input v-model="dramaAllCharKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadDramaAllCharList()" />
           </div>
           <div v-loading="dramaAllCharLoading" class="library-list">
             <div v-for="item in dramaAllCharList" :key="'drama-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
                 <div class="library-item-name">
-                  {{ item.name || '未命名' }}
+                  {{ item.name || 'Chưa đặt tên' }}
                   <el-tag v-if="item.role" size="small" type="info" style="margin-left: 6px">{{ charRoleLabel(item.role) }}</el-tag>
                 </div>
                 <div class="library-item-desc">{{ (item.description || item.appearance || '').slice(0, 60) }}{{ (item.description || item.appearance || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isCharAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaCharToEpisode(item)">加入本集</el-button>
+                  <el-button size="small" type="primary" :loading="isCharAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaCharToEpisode(item)">Thêm vào tập</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!dramaAllCharLoading && dramaAllCharList.length === 0" class="library-empty">本剧暂无制作角色，请先在角色面板创建</div>
+            <div v-if="!dramaAllCharLoading && dramaAllCharList.length === 0" class="library-empty">Phim chưa có nhân vật, vui lòng tạo ở phần nhân vật trước</div>
           </div>
           <div class="library-pagination">
             <el-pagination
@@ -2046,79 +2046,79 @@
 
       </el-tabs>
       <template #footer>
-        <el-button @click="showCharLibrary = false">关闭</el-button>
+        <el-button @click="showCharLibrary = false">Đóng</el-button>
       </template>
     </el-dialog>
-    <!-- 编辑公共角色 -->
-    <el-dialog v-model="showEditCharLibrary" title="编辑公共角色" width="440px" @close="editCharLibraryForm = null">
+    <!-- Edit public character -->
+    <el-dialog v-model="showEditCharLibrary" title="Sửa nhân vật dùng chung" width="440px" @close="editCharLibraryForm = null">
       <el-form v-if="editCharLibraryForm" label-width="80px">
-        <el-form-item label="名称">
-          <el-input v-model="editCharLibraryForm.name" placeholder="角色名称" />
+        <el-form-item label="Tên">
+          <el-input v-model="editCharLibraryForm.name" placeholder="Tên nhân vật" />
         </el-form-item>
-        <el-form-item label="分类">
-          <el-input v-model="editCharLibraryForm.category" placeholder="可选" />
+        <el-form-item label="Phân loại">
+          <el-input v-model="editCharLibraryForm.category" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="editCharLibraryForm.description" type="textarea" :rows="3" placeholder="可选" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="editCharLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="editCharLibraryForm.tags" placeholder="可选，逗号分隔" />
+        <el-form-item label="Tag">
+          <el-input v-model="editCharLibraryForm.tags" placeholder="Tuỳ chọn, ngăn cách bằng dấu phẩy" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditCharLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editCharLibrarySaving" @click="submitEditCharLibrary">保存</el-button>
+        <el-button @click="showEditCharLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editCharLibrarySaving" @click="submitEditCharLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 道具资源库 -->
-    <el-dialog v-model="showPropLibrary" title="道具资源库" width="720px" destroy-on-close class="library-dialog" @open="onPropLibraryDialogOpen">
+    <!-- Prop library dialog -->
+    <el-dialog v-model="showPropLibrary" title="Thư viện đạo cụ" width="720px" destroy-on-close class="library-dialog" @open="onPropLibraryDialogOpen">
       <el-tabs v-model="propLibraryTab" class="char-library-tabs" @tab-change="onPropLibraryTabChange">
-        <el-tab-pane label="本剧道具库" name="library">
+        <el-tab-pane label="Thư viện đạo cụ phim này" name="library">
           <div class="library-toolbar">
-            <el-input v-model="propLibraryKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadPropLibrary()" />
+            <el-input v-model="propLibraryKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadPropLibrary()" />
           </div>
           <div v-loading="propLibraryLoading" class="library-list">
             <div v-for="item in propLibraryList" :key="'plib-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
-                <div class="library-item-name">{{ item.name || '未命名' }}</div>
+                <div class="library-item-name">{{ item.name || 'Chưa đặt tên' }}</div>
                 <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isPropAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddPropFromLibrary(item)">加入本集</el-button>
-                  <el-button size="small" @click="openEditPropLibrary(item)">编辑</el-button>
-                  <el-button size="small" type="danger" plain @click="onDeletePropLibrary(item)">删除</el-button>
+                  <el-button size="small" type="primary" :loading="isPropAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddPropFromLibrary(item)">Thêm vào tập</el-button>
+                  <el-button size="small" @click="openEditPropLibrary(item)">Sửa</el-button>
+                  <el-button size="small" type="danger" plain @click="onDeletePropLibrary(item)">Xoá</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!propLibraryLoading && propLibraryList.length === 0" class="library-empty">暂无本剧道具库记录，可将本剧道具「加入本剧库」后在此查看</div>
+            <div v-if="!propLibraryLoading && propLibraryList.length === 0" class="library-empty">Chưa có bản ghi thư viện đạo cụ, có thể "Thêm vào thư viện phim" từ list đạo cụ để xem tại đây</div>
           </div>
           <div class="library-pagination">
             <el-pagination v-model:current-page="propLibraryPage" v-model:page-size="propLibraryPageSize" :total="propLibraryTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadPropLibraryList" @size-change="loadPropLibraryList" />
           </div>
         </el-tab-pane>
-        <el-tab-pane label="本剧所有道具" name="drama">
+        <el-tab-pane label="Tất cả đạo cụ trong phim" name="drama">
           <div class="library-toolbar">
-            <el-input v-model="dramaAllPropKeyword" placeholder="搜索名称或描述" clearable style="width: 200px" @input="debouncedLoadDramaAllPropList()" />
+            <el-input v-model="dramaAllPropKeyword" placeholder="Tìm theo tên hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadDramaAllPropList()" />
           </div>
           <div v-loading="dramaAllPropLoading" class="library-list">
             <div v-for="item in dramaAllPropList" :key="'pdr-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
-                <div class="library-item-name">{{ item.name || '未命名' }}</div>
+                <div class="library-item-name">{{ item.name || 'Chưa đặt tên' }}</div>
                 <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isPropAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaPropToEpisode(item)">加入本集</el-button>
+                  <el-button size="small" type="primary" :loading="isPropAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaPropToEpisode(item)">Thêm vào tập</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!dramaAllPropLoading && dramaAllPropList.length === 0" class="library-empty">本剧暂无制作道具，请先在道具面板创建</div>
+            <div v-if="!dramaAllPropLoading && dramaAllPropList.length === 0" class="library-empty">Phim chưa có đạo cụ, vui lòng tạo ở phần đạo cụ trước</div>
           </div>
           <div class="library-pagination">
             <el-pagination v-model:current-page="dramaAllPropPage" v-model:page-size="dramaAllPropPageSize" :total="dramaAllPropTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadDramaAllPropList" @size-change="loadDramaAllPropList" />
@@ -2126,79 +2126,79 @@
         </el-tab-pane>
       </el-tabs>
       <template #footer>
-        <el-button @click="showPropLibrary = false">关闭</el-button>
+        <el-button @click="showPropLibrary = false">Đóng</el-button>
       </template>
     </el-dialog>
-    <!-- 编辑公共道具 -->
-    <el-dialog v-model="showEditPropLibrary" title="编辑公共道具" width="440px" @close="editPropLibraryForm = null">
+    <!-- Edit public prop -->
+    <el-dialog v-model="showEditPropLibrary" title="Sửa đạo cụ dùng chung" width="440px" @close="editPropLibraryForm = null">
       <el-form v-if="editPropLibraryForm" label-width="80px">
-        <el-form-item label="名称">
-          <el-input v-model="editPropLibraryForm.name" placeholder="道具名称" />
+        <el-form-item label="Tên">
+          <el-input v-model="editPropLibraryForm.name" placeholder="Tên đạo cụ" />
         </el-form-item>
-        <el-form-item label="分类">
-          <el-input v-model="editPropLibraryForm.category" placeholder="可选" />
+        <el-form-item label="Phân loại">
+          <el-input v-model="editPropLibraryForm.category" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="editPropLibraryForm.description" type="textarea" :rows="3" placeholder="可选" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="editPropLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="editPropLibraryForm.tags" placeholder="可选，逗号分隔" />
+        <el-form-item label="Tag">
+          <el-input v-model="editPropLibraryForm.tags" placeholder="Tuỳ chọn, ngăn cách bằng dấu phẩy" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditPropLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editPropLibrarySaving" @click="submitEditPropLibrary">保存</el-button>
+        <el-button @click="showEditPropLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editPropLibrarySaving" @click="submitEditPropLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 场景资源库 -->
-    <el-dialog v-model="showSceneLibrary" title="场景资源库" width="720px" destroy-on-close class="library-dialog" @open="onSceneLibraryDialogOpen">
+    <!-- Scene library dialog -->
+    <el-dialog v-model="showSceneLibrary" title="Thư viện scene" width="720px" destroy-on-close class="library-dialog" @open="onSceneLibraryDialogOpen">
       <el-tabs v-model="sceneLibraryTab" class="char-library-tabs" @tab-change="onSceneLibraryTabChange">
-        <el-tab-pane label="本剧场景库" name="library">
+        <el-tab-pane label="Thư viện scene phim này" name="library">
           <div class="library-toolbar">
-            <el-input v-model="sceneLibraryKeyword" placeholder="搜索地点或描述" clearable style="width: 200px" @input="debouncedLoadSceneLibrary()" />
+            <el-input v-model="sceneLibraryKeyword" placeholder="Tìm theo địa điểm hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadSceneLibrary()" />
           </div>
           <div v-loading="sceneLibraryLoading" class="library-list">
             <div v-for="item in sceneLibraryList" :key="'slib-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
-                <div class="library-item-name">{{ item.location || item.time || '未命名' }}</div>
+                <div class="library-item-name">{{ item.location || item.time || 'Chưa đặt tên' }}</div>
                 <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isSceneAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddSceneFromLibrary(item)">加入本集</el-button>
-                  <el-button size="small" @click="openEditSceneLibrary(item)">编辑</el-button>
-                  <el-button size="small" type="danger" plain @click="onDeleteSceneLibrary(item)">删除</el-button>
+                  <el-button size="small" type="primary" :loading="isSceneAddToEpisodeLoading('library', item.id)" :disabled="!currentEpisodeId" @click="onAddSceneFromLibrary(item)">Thêm vào tập</el-button>
+                  <el-button size="small" @click="openEditSceneLibrary(item)">Sửa</el-button>
+                  <el-button size="small" type="danger" plain @click="onDeleteSceneLibrary(item)">Xoá</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!sceneLibraryLoading && sceneLibraryList.length === 0" class="library-empty">暂无本剧场景库记录，可将本剧场景「加入本剧库」后在此查看</div>
+            <div v-if="!sceneLibraryLoading && sceneLibraryList.length === 0" class="library-empty">Chưa có bản ghi thư viện scene, có thể "Thêm vào thư viện phim" từ list scene để xem tại đây</div>
           </div>
           <div class="library-pagination">
             <el-pagination v-model:current-page="sceneLibraryPage" v-model:page-size="sceneLibraryPageSize" :total="sceneLibraryTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadSceneLibraryList" @size-change="loadSceneLibraryList" />
           </div>
         </el-tab-pane>
-        <el-tab-pane label="本剧所有场景" name="drama">
+        <el-tab-pane label="Tất cả scene trong phim" name="drama">
           <div class="library-toolbar">
-            <el-input v-model="dramaAllSceneKeyword" placeholder="搜索地点或描述" clearable style="width: 200px" @input="debouncedLoadDramaAllSceneList()" />
+            <el-input v-model="dramaAllSceneKeyword" placeholder="Tìm theo địa điểm hoặc mô tả" clearable style="width: 200px" @input="debouncedLoadDramaAllSceneList()" />
           </div>
           <div v-loading="dramaAllSceneLoading" class="library-list">
             <div v-for="item in dramaAllSceneList" :key="'sdr-' + item.id" class="library-item">
               <div class="library-item-cover" @click="openImagePreview(assetImageUrl(item))">
                 <img v-if="item.image_url || item.local_path" :src="assetImageUrl(item)" alt="" />
-                <span v-else class="library-item-placeholder">暂无图</span>
+                <span v-else class="library-item-placeholder">Chưa có ảnh</span>
               </div>
               <div class="library-item-info">
-                <div class="library-item-name">{{ item.location || '未命名' }}<span v-if="item.time" class="library-item-sub"> · {{ item.time }}</span></div>
+                <div class="library-item-name">{{ item.location || 'Chưa đặt tên' }}<span v-if="item.time" class="library-item-sub"> · {{ item.time }}</span></div>
                 <div class="library-item-desc">{{ (item.description || item.prompt || '').slice(0, 60) }}{{ (item.description || item.prompt || '').length > 60 ? '…' : '' }}</div>
                 <div class="library-item-actions">
-                  <el-button size="small" type="primary" :loading="isSceneAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaSceneToEpisode(item)">加入本集</el-button>
+                  <el-button size="small" type="primary" :loading="isSceneAddToEpisodeLoading('drama', item.id)" :disabled="!currentEpisodeId" @click="onAddDramaSceneToEpisode(item)">Thêm vào tập</el-button>
                 </div>
               </div>
             </div>
-            <div v-if="!dramaAllSceneLoading && dramaAllSceneList.length === 0" class="library-empty">本剧暂无制作场景，请先在场景面板创建</div>
+            <div v-if="!dramaAllSceneLoading && dramaAllSceneList.length === 0" class="library-empty">Phim chưa có scene, vui lòng tạo ở phần scene trước</div>
           </div>
           <div class="library-pagination">
             <el-pagination v-model:current-page="dramaAllScenePage" v-model:page-size="dramaAllScenePageSize" :total="dramaAllSceneTotal" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @current-change="loadDramaAllSceneList" @size-change="loadDramaAllSceneList" />
@@ -2206,241 +2206,241 @@
         </el-tab-pane>
       </el-tabs>
       <template #footer>
-        <el-button @click="showSceneLibrary = false">关闭</el-button>
+        <el-button @click="showSceneLibrary = false">Đóng</el-button>
       </template>
     </el-dialog>
-    <!-- 编辑公共场景 -->
-    <el-dialog v-model="showEditSceneLibrary" title="编辑公共场景" width="440px" @close="editSceneLibraryForm = null">
+    <!-- Edit public scene -->
+    <el-dialog v-model="showEditSceneLibrary" title="Sửa scene dùng chung" width="440px" @close="editSceneLibraryForm = null">
       <el-form v-if="editSceneLibraryForm" label-width="80px">
-        <el-form-item label="地点">
-          <el-input v-model="editSceneLibraryForm.location" placeholder="场景地点" />
+        <el-form-item label="Địa điểm">
+          <el-input v-model="editSceneLibraryForm.location" placeholder="Địa điểm scene" />
         </el-form-item>
-        <el-form-item label="时间">
-          <el-input v-model="editSceneLibraryForm.time" placeholder="如：浅色/夜晚" />
+        <el-form-item label="Thời gian">
+          <el-input v-model="editSceneLibraryForm.time" placeholder="Ví dụ: sáng / đêm" />
         </el-form-item>
-        <el-form-item label="分类">
-          <el-input v-model="editSceneLibraryForm.category" placeholder="可选" />
+        <el-form-item label="Phân loại">
+          <el-input v-model="editSceneLibraryForm.category" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="editSceneLibraryForm.description" type="textarea" :rows="3" placeholder="可选" />
+        <el-form-item label="Mô tả">
+          <el-input v-model="editSceneLibraryForm.description" type="textarea" :rows="3" placeholder="Tuỳ chọn" />
         </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="editSceneLibraryForm.tags" placeholder="可选，逗号分隔" />
+        <el-form-item label="Tag">
+          <el-input v-model="editSceneLibraryForm.tags" placeholder="Tuỳ chọn, ngăn cách bằng dấu phẩy" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditSceneLibrary = false">取消</el-button>
-        <el-button type="primary" :loading="editSceneLibrarySaving" @click="submitEditSceneLibrary">保存</el-button>
+        <el-button @click="showEditSceneLibrary = false">Huỷ</el-button>
+        <el-button type="primary" :loading="editSceneLibrarySaving" @click="submitEditSceneLibrary">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 分镜提示词编辑弹窗 -->
+    <!-- Storyboard prompt edit dialog -->
     <el-dialog
       v-model="showSbPromptDialog"
-      :title="`分镜 ${sbPromptTarget?.storyboard_number ?? ''} · 编辑提示词`"
+      :title="`Storyboard ${sbPromptTarget?.storyboard_number ?? ''} · Sửa prompt`"
       width="700px"
       @close="sbPromptTarget = null"
     >
       <el-form v-if="sbPromptTarget" label-width="0" class="sb-prompt-dialog-form">
-        <!-- 图片区 -->
-        <div class="sb-prompt-section-title">🖼 图片提示词</div>
+        <!-- Image section -->
+        <div class="sb-prompt-section-title">🖼 Prompt ảnh</div>
         <el-form-item label="">
           <div style="width:100%">
-            <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">原始提示词（分镜生成时写入，仅供参考）</div>
+            <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">Prompt gốc (ghi khi tạo storyboard, chỉ để tham khảo)</div>
             <el-input
               v-model="sbPromptImageText"
               type="textarea"
               :rows="4"
-              placeholder="分镜生成时由 AI 写入的原始描述"
+              placeholder="Mô tả gốc do AI ghi khi tạo storyboard"
             />
           </div>
         </el-form-item>
         <el-form-item label="">
           <div style="width:100%">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-              <span style="font-size:12px; color:#6b7280;">通用优化提示词（仅更新本字段，不影响首尾帧/关键帧专用提示词）</span>
+              <span style="font-size:12px; color:#6b7280;">Prompt tối ưu chung (chỉ cập nhật field này, không ảnh hưởng prompt riêng frame đầu/cuối/keyframe)</span>
               <el-button
                 size="small"
                 type="warning"
                 plain
                 :loading="sbPromptPolishing"
                 @click="onPolishSbPrompt"
-              >{{ sbPromptPolishedText ? '重新生成' : '立即生成' }}</el-button>
+              >{{ sbPromptPolishedText ? 'Tạo lại' : 'Tạo ngay' }}</el-button>
             </div>
             <el-input
               v-model="sbPromptPolishedText"
               type="textarea"
               :rows="5"
-              placeholder="点击「立即生成」润色通用优化提示词（仅更新本字段，不影响首尾帧专用提示词）"
+              placeholder="Bấm 'Tạo ngay' để tinh chỉnh prompt tối ưu chung (chỉ cập nhật field này, không ảnh hưởng prompt frame đầu/cuối)"
             />
           </div>
         </el-form-item>
-        <!-- 视频区 -->
-        <div class="sb-prompt-section-title" style="margin-top:12px;">🎬 视频提示词</div>
+        <!-- Video section -->
+        <div class="sb-prompt-section-title" style="margin-top:12px;">🎬 Prompt video</div>
         <el-form-item label="">
           <el-input
             v-model="sbPromptVideoText"
             type="textarea"
             :rows="12"
-            placeholder="视频生成提示词（可选，留空则由系统自动生成）"
+            placeholder="Prompt tạo video (tuỳ chọn, để trống hệ thống sẽ tự tạo)"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showSbPromptDialog = false">取消</el-button>
-        <el-button type="primary" :loading="sbPromptSaving" @click="onSaveSbPromptDialog">保存</el-button>
+        <el-button @click="showSbPromptDialog = false">Huỷ</el-button>
+        <el-button type="primary" :loading="sbPromptSaving" @click="onSaveSbPromptDialog">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 首尾帧提示词编辑器（显示最终发给AI的完整提示词，支持编辑保存） -->
+    <!-- Frame prompt editor (hiển thị prompt cuối gửi AI, hỗ trợ chỉnh sửa và lưu) -->
     <el-dialog
       v-model="showFramePromptEditor"
-      :title="`${editingFramePromptSlot === 'last' ? '尾帧' : '首帧'}图生提示词 · 编辑`"
+      :title="`Prompt ảnh ${editingFramePromptSlot === 'last' ? 'frame cuối' : 'frame đầu'} · Sửa`"
       width="720px"
       destroy-on-close
     >
       <div class="frame-prompt-editor-body">
         <div class="frame-prompt-editor-hint">
-          此提示词将直接发给AI生成首/尾帧图片。支持编辑后保存，保存后点击「生成」即可使用新提示词。
+          Prompt này sẽ được gửi trực tiếp đến AI để tạo ảnh frame đầu/cuối. Hỗ trợ chỉnh sửa rồi lưu, sau khi lưu bấm "Tạo" là dùng prompt mới.
         </div>
 
-        <!-- 空间布局锚点（生成分镜时 AI 输出的最高优先级站位合同） -->
+        <!-- Spatial layout anchor -->
         <div v-if="editingFramePromptSb?.layout_description" class="frame-layout-anchor">
-          <div class="frame-layout-anchor-label">本分镜空间布局锚点（首尾帧强制一致合同，最高优先级）</div>
+          <div class="frame-layout-anchor-label">Neo bố cục không gian của storyboard này (hợp đồng frame đầu/cuối bắt buộc nhất quán, ưu tiên cao nhất)</div>
           <div class="frame-layout-anchor-text">{{ editingFramePromptSb.layout_description }}</div>
-          <div class="frame-layout-anchor-note">首帧必须严格按此生成初始站位；尾帧必须在完全相同的左右位置、距离、构图下仅演化姿态/表情/结果。</div>
+          <div class="frame-layout-anchor-note">Frame đầu phải tạo đúng vị trí ban đầu theo hợp đồng này; frame cuối phải giữ nguyên vị trí trái/phải, khoảng cách, bố cục và chỉ thay đổi tư thế/biểu cảm/kết quả.</div>
         </div>
 
         <el-input
           v-model="editingFramePromptText"
           type="textarea"
           :rows="14"
-          placeholder="在此编辑最终发给AI生图的完整提示词..."
+          placeholder="Chỉnh sửa prompt cuối gửi AI tạo ảnh tại đây..."
           class="frame-prompt-editor-textarea"
         />
       </div>
       <template #footer>
-        <el-button @click="showFramePromptEditor = false">关闭</el-button>
-        <el-button :loading="editingFramePromptRegenerating" @click="regenerateEditingFramePrompt">重新生成</el-button>
-        <el-button type="primary" :loading="editingFramePromptSaving" @click="saveEditingFramePrompt">保存</el-button>
+        <el-button @click="showFramePromptEditor = false">Đóng</el-button>
+        <el-button :loading="editingFramePromptRegenerating" @click="regenerateEditingFramePrompt">Tạo lại</el-button>
+        <el-button type="primary" :loading="editingFramePromptSaving" @click="saveEditingFramePrompt">Lưu</el-button>
       </template>
     </el-dialog>
 
-    <!-- 分镜视频参数编辑弹窗 -->
+    <!-- Video params edit dialog -->
     <el-dialog
       v-model="showVideoParamsDialog"
-      :title="`分镜 ${videoParamsTarget?.storyboard_number ?? ''} · 视频参数`"
+      :title="`Storyboard ${videoParamsTarget?.storyboard_number ?? ''} · Tham số video`"
       width="860px"
       destroy-on-close
       @close="onVideoParamsDialogClosed"
     >
       <el-form v-if="videoParamsTarget" label-width="115px" size="small" class="vp-dialog-form">
-        <el-form-item label="创作模式">
+        <el-form-item label="Chế độ sáng tác">
           <el-radio-group
             :model-value="sbCreationMode[videoParamsTarget.id] === 'universal' ? 'universal' : 'classic'"
             size="small"
             @change="(v) => setSbCreationModeId(videoParamsTarget.id, v)"
           >
-            <el-radio-button value="classic">经典分镜</el-radio-button>
-            <el-radio-button value="universal">全能模式</el-radio-button>
+            <el-radio-button value="classic">Storyboard cổ điển</el-radio-button>
+            <el-radio-button value="universal">Chế độ Omni</el-radio-button>
           </el-radio-group>
-          <div class="vp-mode-hint">全能模式：中间为片段描述；生视频时使用 <strong>AI 配置里当前启用的视频</strong>（接口规范 <code>kling_omni</code> 或 <code>volcengine_omni</code>，模型如 <code>kling-video-o1</code>、<code>doubao-seedance-2-0-260128</code> 等）并合并场景/角色/道具等参考图（不含经典分镜主图）。经典字段保留，可随时切回。</div>
+          <div class="vp-mode-hint">Chế độ Omni: giữa là mô tả đoạn; khi tạo video sẽ dùng <strong>model video đang bật trong Cấu hình AI</strong> (API <code>kling_omni</code> hoặc <code>volcengine_omni</code>, model như <code>kling-video-o1</code>, <code>doubao-seedance-2-0-260128</code>) và ghép ảnh tham chiếu scene/nhân vật/đạo cụ (không gồm ảnh chính storyboard cổ điển). Các field cổ điển vẫn được giữ, có thể chuyển lại bất cứ lúc nào.</div>
         </el-form-item>
         <el-row :gutter="12">
           <el-col :span="12">
-            <el-form-item label="标题">
-              <el-input v-model="sbTitle[videoParamsTarget.id]" placeholder="镜头标题" />
+            <el-form-item label="Tiêu đề">
+              <el-input v-model="sbTitle[videoParamsTarget.id]" placeholder="Tiêu đề cảnh" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="地点">
-              <el-input v-model="sbLocation[videoParamsTarget.id]" placeholder="场景地点" />
+            <el-form-item label="Địa điểm">
+              <el-input v-model="sbLocation[videoParamsTarget.id]" placeholder="Địa điểm scene" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="时间">
-              <el-input v-model="sbTime[videoParamsTarget.id]" placeholder="清晨/午后" />
+            <el-form-item label="Thời gian">
+              <el-input v-model="sbTime[videoParamsTarget.id]" placeholder="Sáng sớm/chiều" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="12">
           <el-col :span="6">
-            <el-form-item label="时长(秒)">
+            <el-form-item label="Thời lượng (giây)">
               <el-input-number v-model="sbDuration[videoParamsTarget.id]" :min="1" :max="60" style="width:100%" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="景别">
-              <el-select v-model="sbShotType[videoParamsTarget.id]" placeholder="景别" style="width:100%">
-                <el-option label="大远景" value="大远景" />
-                <el-option label="远景" value="远景" />
-                <el-option label="中景" value="中景" />
-                <el-option label="近景" value="近景" />
-                <el-option label="特写" value="特写" />
+            <el-form-item label="Cỡ cảnh">
+              <el-select v-model="sbShotType[videoParamsTarget.id]" placeholder="Cỡ cảnh" style="width:100%">
+                <el-option label="Đại toàn cảnh" value="大远景" />
+                <el-option label="Toàn cảnh" value="远景" />
+                <el-option label="Trung cảnh" value="中景" />
+                <el-option label="Cận cảnh" value="近景" />
+                <el-option label="Đặc tả" value="特写" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="运镜">
-              <el-select v-model="sbMovement[videoParamsTarget.id]" placeholder="运镜（推荐动态）" style="width:100%" clearable filterable>
-                <el-option-group label="基础运镜">
-                  <el-option label="固定（少用）" value="static" />
-                  <el-option label="推镜" value="push" />
-                  <el-option label="拉镜" value="pull" />
-                  <el-option label="横摇（左/右）" value="pan" />
-                  <el-option label="纵摇（上/下）" value="tilt" />
-                  <el-option label="跟镜/跟踪" value="tracking" />
-                  <el-option label="升镜（吊臂上升）" value="crane_up" />
-                  <el-option label="降镜（吊臂下降）" value="crane_dn" />
-                  <el-option label="环绕/轨道" value="orbit" />
-                  <el-option label="手持/晃动" value="handheld" />
+            <el-form-item label="Chuyển động máy">
+              <el-select v-model="sbMovement[videoParamsTarget.id]" placeholder="Chuyển động (nên động)" style="width:100%" clearable filterable>
+                <el-option-group label="Chuyển động cơ bản">
+                  <el-option label="Cố định (ít dùng)" value="static" />
+                  <el-option label="Push in" value="push" />
+                  <el-option label="Pull out" value="pull" />
+                  <el-option label="Pan (trái/phải)" value="pan" />
+                  <el-option label="Tilt (trên/dưới)" value="tilt" />
+                  <el-option label="Tracking" value="tracking" />
+                  <el-option label="Crane up" value="crane_up" />
+                  <el-option label="Crane down" value="crane_dn" />
+                  <el-option label="Orbit/quỹ đạo" value="orbit" />
+                  <el-option label="Handheld/rung" value="handheld" />
                 </el-option-group>
-                <el-option-group label="进阶运镜">
-                  <el-option label="变焦（zoom in/out）" value="zoom" />
-                  <el-option label="旋转/滚镜（roll）" value="roll" />
-                  <el-option label="甩镜/急摇" value="whip_pan" />
-                  <el-option label="螺旋上升/下降" value="spiral" />
+                <el-option-group label="Chuyển động nâng cao">
+                  <el-option label="Zoom in/out" value="zoom" />
+                  <el-option label="Roll" value="roll" />
+                  <el-option label="Whip pan" value="whip_pan" />
+                  <el-option label="Xoắn ốc lên/xuống" value="spiral" />
                 </el-option-group>
-                <el-option-group label="电影化组合镜头">
-                  <el-option label="希区柯克镜头（推+变焦）" value="hitchcock_zoom" />
-                  <el-option label="子弹时间（环绕+升格）" value="bullet_time" />
-                  <el-option label="荷兰角+运镜" value="dutch_angle_move" />
-                  <el-option label="推轨复合（dolly+track）" value="dolly_track" />
-                  <el-option label="升格环绕（slow-mo orbit）" value="slowmo_orbit" />
+                <el-option-group label="Chuyển động điện ảnh kết hợp">
+                  <el-option label="Hitchcock zoom (push + zoom)" value="hitchcock_zoom" />
+                  <el-option label="Bullet time (orbit + slow-mo)" value="bullet_time" />
+                  <el-option label="Dutch angle + chuyển động" value="dutch_angle_move" />
+                  <el-option label="Dolly + track kết hợp" value="dolly_track" />
+                  <el-option label="Slow-mo orbit" value="slowmo_orbit" />
                 </el-option-group>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="氛围">
-              <el-input v-model="sbAtmosphere[videoParamsTarget.id]" placeholder="氛围/情绪" />
+            <el-form-item label="Không khí">
+              <el-input v-model="sbAtmosphere[videoParamsTarget.id]" placeholder="Không khí/cảm xúc" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="12">
           <el-col :span="8">
-            <el-form-item label="镜头视角">
+            <el-form-item label="Góc máy">
               <div style="display:flex;gap:4px;flex-wrap:wrap">
-                <el-select v-model="sbAngleS[videoParamsTarget.id]" placeholder="景别" style="width:76px">
-                  <el-option label="特写" value="close_up" />
-                  <el-option label="中景" value="medium" />
-                  <el-option label="远景" value="wide" />
+                <el-select v-model="sbAngleS[videoParamsTarget.id]" placeholder="Cỡ cảnh" style="width:76px">
+                  <el-option label="Đặc tả" value="close_up" />
+                  <el-option label="Trung cảnh" value="medium" />
+                  <el-option label="Toàn cảnh" value="wide" />
                 </el-select>
-                <el-select v-model="sbAngleV[videoParamsTarget.id]" placeholder="俯仰" style="width:86px">
-                  <el-option label="平视" value="eye_level" />
-                  <el-option label="低角仰拍" value="low" />
-                  <el-option label="高角俯拍" value="high" />
-                  <el-option label="虫眼仰视" value="worm" />
+                <el-select v-model="sbAngleV[videoParamsTarget.id]" placeholder="Nghiêng dọc" style="width:86px">
+                  <el-option label="Ngang tầm mắt" value="eye_level" />
+                  <el-option label="Góc thấp" value="low" />
+                  <el-option label="Góc cao" value="high" />
+                  <el-option label="Sát đất" value="worm" />
                 </el-select>
-                <el-select v-model="sbAngleH[videoParamsTarget.id]" placeholder="方向" style="width:80px">
-                  <el-option label="正面" value="front" />
-                  <el-option label="前左45°" value="front_left" />
-                  <el-option label="左侧" value="left" />
-                  <el-option label="后左135°" value="back_left" />
-                  <el-option label="背面" value="back" />
-                  <el-option label="后右135°" value="back_right" />
-                  <el-option label="右侧" value="right" />
-                  <el-option label="前右45°" value="front_right" />
+                <el-select v-model="sbAngleH[videoParamsTarget.id]" placeholder="Hướng" style="width:80px">
+                  <el-option label="Chính diện" value="front" />
+                  <el-option label="Trước trái 45°" value="front_left" />
+                  <el-option label="Bên trái" value="left" />
+                  <el-option label="Sau trái 135°" value="back_left" />
+                  <el-option label="Sau lưng" value="back" />
+                  <el-option label="Sau phải 135°" value="back_right" />
+                  <el-option label="Bên phải" value="right" />
+                  <el-option label="Trước phải 45°" value="front_right" />
                 </el-select>
                 <span v-if="sbAngleS[videoParamsTarget.id] && sbAngleV[videoParamsTarget.id] && sbAngleH[videoParamsTarget.id]"
                       style="font-size:11px;color:#6b7280;background:#f3f4f6;padding:2px 6px;border-radius:4px;white-space:nowrap">
@@ -2450,43 +2450,43 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="灯光">
-              <el-select v-model="sbLighting[videoParamsTarget.id]" placeholder="灯光风格" style="width:100%" clearable>
-                <el-option label="自然光" value="natural" />
-                <el-option label="顺光" value="front" />
-                <el-option label="侧光" value="side" />
-                <el-option label="逆光" value="backlit" />
-                <el-option label="顶光" value="top" />
-                <el-option label="底光" value="under" />
-                <el-option label="柔光" value="soft" />
-                <el-option label="戏剧光" value="dramatic" />
-                <el-option label="黄金时段" value="golden_hour" />
-                <el-option label="蓝调时刻" value="blue_hour" />
-                <el-option label="夜景" value="night" />
-                <el-option label="霓虹" value="neon" />
+            <el-form-item label="Ánh sáng">
+              <el-select v-model="sbLighting[videoParamsTarget.id]" placeholder="Kiểu ánh sáng" style="width:100%" clearable>
+                <el-option label="Ánh sáng tự nhiên" value="natural" />
+                <el-option label="Front light" value="front" />
+                <el-option label="Side light" value="side" />
+                <el-option label="Back light" value="backlit" />
+                <el-option label="Top light" value="top" />
+                <el-option label="Bottom light" value="under" />
+                <el-option label="Soft light" value="soft" />
+                <el-option label="Dramatic light" value="dramatic" />
+                <el-option label="Golden hour" value="golden_hour" />
+                <el-option label="Blue hour" value="blue_hour" />
+                <el-option label="Ban đêm" value="night" />
+                <el-option label="Neon" value="neon" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="景深">
-              <el-select v-model="sbDof[videoParamsTarget.id]" placeholder="景深" style="width:100%" clearable>
-                <el-option label="极浅景深" value="extreme_shallow" />
-                <el-option label="浅景深" value="shallow" />
-                <el-option label="中景深" value="medium" />
-                <el-option label="深景深（全焦）" value="deep" />
+            <el-form-item label="Depth of field">
+              <el-select v-model="sbDof[videoParamsTarget.id]" placeholder="DOF" style="width:100%" clearable>
+                <el-option label="Rất nông" value="extreme_shallow" />
+                <el-option label="Nông" value="shallow" />
+                <el-option label="Trung bình" value="medium" />
+                <el-option label="Sâu (all focus)" value="deep" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <!-- 空间布局锚点：生成分镜时 AI 输出的最高优先级人物站位合同（首尾帧强制一致核心） -->
-        <el-form-item label="空间布局锚点（首尾帧人物站位合同）">
+        <!-- Spatial layout anchor -->
+        <el-form-item label="Neo bố cục không gian (hợp đồng vị trí nhân vật frame đầu/cuối)">
           <div style="display:flex; gap:8px; align-items:flex-start; width:100%">
             <el-input
               v-model="sbLayoutDescription[videoParamsTarget.id]"
               type="textarea"
               :rows="3"
-              placeholder="例如：女主站画面左三分之一正对镜头，男主站右后侧侧身看向女主，中景，双人构图，平衡稳定"
+              placeholder="Ví dụ: Nữ chính đứng 1/3 bên trái khung, chính diện máy quay; nam chính đứng phía sau bên phải, nghiêng người nhìn nữ chính; trung cảnh, bố cục 2 người, cân bằng ổn định"
               style="flex:1"
             />
             <el-button
@@ -2495,27 +2495,27 @@
               @click="onRegenerateLayoutDescription(videoParamsTarget)"
               style="margin-top:4px; white-space:nowrap"
             >
-              AI 重新生成/优化
+              AI tạo lại/tối ưu
             </el-button>
           </div>
           <div style="font-size:11px;color:#64748b;margin-top:4px;line-height:1.35">
-            最高优先级空间合同（用于首尾帧站位锁定）。AI 可参考上下分镜一键重新生成/优化，点击右侧按钮触发。
+            Hợp đồng không gian ưu tiên cao nhất (dùng để khoá vị trí frame đầu/cuối). AI có thể tham chiếu storyboard liền kề để tạo lại/tối ưu, bấm nút bên phải để kích hoạt.
           </div>
         </el-form-item>
 
-        <el-form-item label="动作">
-          <el-input v-model="sbAction[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="动作描述" />
+        <el-form-item label="Hành động">
+          <el-input v-model="sbAction[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="Mô tả hành động" />
         </el-form-item>
-        <el-form-item label="对白">
-          <el-input v-model="sbDialogue[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="角色对白" />
+        <el-form-item label="Lời thoại">
+          <el-input v-model="sbDialogue[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="Lời thoại nhân vật" />
         </el-form-item>
-        <el-form-item label="解说旁白">
-          <el-input v-model="sbNarration[videoParamsTarget.id]" type="textarea" :rows="2" class="sb-narration-input" placeholder="画外解说 / 纪录片式旁白（与对白分开）" />
+        <el-form-item label="Narration">
+          <el-input v-model="sbNarration[videoParamsTarget.id]" type="textarea" :rows="2" class="sb-narration-input" placeholder="Voiceover / narration kiểu tài liệu (tách khỏi lời thoại)" />
         </el-form-item>
-        <el-form-item v-if="canSplitSbByAudio(videoParamsTarget)" label="多角色对白">
+        <el-form-item v-if="canSplitSbByAudio(videoParamsTarget)" label="Nhiều thoại nhân vật">
           <div class="sb-split-audio-row">
             <p class="sb-split-audio-tip">
-              本镜含多句对白或「对白+旁白」，Seedance 同镜易串音。可拆成多条分镜（每条仅一人说话或仅旁白），再分别生视频。
+              Cảnh này có nhiều lời thoại hoặc "thoại + narration", Seedance dễ chồng tiếng trong cùng cảnh. Có thể tách thành nhiều storyboard (mỗi cảnh chỉ 1 người nói hoặc chỉ narration), rồi tạo video riêng.
             </p>
             <el-button
               type="warning"
@@ -2523,15 +2523,15 @@
               :loading="splitByAudioLoading"
               @click="onSplitSbByAudio(videoParamsTarget)"
             >
-              按对白拆镜
+              Tách cảnh theo thoại
             </el-button>
           </div>
         </el-form-item>
-        <el-form-item label="画面结果">
-          <el-input v-model="sbResult[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="动作完成后的画面结果" />
+        <el-form-item label="Kết quả hình ảnh">
+          <el-input v-model="sbResult[videoParamsTarget.id]" type="textarea" :rows="2" placeholder="Kết quả hình ảnh sau khi hành động hoàn tất" />
         </el-form-item>
-        <el-form-item label="视频提示词">
-          <div class="vp-video-prompt-hint">保存后将根据上方字段，由系统按最新规则自动生成（含角色音色锚点）。</div>
+        <el-form-item label="Prompt video">
+          <div class="vp-video-prompt-hint">Sau khi lưu, hệ thống sẽ tự động tạo dựa trên các field ở trên theo quy tắc mới nhất (bao gồm neo voice nhân vật).</div>
           <el-input
             v-if="videoParamsTarget?.video_prompt"
             :model-value="videoParamsTarget.video_prompt"
@@ -2543,25 +2543,25 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showVideoParamsDialog = false">取消</el-button>
-        <el-button type="primary" :loading="videoParamsSaving" @click="onSaveVideoParams">保存并更新</el-button>
+        <el-button @click="showVideoParamsDialog = false">Huỷ</el-button>
+        <el-button type="primary" :loading="videoParamsSaving" @click="onSaveVideoParams">Lưu và cập nhật</el-button>
       </template>
     </el-dialog>
 
-    <!-- P1-2: 导入小说弹窗 -->
-    <el-dialog v-model="showNovelImport" title="导入小说/长文" width="600px" @close="novelImportReset">
+    <!-- Novel import dialog -->
+    <el-dialog v-model="showNovelImport" title="Nhập tiểu thuyết/văn bản dài" width="600px" @close="novelImportReset">
       <div class="novel-import-dialog">
-        <p style="color:#6b7280;font-size:13px;margin-bottom:12px">支持粘贴小说文本或上传 txt 文件，AI 自动识别章节并转换为剧本集数</p>
+        <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Hỗ trợ dán text tiểu thuyết hoặc tải file txt, AI tự động nhận diện chương và chuyển thành các tập kịch bản</p>
         <el-tabs v-model="novelImportMode">
-          <el-tab-pane label="粘贴文本" name="text">
+          <el-tab-pane label="Dán text" name="text">
             <el-input
               v-model="novelText"
               type="textarea"
               :rows="10"
-              placeholder="粘贴小说正文，AI 会自动识别章节..."
+              placeholder="Dán nội dung tiểu thuyết, AI sẽ tự động nhận diện chương..."
             />
           </el-tab-pane>
-          <el-tab-pane label="上传文件" name="file">
+          <el-tab-pane label="Tải file" name="file">
             <el-upload
               drag
               :auto-upload="false"
@@ -2570,31 +2570,31 @@
               :show-file-list="false"
             >
               <el-icon class="el-icon--upload"><DocumentAdd /></el-icon>
-              <div class="el-upload__text">拖拽 .txt / .md 文件到此处，或<em>点击上传</em></div>
+              <div class="el-upload__text">Kéo thả file .txt / .md vào đây, hoặc <em>bấm để tải lên</em></div>
             </el-upload>
-            <div v-if="novelFileName" style="margin-top:8px;font-size:13px;color:#409eff">已选择：{{ novelFileName }}</div>
+            <div v-if="novelFileName" style="margin-top:8px;font-size:13px;color:#409eff">Đã chọn: {{ novelFileName }}</div>
           </el-tab-pane>
         </el-tabs>
         <div class="novel-import-options" style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:6px;font-size:13px">
-            <span>最多导入集数：</span>
+            <span>Số tập nhập tối đa:</span>
             <el-input-number v-model="novelMaxChapters" :min="1" :max="20" size="small" style="width:100px" />
           </div>
-          <el-checkbox v-model="novelAiSummarize" size="small">AI 转换为剧本格式（会消耗 Token）</el-checkbox>
+          <el-checkbox v-model="novelAiSummarize" size="small">AI chuyển sang format kịch bản (tốn token)</el-checkbox>
         </div>
       </div>
       <template #footer>
-        <el-button @click="showNovelImport = false">取消</el-button>
-        <el-button type="primary" :loading="novelImporting" @click="onImportNovel">开始导入</el-button>
+        <el-button @click="showNovelImport = false">Huỷ</el-button>
+        <el-button type="primary" :loading="novelImporting" @click="onImportNovel">Bắt đầu nhập</el-button>
       </template>
     </el-dialog>
 
-    <!-- AI 配置弹窗（不跳转，避免本页内容丢失） -->
-    <el-dialog v-model="showAiConfigDialog" title="AI 配置" width="90%" destroy-on-close class="ai-config-dialog">
+    <!-- AI config dialog (không chuyển trang để tránh mất nội dung hiện tại) -->
+    <el-dialog v-model="showAiConfigDialog" title="Cấu hình AI" width="90%" destroy-on-close class="ai-config-dialog">
       <AIConfigContent v-if="showAiConfigDialog" />
     </el-dialog>
 
-    <!-- 图片放大预览：点击遮罩或图片关闭 -->
+    <!-- Image preview overlay: click overlay or image to close -->
     <Teleport to="body">
       <div
         v-if="previewImageUrl"
@@ -3043,13 +3043,13 @@ const navSteps = computed(() => {
   const videoStatus = sbVideoGen ? 'generating' : sbVideoAllDone ? 'done' : sbVideoSome ? 'partial' : 'pending'
 
   return [
-    { key: 'script',   label: '故事剧本',   anchor: 'anchor-script',     status: scriptStatus,    count: hasScript ? 1 : 0 },
-    { key: 'chars',    label: '角色',        anchor: 'anchor-characters', status: charStatus,      count: charList.length },
-    { key: 'props',    label: '道具',        anchor: 'anchor-props',      status: propStatus,      count: propList.length },
-    { key: 'scenes',   label: '场景',        anchor: 'anchor-scenes',     status: sceneStatus,     count: sceneList.length },
-    { key: 'sb',       label: '分镜脚本',   anchor: 'anchor-storyboard', status: sbScriptStatus,  count: sbList.length },
-    { key: 'sbimg',    label: '分镜图',      anchor: 'anchor-storyboard', status: sbImgStatus,     count: sbList.length },
-    { key: 'video',    label: '分镜视频',   anchor: 'anchor-video',      status: videoStatus,     count: 0 },
+    { key: 'script',   label: 'Kịch bản',    anchor: 'anchor-script',     status: scriptStatus,    count: hasScript ? 1 : 0 },
+    { key: 'chars',    label: 'Nhân vật',    anchor: 'anchor-characters', status: charStatus,      count: charList.length },
+    { key: 'props',    label: 'Đạo cụ',      anchor: 'anchor-props',      status: propStatus,      count: propList.length },
+    { key: 'scenes',   label: 'Scene',       anchor: 'anchor-scenes',     status: sceneStatus,     count: sceneList.length },
+    { key: 'sb',       label: 'Storyboard',  anchor: 'anchor-storyboard', status: sbScriptStatus,  count: sbList.length },
+    { key: 'sbimg',    label: 'Ảnh storyboard', anchor: 'anchor-storyboard', status: sbImgStatus, count: sbList.length },
+    { key: 'video',    label: 'Video storyboard', anchor: 'anchor-video', status: videoStatus,    count: 0 },
   ]
 })
 
@@ -3066,7 +3066,7 @@ const allActiveTaskItems = computed(() => {
   for (const t of genStore.getAllRunningTasks()) {
     addItem({
       id: `gen:${t.key || t.taskId || t.label}`,
-      label: t.label || '任务进行中...',
+      label: t.label || 'Task đang chạy...',
       kind: 'genStore',
       task: t,
     })
@@ -3075,28 +3075,28 @@ const allActiveTaskItems = computed(() => {
     const step = pipelineCurrentStep.value
     addItem({
       id: 'pipeline',
-      label: step ? step.replace(/^\[步骤 \d+\/\d+\] /, '') : '一键全流程运行中...',
+      label: step ? step.replace(/^\[步骤 \d+\/\d+\] /, '') : 'Pipeline đang chạy...',
       kind: 'pipeline',
     })
   }
   if (isStoryGenRunning.value && !genStore.getAllRunningTasks().some((t) => t.resourceType === GEN_RESOURCE.GENERATE_STORY)) {
-    addItem({ id: 'story-gen-local', label: '生成剧本...', kind: 'storyGenLocal' })
+    addItem({ id: 'story-gen-local', label: 'Đang tạo kịch bản...', kind: 'storyGenLocal' })
   }
   if (universalOmniPolishRunning.value) {
     const p = universalOmniPolishProgress.value
     addItem({
       id: 'universal-omni-polish',
-      label: `润色全能分镜 ${p.current}/${p.total}${p.label ? ' ' + p.label : ''}`,
+      label: `Polish universal storyboard ${p.current}/${p.total}${p.label ? ' ' + p.label : ''}`,
       kind: 'universalOmniPolish',
     })
   }
   if (batchImageRunning.value) {
-    addItem({ id: 'batch-image', label: '批量生成分镜图...', kind: 'batchImage' })
+    addItem({ id: 'batch-image', label: 'Đang tạo ảnh storyboard hàng loạt...', kind: 'batchImage' })
   }
   if (batchVideoRunning.value) {
     const p = batchVideoProgress.value
     const suffix = p?.total ? ` ${p.current}/${p.total}` : ''
-    addItem({ id: 'batch-video', label: `批量生成分镜视频${suffix}...`, kind: 'batchVideo' })
+    addItem({ id: 'batch-video', label: `Đang tạo video storyboard hàng loạt${suffix}...`, kind: 'batchVideo' })
   }
   return items
 })
@@ -3108,7 +3108,7 @@ async function cancelActiveTask(item) {
   try {
     if (item.kind === 'genStore' && item.task) {
       await genStore.cancelTask(item.task)
-      ElMessage.success('任务已取消')
+      ElMessage.success('Đã huỷ task')
       return
     }
     if (item.kind === 'pipeline') {
@@ -3118,7 +3118,7 @@ async function cancelActiveTask(item) {
       for (const t of genStore.getAllRunningTasks()) {
         if (t.taskId) await genStore.cancelTask(t)
       }
-      ElMessage.success('已停止全流程')
+      ElMessage.success('Đã dừng pipeline')
       return
     }
     if (item.kind === 'storyGenLocal') {
@@ -3126,26 +3126,26 @@ async function cancelActiveTask(item) {
       scriptGenerating.value = false
       const storyTask = genStore.getAllRunningTasks().find((t) => t.resourceType === GEN_RESOURCE.GENERATE_STORY)
       if (storyTask) await genStore.cancelTask(storyTask)
-      ElMessage.success('已取消剧本生成')
+      ElMessage.success('Đã huỷ tạo kịch bản')
       return
     }
     if (item.kind === 'universalOmniPolish') {
       universalOmniPolishAbort.value = true
-      ElMessage.success('正在停止润色...')
+      ElMessage.success('Đang dừng polish...')
       return
     }
     if (item.kind === 'batchImage') {
       batchImageStopping.value = true
-      ElMessage.info('正在停止批量生图...')
+      ElMessage.info('Đang dừng tạo ảnh hàng loạt...')
       return
     }
     if (item.kind === 'batchVideo') {
       batchVideoStopping.value = true
-      ElMessage.info('正在停止批量生视频...')
+      ElMessage.info('Đang dừng tạo video hàng loạt...')
       return
     }
   } catch (e) {
-    ElMessage.error(e?.message || '取消失败')
+    ElMessage.error(e?.message || 'Huỷ thất bại')
   }
 }
 const sbCharacterIds = ref({})  // sbId -> number[] 多选角色
@@ -3303,28 +3303,28 @@ const scriptStoryboardEstimate = computed(() => {
 const scriptEstimateVideoDurationHint = computed(() => {
   const e = scriptStoryboardEstimate.value
   if (!e) return ''
-  return `（约 ${e.sec}s）`
+  return `(khoảng ${e.sec}s)`
 })
 
 const scriptEstimateVideoDurationTitle = computed(() => {
   const e = scriptStoryboardEstimate.value
   if (!e) return ''
-  return `按当前剧本文本约 ${e.len} 个字符（含标点；常见汉字在浏览器里一字一算，并非按 UTF-8 字节翻倍）、短剧公式 round(10+(字符/600)×60) 粗估总时长约 ${e.sec} 秒；未填输入框时该值会作为约束传给生成接口。仅供参考`
+  return `Kịch bản hiện có khoảng ${e.len} ký tự (kể cả dấu câu). Công thức phim ngắn round(10+(ký tự/600)×60) ước tính tổng thời lượng khoảng ${e.sec} giây. Nếu không điền, giá trị này được dùng làm ràng buộc gửi tới API. Chỉ để tham khảo.`
 })
 
 const scriptEstimateStoryboardHint = computed(() => {
   const e = scriptStoryboardEstimate.value
   if (!e) return ''
   if (e.range && e.range.min !== e.range.max) {
-    return `（约 ${e.locked} 镜，参考 ${e.range.min}–${e.range.max}）`
+    return `(khoảng ${e.locked} shot, tham khảo ${e.range.min}–${e.range.max})`
   }
-  return `（约 ${e.locked} 镜）`
+  return `(khoảng ${e.locked} shot)`
 })
 
 const scriptEstimateStoryboardTitle = computed(() => {
   const e = scriptStoryboardEstimate.value
   if (!e) return ''
-  return `按估算时长 ${e.sec}s ÷ 项目「每段 ${e.clip} 秒」四舍五入粗估约 ${e.locked} 镜；旁注区间为 ±1 镜供参考。切换「X秒/段」会同步改变本估算。`
+  return `Theo thời lượng ước tính ${e.sec}s ÷ "mỗi shot ${e.clip}s" của dự án, làm tròn khoảng ${e.locked} shot; khoảng bên cạnh là ±1 shot để tham khảo. Đổi "X giây/shot" sẽ đổi ước tính này.`
 })
 
 function scriptTextTrimmedForEstimate() {
@@ -3436,10 +3436,10 @@ async function doExtractFromRef(type) {
       const res = await uploadAPI.extractDescriptionFromImage('character', refImage.dataUrl, name)
       if (res?.description && editCharacterForm.value) {
         editCharacterForm.value.appearance = res.description
-        ElMessage.success('已从参考图提取外貌描述')
+        ElMessage.success('Đã trích xuất mô tả ngoại hình từ ảnh tham chiếu')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查 AI 配置中是否有支持视觉的模型')
+      ElMessage.error(e.message || 'Trích xuất thất bại, hãy kiểm tra cấu hình AI có model hỗ trợ thị giác')
     } finally {
       extractingCharAppearance.value = false
     }
@@ -3452,10 +3452,10 @@ async function doExtractFromRef(type) {
       const res = await uploadAPI.extractDescriptionFromImage('prop', refImage.dataUrl, name)
       if (res?.description && editPropForm.value) {
         editPropForm.value.description = res.description
-        ElMessage.success('已从参考图提取特征描述')
+        ElMessage.success('Đã trích xuất mô tả đặc điểm từ ảnh tham chiếu')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查 AI 配置中是否有支持视觉的模型')
+      ElMessage.error(e.message || 'Trích xuất thất bại, hãy kiểm tra cấu hình AI có model hỗ trợ thị giác')
     } finally {
       extractingPropDesc.value = false
     }
@@ -3468,10 +3468,10 @@ async function doExtractFromRef(type) {
       const res = await uploadAPI.extractDescriptionFromImage('scene', refImage.dataUrl, name)
       if (res?.description && editSceneForm.value) {
         editSceneForm.value.description = res.description
-        ElMessage.success('已从参考图提取场景描述')
+        ElMessage.success('Đã trích xuất mô tả scene từ ảnh tham chiếu')
       }
     } catch (e) {
-      ElMessage.error(e.message || '提取失败，请检查 AI 配置中是否有支持视觉的模型')
+      ElMessage.error(e.message || 'Trích xuất thất bại, hãy kiểm tra cấu hình AI có model hỗ trợ thị giác')
     } finally {
       extractingSceneDesc.value = false
     }
@@ -3582,7 +3582,7 @@ function sbMainVideoPlayerKey(sbId) {
 function onStoryboardUseFirstLastFrameChange() {
   if (storyboardUseFirstLastFrame.value && gridMode.value !== 'single') {
     gridMode.value = 'single'
-    ElMessage.info('首尾帧模式已开启，序列图已切换为单张')
+    ElMessage.info('Đã bật chế độ frame đầu/cuối, đã chuyển sequence về ảnh đơn')
   }
   saveProjectSettings(false)
 }
@@ -3741,7 +3741,7 @@ function getVideoStripItems(storyboardId) {
       key: `vid-${v.id}`,
       video: v,
       src: assetVideoUrl(v),
-      label: `历史${idx + 2}`,
+      label: `Lịch sử ${idx + 2}`,
     }))
 }
 /** 选中某条历史视频为当前视频，并持久化到分镜记录供合成视频使用 */
@@ -3818,7 +3818,7 @@ function buildSbGenMeta(sb, resourceType, labelPrefix) {
   const num = sb?.storyboard_number ?? sb?.id
   const epNum = store.currentEpisode?.episode_number
   const dramaTitle = store.drama?.title || ''
-  const epLabel = dramaTitle ? `${dramaTitle} · 第${epNum ?? ''}集` : `第${epNum ?? ''}集`
+  const epLabel = dramaTitle ? `${dramaTitle} · Tập ${epNum ?? ''}` : `Tập ${epNum ?? ''}`
   return {
     dramaId: dramaId.value,
     episodeId: currentEpisodeId.value,
@@ -3859,7 +3859,7 @@ async function recoverAndSyncEpisodeTasks(epId) {
       },
       onEpisodeMergeFailed: (err) => {
         store.setVideoStatus('error', did, eid)
-        videoErrorMsg.value = err || '视频生成失败'
+        videoErrorMsg.value = err || 'Tạo video thất bại'
       },
     },
   })
@@ -3950,7 +3950,7 @@ function getStripItems(storyboardId) {
       type: 'img',
       img,
       label: quadPanelLabel(img.frame_type),
-      frameBadge: img.frame_type === 'storyboard_first' ? '首' : img.frame_type === 'storyboard_last' ? '尾' : null,
+      frameBadge: img.frame_type === 'storyboard_first' ? 'Đầu' : img.frame_type === 'storyboard_last' ? 'Cuối' : null,
       prompt: img.prompt || '',
     }))
 }
@@ -3958,9 +3958,9 @@ function getStripItems(storyboardId) {
 function stripItemTitle(sbId, item) {
   const lines = [item.label, item.prompt].filter(Boolean)
   if (storyboardUseFirstLastFrame.value) {
-    lines.unshift('点击：设为首帧或尾帧')
+    lines.unshift('Nhấn: đặt làm frame đầu hoặc frame cuối')
   } else {
-    lines.unshift('点击设为主图')
+    lines.unshift('Nhấn để đặt làm ảnh chính')
   }
   return lines.join('\n\n')
 }
@@ -3971,18 +3971,18 @@ async function onStripItemClick(sb, item) {
     return
   }
   try {
-    await ElMessageBox.confirm('将此图绑定到哪个槽位？', '设置参考帧', {
-      confirmButtonText: '设为首帧',
-      cancelButtonText: '设为尾帧',
+    await ElMessageBox.confirm('Gán ảnh này vào slot nào?', 'Đặt frame tham chiếu', {
+      confirmButtonText: 'Đặt làm frame đầu',
+      cancelButtonText: 'Đặt làm frame cuối',
       distinguishCancelAndClose: true,
       type: 'info',
     })
     onSelectSbFrameImage(sb, item.img, 'first')
-    ElMessage.success('已设为首帧')
+    ElMessage.success('Đã đặt làm frame đầu')
   } catch (action) {
     if (action === 'cancel') {
       onSelectSbFrameImage(sb, item.img, 'last')
-      ElMessage.success('已设为尾帧')
+      ElMessage.success('Đã đặt làm frame cuối')
     }
   }
 }
@@ -3990,10 +3990,10 @@ async function onStripItemClick(sb, item) {
 /** 宫格子图位置标签 */
 function quadPanelLabel(frameType) {
   const map = {
-    quad_panel_0: '左上', quad_panel_1: '右上', quad_panel_2: '左下', quad_panel_3: '右下',
-    nine_panel_0: '左上', nine_panel_1: '中上', nine_panel_2: '右上',
-    nine_panel_3: '左中', nine_panel_4: '中间', nine_panel_5: '右中',
-    nine_panel_6: '左下', nine_panel_7: '中下', nine_panel_8: '右下',
+    quad_panel_0: 'Trên trái', quad_panel_1: 'Trên phải', quad_panel_2: 'Dưới trái', quad_panel_3: 'Dưới phải',
+    nine_panel_0: 'Trên trái', nine_panel_1: 'Trên giữa', nine_panel_2: 'Trên phải',
+    nine_panel_3: 'Giữa trái', nine_panel_4: 'Giữa', nine_panel_5: 'Giữa phải',
+    nine_panel_6: 'Dưới trái', nine_panel_7: 'Dưới giữa', nine_panel_8: 'Dưới phải',
   }
   return map[frameType] || null
 }
@@ -4059,18 +4059,18 @@ function onSelectSbMainImage(sb, img) {
 async function onRemoveSbHistoryImage(storyboardId, imageGenId) {
   if (!storyboardId || !imageGenId) return
   try {
-    await ElMessageBox.confirm('确定删除这张历史参考图？此操作不可恢复。', '删除历史图', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm('Xoá ảnh tham chiếu lịch sử này? Thao tác này không thể hoàn tác.', 'Xoá ảnh lịch sử', {
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
       type: 'warning',
       distinguishCancelAndClose: true,
     })
     await imagesAPI.delete(imageGenId)
     await loadSingleStoryboardMedia(storyboardId)
-    ElMessage.success('历史图已删除')
+    ElMessage.success('Đã xoá ảnh lịch sử')
   } catch (err) {
     if (err !== 'cancel' && err !== 'close') {
-      ElMessage.error(err?.message || '删除失败')
+      ElMessage.error(err?.message || 'Xoá thất bại')
     }
   }
 }
@@ -4168,17 +4168,17 @@ async function saveEditingFramePrompt() {
   if (!sb?.id || !slot) return
   const text = (editingFramePromptText.value || '').trim()
   if (!text) {
-    ElMessage.warning('提示词不能为空')
+    ElMessage.warning('Prompt không được để trống')
     return
   }
   editingFramePromptSaving.value = true
   try {
     const frameType = slot === 'last' ? 'last' : 'first'
     await storyboardsAPI.saveFramePrompt(sb.id, frameType, { prompt: text })
-    ElMessage.success('提示词已保存，后续生成将使用此版本')
+    ElMessage.success('Đã lưu prompt, các lần tạo sau sẽ dùng bản này')
     showFramePromptEditor.value = false
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     editingFramePromptSaving.value = false
   }
@@ -4191,12 +4191,12 @@ async function regenerateEditingFramePrompt() {
   if (!sb?.id || !slot) return
   editingFramePromptRegenerating.value = true
   try {
-    ElMessage.info('正在重新生成专业帧提示词…')
+    ElMessage.info('Đang tạo lại prompt frame chuyên nghiệp...')
     const fresh = await ensureProfessionalFramePrompt(sb, slot, { forceRegenerate: true })
     editingFramePromptText.value = fresh || ''
-    ElMessage.success('已重新生成，可编辑后保存')
+    ElMessage.success('Đã tạo lại, có thể chỉnh sửa trước khi lưu')
   } catch (e) {
-    ElMessage.error(e.message || '生成失败')
+    ElMessage.error(e.message || 'Tạo thất bại')
   } finally {
     editingFramePromptRegenerating.value = false
   }
@@ -4212,7 +4212,7 @@ async function onGenerateSbFrameImage(sb, slot) {
   const meta = buildSbGenMeta(
     sb,
     isLast ? GEN_RESOURCE.SB_LAST_IMAGE : GEN_RESOURCE.SB_FIRST_IMAGE,
-    isLast ? '尾帧' : '首帧'
+    isLast ? 'Frame cuối' : 'Frame đầu'
   )
   sb.errorMsg = ''
   sb.error_msg = ''
@@ -4240,7 +4240,7 @@ async function onGenerateSbFrameImage(sb, slot) {
     try {
       await storyboardsAPI.update(sb.id, { character_ids: Array.isArray(idsToSave) ? idsToSave : [] })
     } catch (e) {
-      ElMessage.warning('保存分镜角色失败')
+      ElMessage.warning('Lưu nhân vật cho storyboard thất bại')
       return
     }
     // 尾帧可选附带首帧作构图/站位参考（「首帧站位」勾选时；后端亦会按 use_first_frame_layout_lock 兜底）
@@ -4266,11 +4266,11 @@ async function onGenerateSbFrameImage(sb, slot) {
       reference_images: refImagesForCreate,
       use_first_frame_layout_lock: isLast ? !!lastFrameUseFirstLayoutLock.value : undefined,
     })
-    ElMessage.success(isLast ? '尾帧生成任务已提交' : '首帧生成任务已提交')
+    ElMessage.success(isLast ? 'Đã gửi task tạo frame cuối' : 'Đã gửi task tạo frame đầu')
     if (res?.task_id) {
       const pollRes = await pollTask(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
       if (pollRes?.status === 'failed') {
-        sb.errorMsg = pollRes.error || '生成失败'
+        sb.errorMsg = pollRes.error || 'Tạo thất bại'
       } else {
         await loadDrama()
         restoreSelectionsFromBackend()
@@ -4298,8 +4298,8 @@ async function onGenerateSbFrameImage(sb, slot) {
       }
     }
   } catch (e) {
-    sb.errorMsg = e.message || '生成失败'
-    ElMessage.error(e.message || '生成失败')
+    sb.errorMsg = e.message || 'Tạo thất bại'
+    ElMessage.error(e.message || 'Tạo thất bại')
   } finally {
     loadingSet.delete(sb.id)
     genStore.markDone(meta)
@@ -4321,7 +4321,7 @@ async function onGenerateSbImage(sb) {
   if (!dramaId.value || !sb?.id) return
   sb.errorMsg = ''
   sb.error_msg = ''
-  const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_IMAGE, '分镜图')
+  const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_IMAGE, 'Ảnh storyboard')
   generatingSbImageIds.add(sb.id)
   genStore.markRunning(meta)
   try {
@@ -4336,7 +4336,7 @@ async function onGenerateSbImage(sb) {
       await storyboardsAPI.update(sb.id, { character_ids: Array.isArray(idsToSave) ? idsToSave : [] })
     } catch (e) {
       console.warn('[分镜图] 保存角色勾选失败', e)
-      ElMessage.warning('保存分镜角色失败，请稍后重试')
+      ElMessage.warning('Lưu nhân vật cho storyboard thất bại, hãy thử lại')
       return
     }
     const res = await imagesAPI.create({
@@ -4348,21 +4348,21 @@ async function onGenerateSbImage(sb) {
       frame_type: gridMode.value !== 'single' ? gridMode.value : undefined,
       aspect_ratio: projectAspectRatio.value || '16:9',
     })
-    ElMessage.success('分镜图生成任务已提交')
+    ElMessage.success('Đã gửi task tạo ảnh storyboard')
     if (res?.task_id) {
       const pollRes = await pollTask(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
       if (pollRes?.status === 'failed') {
-        sb.errorMsg = pollRes.error || '生成失败'
+        sb.errorMsg = pollRes.error || 'Tạo thất bại'
       } else {
-        ElMessage.success('分镜图生成完成')
+        ElMessage.success('Tạo ảnh storyboard hoàn tất')
       }
     } else {
       await loadSingleStoryboardMedia(sb.id)
     }
   } catch (e) {
     console.error(e)
-    sb.errorMsg = e.message || '生成失败'
-    ElMessage.error(e.message || '生成失败')
+    sb.errorMsg = e.message || 'Tạo thất bại'
+    ElMessage.error(e.message || 'Tạo thất bại')
   } finally {
     generatingSbImageIds.delete(sb.id)
     genStore.markDone(meta)
@@ -4395,7 +4395,7 @@ async function doUploadSbImage(sbId, file, slot = 'first') {
     const url = res?.url || res?.path
     const localPath = res?.local_path
     if (!url && !localPath) {
-      ElMessage.error('上传未返回地址')
+      ElMessage.error('Upload không trả về địa chỉ')
       return
     }
     const uploaded = await imagesAPI.upload({
@@ -4405,7 +4405,7 @@ async function doUploadSbImage(sbId, file, slot = 'first') {
       local_path: localPath || undefined,
       frame_type: storyboardUseFirstLastFrame.value ? frameTypeForSlot(useSlot) : undefined,
     })
-    ElMessage.success(useSlot === 'last' ? '尾帧上传成功' : '首帧上传成功')
+    ElMessage.success(useSlot === 'last' ? 'Đã tải frame cuối lên' : 'Đã tải frame đầu lên')
     if (uploaded?.id) {
       const sb = (store.storyboards || []).find((b) => b.id === sbId)
       if (sb) onSelectSbFrameImage(sb, uploaded, useSlot)
@@ -4416,7 +4416,7 @@ async function doUploadSbImage(sbId, file, slot = 'first') {
     await loadSingleStoryboardMedia(sbId)
     restoreSelectionsFromBackend()
   } catch (e) {
-    ElMessage.error(e.message || '上传失败')
+    ElMessage.error(e.message || 'Tải lên thất bại')
   } finally {
     uploadingSbImageId.value = null
     const next = { ...sbImageUploadSlotById.value }
@@ -4528,7 +4528,7 @@ function onEpisodeSelect(epId) {
   if (!ep) return
   store.setCurrentEpisode(ep)
   store.setScriptContent(ep.script_content || '')
-  scriptTitle.value = ep.title || '第' + (ep.episode_number || 0) + '集'
+  scriptTitle.value = ep.title || 'Tập ' + (ep.episode_number || 0)
   syncStoryboardStateFromEpisode(ep)
   loadStoryboardMedia()
   recoverAndSyncEpisodeTasks(epId)
@@ -4565,7 +4565,7 @@ async function loadDrama() {
     store.setCurrentEpisode(ep)
     if (ep) {
       store.setScriptContent(ep.script_content || '')
-      scriptTitle.value = ep.title || '第' + (ep.episode_number || 0) + '集'
+      scriptTitle.value = ep.title || 'Tập ' + (ep.episode_number || 0)
       selectedEpisodeId.value = ep.id
     } else {
       store.setScriptContent('')
@@ -4576,7 +4576,7 @@ async function loadDrama() {
     await loadStoryboardMedia()
     await recoverAndSyncEpisodeTasks(ep?.id)
   } catch (e) {
-    ElMessage.error(e.message || '加载失败')
+    ElMessage.error(e.message || 'Tải thất bại')
   }
 }
 
@@ -4591,25 +4591,25 @@ function getSbCharacterIds(sbId) {
 function getMovementLabel(m) {
   if (!m) return ''
   const map = {
-    static: '固定',
-    push: '推镜',
-    pull: '拉镜',
-    pan: '横摇',
-    tilt: '纵摇',
-    tracking: '跟镜',
-    crane_up: '升镜',
-    crane_dn: '降镜',
-    orbit: '环绕',
-    handheld: '手持',
-    zoom: '变焦',
-    roll: '旋转',
-    whip_pan: '甩镜',
-    spiral: '螺旋',
-    hitchcock_zoom: '希区柯克',
-    bullet_time: '子弹时间',
-    dutch_angle_move: '荷兰角',
-    dolly_track: '推轨',
-    slowmo_orbit: '升格环绕'
+    static: 'Cố định',
+    push: 'Đẩy máy',
+    pull: 'Kéo máy',
+    pan: 'Lia ngang',
+    tilt: 'Lia dọc',
+    tracking: 'Theo máy',
+    crane_up: 'Nâng máy',
+    crane_dn: 'Hạ máy',
+    orbit: 'Vòng quanh',
+    handheld: 'Cầm tay',
+    zoom: 'Zoom',
+    roll: 'Xoay',
+    whip_pan: 'Whip pan',
+    spiral: 'Xoắn ốc',
+    hitchcock_zoom: 'Dolly zoom',
+    bullet_time: 'Bullet time',
+    dutch_angle_move: 'Nghiêng máy',
+    dolly_track: 'Dolly track',
+    slowmo_orbit: 'Vòng quanh slow-mo'
   }
   return map[m] || m
 }
@@ -4752,9 +4752,9 @@ async function onRegenAffectedSbImages(assetKey, affectedBoards) {
   if (!affectedBoards.length || regenSbImagesForAsset.has(assetKey)) return
   try {
     await ElMessageBox.confirm(
-      `将为 ${affectedBoards.length} 个关联分镜重新生成图片（#${affectedBoards.map((s) => s.storyboard_number).join('、#')}），原有图片将被覆盖，是否继续？`,
-      '重新生成关联分镜图',
-      { confirmButtonText: '确认生成', cancelButtonText: '取消', type: 'warning' }
+      `Sẽ tạo lại ảnh cho ${affectedBoards.length} storyboard liên quan (#${affectedBoards.map((s) => s.storyboard_number).join(', #')}), ảnh cũ sẽ bị ghi đè. Tiếp tục?`,
+      'Tạo lại ảnh storyboard liên quan',
+      { confirmButtonText: 'Xác nhận', cancelButtonText: 'Huỷ', type: 'warning' }
     )
   } catch {
     return
@@ -4794,7 +4794,7 @@ async function onRegenAffectedSbImages(assetKey, affectedBoards) {
               try {
                 const t = await taskAPI.get(res.task_id)
                 if (t.status === 'completed') { await loadSingleStoryboardMedia(sb.id); return resolve({ status: 'completed' }) }
-                if (t.status === 'failed') return resolve({ status: 'failed', error: t.error || '任务失败' })
+                if (t.status === 'failed') return resolve({ status: 'failed', error: t.error || 'Task thất bại' })
               } catch (_) {}
               if (attempts < maxAttempts) setTimeout(tick, 2000)
               else resolve({ status: 'timeout' })
@@ -4813,8 +4813,8 @@ async function onRegenAffectedSbImages(assetKey, affectedBoards) {
       }
       if (i < affectedBoards.length - 1) await new Promise((r) => setTimeout(r, 500))
     }
-    if (failed === 0) ElMessage.success(`已重新生成 ${affectedBoards.length} 张关联分镜图`)
-    else ElMessage.warning(`完成，${failed}/${affectedBoards.length} 条失败`)
+    if (failed === 0) ElMessage.success(`Đã tạo lại ${affectedBoards.length} ảnh storyboard liên quan`)
+    else ElMessage.warning(`Hoàn tất, ${failed}/${affectedBoards.length} lỗi`)
   } finally {
     regenSbImagesForAsset.delete(assetKey)
     if (regenSbImagesProgress.value) delete regenSbImagesProgress.value[assetKey]
@@ -4834,7 +4834,7 @@ async function saveScriptToBackend(content) {
   const toPayload = (list) =>
     list.map((e, i) => ({
       episode_number: i + 1,
-      title: (e.title && String(e.title).trim()) || '第' + (i + 1) + '集',
+      title: (e.title && String(e.title).trim()) || 'Tập ' + (i + 1),
       script_content: e.script_content ?? '',
       description: null,
       duration: 0,
@@ -4844,7 +4844,7 @@ async function saveScriptToBackend(content) {
   const curEp = store.currentEpisode
   if (!dramaId) {
     const drama = await dramaAPI.create({
-      title: scriptTitle.value || '新故事',
+      title: scriptTitle.value || 'Câu chuyện mới',
       description: storyInput.value?.trim() || trimmed.slice(0, 200),
       genre: storyType.value || undefined,
       style: generationStyle.value || undefined,
@@ -4863,7 +4863,7 @@ async function saveScriptToBackend(content) {
       : [
           {
             episode_number: 1,
-            title: scriptTitle.value || first.title || '第1集',
+            title: scriptTitle.value || first.title || 'Tập 1',
             script_content: first.script_content || trimmed,
           },
         ]
@@ -4873,7 +4873,7 @@ async function saveScriptToBackend(content) {
       router.replace('/film/' + dramaId)
     }
     if (multiFromMarkers) {
-      ElMessage.success(`已按「第N集/章/节」拆分为 ${episodes.length} 集`)
+      ElMessage.success(`Đã tách theo "Tập/Chương N" thành ${episodes.length} tập`)
     }
     return { created: true }
   }
@@ -4894,7 +4894,7 @@ async function saveScriptToBackend(content) {
       }).catch(() => {})
     }
     await loadDrama()
-    ElMessage.success(`已按「第N集/章/节」拆分为 ${payload.length} 集`)
+    ElMessage.success(`Đã tách theo "Tập/Chương N" thành ${payload.length} tập`)
     return { created: false, splitEpisodes: true }
   }
   const episodes = store.drama?.episodes || []
@@ -4908,7 +4908,7 @@ async function saveScriptToBackend(content) {
     return {
       episode_number: num,
       title: isCurrent
-        ? scriptTitle.value || singleTitle || '第' + num + '集'
+        ? scriptTitle.value || singleTitle || 'Tập ' + num
         : ep.title || '',
       script_content: isCurrent ? (parsed.episodes.length === 1 && singleTitle ? singleBody : trimmed) : (ep.script_content || ''),
       description: ep.description,
@@ -4916,7 +4916,7 @@ async function saveScriptToBackend(content) {
     }
   })
   if (updated.length === 0) {
-    updated.push({ episode_number: 1, title: scriptTitle.value || '第1集', script_content: trimmed })
+    updated.push({ episode_number: 1, title: scriptTitle.value || 'Tập 1', script_content: trimmed })
   }
   await dramaAPI.saveEpisodes(dramaId, updated)
   if (storyInput.value?.trim()) {
@@ -5022,16 +5022,16 @@ async function onPickScriptFromDialog(sourceId) {
   const targetId = store.dramaId ?? targetFromRoute ?? null
 
   if (targetId != null && Number(targetId) === srcNum) {
-    ElMessage.info('当前打开的就是该项目')
+    ElMessage.info('Đang mở chính dự án này')
     return
   }
 
   if (targetId != null) {
     try {
       await ElMessageBox.confirm(
-        '将把所选剧本的「故事梗概」与「各集剧本正文」写入当前工程。不会导入角色、场景、分镜与视频。若源剧本集数更少，多出来的分集将从本工程移除（原分镜可能失效）。是否继续？',
-        '导入剧本到当前工程',
-        { type: 'warning', confirmButtonText: '导入', cancelButtonText: '取消' }
+        'Sẽ ghi "tóm tắt câu chuyện" và "nội dung kịch bản từng tập" của kịch bản đã chọn vào dự án hiện tại. Không nhập nhân vật, scene, storyboard và video. Nếu kịch bản nguồn có ít tập hơn, những tập dư sẽ bị xoá khỏi dự án (storyboard cũ có thể mất hiệu lực). Tiếp tục?',
+        'Nhập kịch bản vào dự án hiện tại',
+        { type: 'warning', confirmButtonText: 'Nhập', cancelButtonText: 'Huỷ' }
       )
     } catch {
       return
@@ -5055,10 +5055,10 @@ async function onPickScriptFromDialog(sourceId) {
 
     if (!targetId) {
       if (episodesPayload.length === 0 && !summary) {
-        ElMessage.warning('所选剧本没有可导入的梗概或分集正文')
+        ElMessage.warning('Kịch bản đã chọn không có tóm tắt hay nội dung tập nào để nhập')
         return
       }
-      const title = (src.title || '新故事').toString().trim() || '新故事'
+      const title = (src.title || 'Câu chuyện mới').toString().trim() || 'Câu chuyện mới'
       const created = await dramaAPI.create({
         title,
         description: summary || undefined,
@@ -5074,7 +5074,7 @@ async function onPickScriptFromDialog(sourceId) {
       }
       showSelectScriptDialog.value = false
       router.replace('/film/' + workId)
-      ElMessage.success('已根据所选剧本创建项目并导入梗概与正文')
+      ElMessage.success('Đã tạo dự án từ kịch bản đã chọn và nhập tóm tắt cùng nội dung')
       scriptWorkbenchMode.value = 'select'
       return
     }
@@ -5085,16 +5085,16 @@ async function onPickScriptFromDialog(sourceId) {
     if (episodesPayload.length > 0) {
       await dramaAPI.saveEpisodes(targetId, episodesPayload)
     } else if (!summary) {
-      ElMessage.warning('所选剧本没有可导入的梗概或分集正文')
+      ElMessage.warning('Kịch bản đã chọn không có tóm tắt hay nội dung tập nào để nhập')
       return
     }
 
     showSelectScriptDialog.value = false
     await loadDrama()
-    ElMessage.success('已导入故事梗概与剧本（当前工程未切换）')
+    ElMessage.success('Đã nhập tóm tắt câu chuyện và kịch bản (không đổi dự án hiện tại)')
     scriptWorkbenchMode.value = 'select'
   } catch (e) {
-    ElMessage.error(e.message || '导入失败')
+    ElMessage.error(e.message || 'Nhập thất bại')
   } finally {
     selectScriptImporting.value = false
   }
@@ -5131,7 +5131,7 @@ function onNovelFileChange(file) {
 async function onImportNovel() {
   const text = novelImportMode.value === 'file' ? novelFileContent.value : novelText.value
   if (!text?.trim()) {
-    ElMessage.warning('请输入或上传小说内容')
+    ElMessage.warning('Vui lòng nhập hoặc tải lên nội dung tiểu thuyết')
     return
   }
   novelImporting.value = true
@@ -5143,7 +5143,7 @@ async function onImportNovel() {
     } else {
       formData.append('text', text)
     }
-    formData.append('title', scriptTitle.value || '导入小说')
+    formData.append('title', scriptTitle.value || 'Nhập tiểu thuyết')
     formData.append('max_chapters', String(novelMaxChapters.value))
     formData.append('ai_summarize', String(novelAiSummarize.value))
     const { default: axios } = await import('axios')
@@ -5153,7 +5153,7 @@ async function onImportNovel() {
     })
     let chapters = res.data?.data?.chapters || res.data?.chapters || []
     if (!chapters.length) {
-      ElMessage.warning('未能识别到章节内容')
+      ElMessage.warning('Không nhận diện được nội dung chương')
       return
     }
     // 若后端只识别出 1 章，但正文里有多处「第N集」行首标题，用前端规则再拆（与保存剧本一致）
@@ -5168,7 +5168,7 @@ async function onImportNovel() {
     }
     const toEpisodeRow = (ch, i) => ({
       episode_number: i + 1,
-      title: (ch.title && String(ch.title).trim()) || '第' + (i + 1) + '集',
+      title: (ch.title && String(ch.title).trim()) || 'Tập ' + (i + 1),
       script_content: String(ch.script ?? ch.content ?? '').trimEnd(),
       description: null,
       duration: 0,
@@ -5180,19 +5180,19 @@ async function onImportNovel() {
     if (store.dramaId && rows.length >= 2) {
       await dramaAPI.saveEpisodes(store.dramaId, rows)
       await loadDrama()
-      ElMessage.success(`已导入并拆分为 ${rows.length} 集`)
+      ElMessage.success(`Đã nhập và tách thành ${rows.length} tập`)
     } else {
       store.setScriptContent(plainScript || rows[0]?.script_content || '')
       ElMessage.success(
         rows.length >= 2
-          ? `已导入 ${rows.length} 个章节（保存剧本时将写入多集）`
-          : `成功导入 ${rows.length} 个章节，请继续编辑剧本`
+          ? `Đã nhập ${rows.length} chương (khi lưu kịch bản sẽ ghi thành nhiều tập)`
+          : `Đã nhập ${rows.length} chương, hãy tiếp tục chỉnh sửa kịch bản`
       )
     }
     showNovelImport.value = false
     novelImportReset()
   } catch (e) {
-    ElMessage.error(e.message || '导入失败')
+    ElMessage.error(e.message || 'Nhập thất bại')
   } finally {
     novelImporting.value = false
   }
@@ -5202,22 +5202,22 @@ async function onGenerateScript() {
   trackFilmCreateAction('save_script_click')
   const content = (scriptContent.value ?? store.scriptContent ?? '').toString().trim()
   if (!content) {
-    ElMessage.warning('请先在「故事生成」中点击 AI 生成，或手动输入剧本内容')
+    ElMessage.warning('Vui lòng bấm AI tạo trong "Tạo câu chuyện" hoặc nhập kịch bản thủ công trước')
     return
   }
   scriptGenerating.value = true
   try {
     const result = await saveScriptToBackend(content)
     if (result?.created) {
-      ElMessage.success('项目已创建，剧本已保存')
+      ElMessage.success('Đã tạo dự án và lưu kịch bản')
     } else {
-      ElMessage.success('剧本已保存')
+      ElMessage.success('Đã lưu kịch bản')
     }
     trackFilmCreateAction('save_script_complete', {
       extra: { created_project: !!result?.created },
     })
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     scriptGenerating.value = false
   }
@@ -5231,14 +5231,14 @@ async function onAddEpisode() {
     : 1
   const updated = list.map((ep, i) => ({
     episode_number: ep.episode_number ?? i + 1,
-    title: ep.title || '第' + (ep.episode_number ?? i + 1) + '集',
+    title: ep.title || 'Tập ' + (ep.episode_number ?? i + 1),
     script_content: ep.script_content || '',
     description: ep.description,
     duration: ep.duration
   }))
   updated.push({
     episode_number: nextNum,
-    title: '第' + nextNum + '集',
+    title: 'Tập ' + nextNum,
     script_content: '',
     description: null,
     duration: 0
@@ -5247,9 +5247,9 @@ async function onAddEpisode() {
     await dramaAPI.saveEpisodes(store.dramaId, updated)
     savedCurrentEpisodeNumber.value = nextNum
     await loadDrama()
-    ElMessage.success('已添加第' + nextNum + '集')
+    ElMessage.success('Đã thêm Tập ' + nextNum)
   } catch (e) {
-    ElMessage.error(e.message || '添加失败')
+    ElMessage.error(e.message || 'Thêm thất bại')
   }
 }
 
@@ -5292,7 +5292,7 @@ async function doUploadResourceImage(type, id, file) {
     const data = res?.data ?? res
     const uploadedLocalPath = data?.local_path || data?.path || null
     const url = data?.url || uploadedLocalPath
-    if (!url) { ElMessage.error('上传未返回地址'); return }
+    if (!url) { ElMessage.error('Upload không trả về địa chỉ'); return }
 
     const current = findResource(type, id)
     const hasPrimary = !!(current?.local_path || current?.image_url)
@@ -5321,9 +5321,9 @@ async function doUploadResourceImage(type, id, file) {
       }
     }
     await loadDrama()
-    ElMessage.success('上传成功')
+    ElMessage.success('Tải lên thành công')
   } catch (e) {
-    ElMessage.error(e.message || '上传失败')
+    ElMessage.error(e.message || 'Tải lên thất bại')
   } finally {
     uploadingResourceId.value = null
   }
@@ -5346,7 +5346,7 @@ async function onSetPrimaryImage(type, item, extraPath) {
     }
     await loadDrama()
   } catch (e) {
-    ElMessage.error(e.message || '操作失败')
+    ElMessage.error(e.message || 'Thao tác thất bại')
   }
 }
 
@@ -5364,7 +5364,7 @@ async function onRemoveExtraImage(type, item, extraPath) {
     }
     await loadDrama()
   } catch (e) {
-    ElMessage.error(e.message || '删除失败')
+    ElMessage.error(e.message || 'Xoá thất bại')
   }
 }
 
@@ -5464,10 +5464,10 @@ async function onUpscaleSbImage(sb) {
   upscalingSbIds.add(sb.id)
   try {
     await storyboardsAPI.upscale(sb.id)
-    ElMessage.success('超分完成，图片已更新为高清版本')
+    ElMessage.success('Upscale hoàn tất, ảnh đã cập nhật sang bản HD')
     await loadSingleStoryboardMedia(sb.id)
   } catch (e) {
-    ElMessage.error(e.message || '超分辨率失败')
+    ElMessage.error(e.message || 'Upscale thất bại')
   } finally {
     upscalingSbIds.delete(sb.id)
   }
@@ -5510,11 +5510,11 @@ function playSbTtsFromRel(rel) {
       if (sbTtsPreviewAudio === a) sbTtsPreviewAudio = null
     })
     a.play().catch(() => {
-      ElMessage.warning('无法播放音频，请检查文件是否存在')
+      ElMessage.warning('Không phát được audio, vui lòng kiểm tra file có tồn tại không')
       if (sbTtsPreviewAudio === a) sbTtsPreviewAudio = null
     })
   } catch (_) {
-    ElMessage.warning('无法播放音频')
+    ElMessage.warning('Không phát được audio')
   }
 }
 
@@ -5530,7 +5530,7 @@ function playSbNarrationTts(sb) {
 async function onTtsSbDialogue(sb) {
   if (!sb?.id || ttsSbIds.has(sb.id)) return
   if (!sb.dialogue?.trim()) {
-    ElMessage.warning('该分镜没有对白内容')
+    ElMessage.warning('Storyboard này không có lời thoại')
     return
   }
   ttsSbIds.add(sb.id)
@@ -5543,15 +5543,15 @@ async function onTtsSbDialogue(sb) {
     const data = await res.json()
     const businessOk = data.success === true || Number(data.code) === 200
     if (!res.ok || !businessOk) {
-      throw new Error(data.error?.message || data.message || '配音失败')
+      throw new Error(data.error?.message || data.message || 'Lồng tiếng thất bại')
     }
     if (data.data?.local_path) {
       sbDialogueAudioPaths.value = { ...sbDialogueAudioPaths.value, [sb.id]: data.data.local_path }
       sb.audio_local_path = data.data.local_path
-      ElMessage.success('配音已生成')
+      ElMessage.success('Đã tạo lồng tiếng')
     }
   } catch (e) {
-    ElMessage.error(e.message || 'TTS 配音失败')
+    ElMessage.error(e.message || 'TTS lồng tiếng thất bại')
   } finally {
     ttsSbIds.delete(sb.id)
   }
@@ -5562,7 +5562,7 @@ async function onTtsSbNarration(sb) {
   if (!sb?.id || ttsSbNarrationIds.has(sb.id)) return
   const text = ((sbNarration.value[sb.id] ?? sb.narration) || '').toString().trim()
   if (!text) {
-    ElMessage.warning('该分镜没有解说旁白内容')
+    ElMessage.warning('Storyboard này không có nội dung narration')
     return
   }
   ttsSbNarrationIds.add(sb.id)
@@ -5575,15 +5575,15 @@ async function onTtsSbNarration(sb) {
     const data = await res.json()
     const businessOk = data.success === true || Number(data.code) === 200
     if (!res.ok || !businessOk) {
-      throw new Error(data.error?.message || data.message || '解说配音失败')
+      throw new Error(data.error?.message || data.message || 'Lồng tiếng narration thất bại')
     }
     if (data.data?.local_path) {
       sbNarrationAudioPaths.value = { ...sbNarrationAudioPaths.value, [sb.id]: data.data.local_path }
       sb.narration_audio_local_path = data.data.local_path
-      ElMessage.success('解说配音已生成')
+      ElMessage.success('Đã tạo lồng tiếng narration')
     }
   } catch (e) {
-    ElMessage.error(e.message || '解说 TTS 失败')
+    ElMessage.error(e.message || 'TTS narration thất bại')
   } finally {
     ttsSbNarrationIds.delete(sb.id)
   }
@@ -5603,13 +5603,13 @@ function formatSrtTimestamp(ms) {
 async function onExportStoryboardSheet() {
   const boards = storyboards.value || []
   if (!boards.length) {
-    ElMessage.warning('暂无分镜')
+    ElMessage.warning('Chưa có storyboard')
     return
   }
   const epNum = store.currentEpisode?.episode_number
   const dramaTitle = (store.drama?.title || 'project').replace(/[\\/:*?"<>|]/g, '_')
-  const epLabel = epNum != null ? `第${epNum}集` : `ep${currentEpisodeId.value || '1'}`
-  const filenameBase = `${dramaTitle}-${epLabel}-分镜表`
+  const epLabel = epNum != null ? `Tap-${epNum}` : `ep${currentEpisodeId.value || '1'}`
+  const filenameBase = `${dramaTitle}-${epLabel}-storyboard`
   const useFirstLast = !!storyboardUseFirstLastFrame.value
 
   exportingStoryboardSheet.value = true
@@ -5688,16 +5688,16 @@ async function onExportStoryboardSheet() {
   )
 
   if (!result.ok) {
-    ElMessage.warning('当前分镜没有可导出的内容')
+    ElMessage.warning('Storyboard hiện tại không có nội dung để xuất')
     return
   }
-  ElMessage.success(`已导出分镜表（${result.count} 个镜头）`)
+  ElMessage.success(`Đã xuất bảng storyboard (${result.count} shot)`)
 }
 
 function onExportNarrationSrt() {
   const boards = storyboards.value || []
   if (!boards.length) {
-    ElMessage.warning('暂无分镜')
+    ElMessage.warning('Chưa có storyboard')
     return
   }
   let tMs = 0
@@ -5716,7 +5716,7 @@ function onExportNarrationSrt() {
     tMs += durMs
   }
   if (!lines.length) {
-    ElMessage.warning('当前分镜没有可导出的解说文案')
+    ElMessage.warning('Storyboard hiện tại không có nội dung narration để xuất')
     return
   }
   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
@@ -5725,7 +5725,7 @@ function onExportNarrationSrt() {
   a.download = `narration-${currentEpisodeId.value || 'episode'}.srt`
   a.click()
   URL.revokeObjectURL(a.href)
-  ElMessage.success('已下载解说 SRT')
+  ElMessage.success('Đã tải SRT narration')
 }
 
 async function onSaveSbNarrationField(sb) {
@@ -5767,7 +5767,7 @@ async function onToggleSbUniversalMode(sb) {
     }
   } catch (e) {
     sbCreationMode.value = { ...sbCreationMode.value, [sb.id]: cur }
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   }
 }
 
@@ -5841,17 +5841,17 @@ function onUniversalSegmentToGrokVideoTags(sb) {
   if (!sb?.id) return
   const raw = (sbUniversalSegmentText.value[sb.id] ?? '').toString()
   if (!raw.trim()) {
-    ElMessage.warning('请先填写或生成片段描述')
+    ElMessage.warning('Vui lòng điền hoặc tạo mô tả segment trước')
     return
   }
   const next = universalSegmentAtImageToGrokTags(raw)
   if (next === raw) {
-    ElMessage.info('未找到 @图片N 标记，无需转换')
+    ElMessage.info('Không tìm thấy marker @图片N, không cần chuyển')
     return
   }
   sbUniversalSegmentText.value = { ...sbUniversalSegmentText.value, [sb.id]: next }
   void onSaveUniversalSegmentField(sb)
-  ElMessage.success('已改为 Grok 视频占位符格式（<IMAGE_N>）')
+  ElMessage.success('Đã đổi sang định dạng placeholder video Grok (<IMAGE_N>)')
 }
 
 function onUniversalSegmentPromptMenu(sb, cmd) {
@@ -5884,7 +5884,7 @@ async function onGenerateUniversalSegmentPrompt(sb, opts = {}) {
     )
     const text = (data?.universal_segment_text ?? '').toString().trim()
     if (!text) {
-      ElMessage.warning('未收到完整生成结果，请重试')
+      ElMessage.warning('Chưa nhận được kết quả hoàn chỉnh, vui lòng thử lại')
       return
     }
     sbUniversalSegmentText.value = { ...sbUniversalSegmentText.value, [sb.id]: text }
@@ -5893,9 +5893,9 @@ async function onGenerateUniversalSegmentPrompt(sb, opts = {}) {
       const row = list.find((x) => Number(x.id) === Number(sb.id))
       if (row) row.universal_segment_text = text
     }
-    ElMessage.success(force ? '已强制生成全能片段提示词（无图模式）' : '已根据分镜生成全能片段提示词')
+    ElMessage.success(force ? 'Đã ép tạo prompt segment Omni (chế độ không ảnh)' : 'Đã tạo prompt segment Omni theo storyboard')
   } catch (e) {
-    ElMessage.error(e.message || '生成失败，请检查文本模型配置')
+    ElMessage.error(e.message || 'Tạo thất bại, vui lòng kiểm tra cấu hình text model')
   } finally {
     generatingUniversalSegmentIds.delete(sb.id)
   }
@@ -5907,7 +5907,7 @@ async function onPolishUniversalSegmentPromptStream(sb, opts = {}) {
   const force = !!opts.forceWithoutReferenceImages
   const draft = sbUniversalSegmentTrimmed(sb)
   if (!draft) {
-    ElMessage.warning('请先填写或生成片段描述后再润色')
+    ElMessage.warning('Vui lòng điền hoặc tạo mô tả segment trước khi polish')
     return
   }
   generatingUniversalSegmentIds.add(sb.id)
@@ -5929,7 +5929,7 @@ async function onPolishUniversalSegmentPromptStream(sb, opts = {}) {
     )
     const text = (data?.universal_segment_text ?? '').toString().trim()
     if (!text) {
-      ElMessage.warning('未收到完整润色结果，请重试')
+      ElMessage.warning('Chưa nhận được kết quả polish hoàn chỉnh, vui lòng thử lại')
       return
     }
     sbUniversalSegmentText.value = { ...sbUniversalSegmentText.value, [sb.id]: text }
@@ -5938,9 +5938,9 @@ async function onPolishUniversalSegmentPromptStream(sb, opts = {}) {
       const row = list.find((x) => Number(x.id) === Number(sb.id))
       if (row) row.universal_segment_text = text
     }
-    ElMessage.success(force ? '全能片段已强制润色并保存（无图模式）' : '全能片段提示词已润色并保存')
+    ElMessage.success(force ? 'Đã ép polish và lưu segment Omni (chế độ không ảnh)' : 'Đã polish và lưu prompt segment Omni')
   } catch (e) {
-    ElMessage.error(e.message || '润色失败，请检查文本模型配置')
+    ElMessage.error(e.message || 'Polish thất bại, vui lòng kiểm tra cấu hình text model')
   } finally {
     generatingUniversalSegmentIds.delete(sb.id)
   }
@@ -6010,7 +6010,7 @@ async function polishUniversalSegmentsAfterGeneration(opts = {}) {
       } catch (e) {
         const msg = e?.message || String(e)
         if (onShotError) onShotError(sb, msg)
-        else ElMessage.warning(`分镜 #${sb.storyboard_number ?? sb.id} 全能润色失败：${msg}`)
+        else ElMessage.warning(`Storyboard #${sb.storyboard_number ?? sb.id} polish Omni thất bại: ${msg}`)
       } finally {
         generatingUniversalSegmentIds.delete(sb.id)
       }
@@ -6072,7 +6072,7 @@ function getSbUniversalOmniRefSlots(sb) {
     out.push({
       index: idx++,
       kind: 'scene',
-      name: (scene.name || '场景').toString(),
+      name: (scene.name || 'Scene').toString(),
       thumbUrl: assetImageUrl(scene),
     })
   }
@@ -6081,7 +6081,7 @@ function getSbUniversalOmniRefSlots(sb) {
       out.push({
         index: idx++,
         kind: 'character',
-        name: (c.name || '角色').toString(),
+        name: (c.name || 'Nhân vật').toString(),
         thumbUrl: assetImageUrl(c),
       })
     }
@@ -6091,7 +6091,7 @@ function getSbUniversalOmniRefSlots(sb) {
       out.push({
         index: idx++,
         kind: 'prop',
-        name: (p.name || '物品').toString(),
+        name: (p.name || 'Đạo cụ').toString(),
         thumbUrl: assetImageUrl(p),
       })
     }
@@ -6192,9 +6192,9 @@ function canUseUniversalOmniVideoApi(cfg) {
 
 async function confirmUniversalNonSeedance2Video() {
   await ElMessageBox.confirm(
-    '你当前视频模型不支持多图参考，全能模式将降级：优先用分镜主图，否则仅传场景参考图。是否继续？',
-    '全能模式与模型不匹配',
-    { confirmButtonText: '继续', cancelButtonText: '取消', type: 'warning' }
+    'Video model hiện tại không hỗ trợ multi-image reference. Chế độ Omni sẽ downgrade: ưu tiên ảnh chính của storyboard, nếu không thì chỉ dùng ảnh scene tham chiếu. Tiếp tục?',
+    'Omni không khớp model',
+    { confirmButtonText: 'Tiếp tục', cancelButtonText: 'Huỷ', type: 'warning' }
   )
 }
 
@@ -6239,10 +6239,10 @@ async function onPolishSbPrompt() {
     const res = await storyboardsAPI.polishPrompt(sb.id)
     if (res?.polished_prompt) {
       sbPromptPolishedText.value = res.polished_prompt
-      ElMessage.success('通用优化提示词已生成')
+      ElMessage.success('Đã tạo prompt tối ưu chung')
     }
   } catch (e) {
-    ElMessage.error(e.message || '生成失败，请检查文本模型配置')
+    ElMessage.error(e.message || 'Tạo thất bại, vui lòng kiểm tra cấu hình text model')
   } finally {
     sbPromptPolishing.value = false
   }
@@ -6261,9 +6261,9 @@ async function onSaveSbPromptDialog() {
     })
     await loadDrama()
     showSbPromptDialog.value = false
-    ElMessage.success('提示词已保存')
+    ElMessage.success('Đã lưu prompt')
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     sbPromptSaving.value = false
   }
@@ -6275,9 +6275,9 @@ async function onSaveSbImagePrompt(sb) {
     await storyboardsAPI.update(sb.id, { image_prompt: (editingSbImagePromptText.value || '').toString().trim() || null })
     await loadDrama()
     editingSbImagePromptId.value = null
-    ElMessage.success('图片提示词已保存')
+    ElMessage.success('Đã lưu prompt ảnh')
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   }
 }
 
@@ -6331,9 +6331,9 @@ async function onSaveSbVideoFields(sb) {
       videoParamsTarget.value = { ...sb, video_prompt: newVp }
     }
     await loadDrama()
-    ElMessage.success('已保存，视频提示词已按最新规则自动生成')
+    ElMessage.success('Đã lưu, prompt video đã tự động tạo theo rule mới nhất')
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   }
 }
 
@@ -6343,9 +6343,9 @@ async function onSaveSbVideoPrompt(sb) {
     await storyboardsAPI.update(sb.id, { video_prompt: (editingSbVideoPromptText.value || '').toString().trim() || null })
     await loadDrama()
     editingSbVideoPromptId.value = null
-    ElMessage.success('视频提示词已保存')
+    ElMessage.success('Đã lưu prompt video')
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   }
 }
 
@@ -6382,9 +6382,9 @@ async function onSplitSbByAudio(sb) {
   if (!sb?.id) return
   try {
     await ElMessageBox.confirm(
-      '将把本镜按「每句对白一条 + 旁白单独一条」拆成多个分镜，原镜变为第一条。已生成的视频不会保留。是否继续？',
-      '按对白拆镜',
-      { type: 'warning', confirmButtonText: '拆镜', cancelButtonText: '取消' }
+      'Sẽ tách shot này theo "mỗi câu thoại một shot + narration riêng một shot" thành nhiều storyboard. Shot gốc thành shot đầu tiên. Video đã tạo sẽ không được giữ lại. Tiếp tục?',
+      'Tách shot theo lời thoại',
+      { type: 'warning', confirmButtonText: 'Tách shot', cancelButtonText: 'Huỷ' }
     )
   } catch {
     return
@@ -6399,9 +6399,9 @@ async function onSplitSbByAudio(sb) {
     const summary = res?.plans_summary || ''
     showVideoParamsDialog.value = false
     await loadDrama()
-    ElMessage.success(summary ? `已拆成 ${n} 条：${summary}` : `已拆成 ${n} 条分镜`)
+    ElMessage.success(summary ? `Đã tách thành ${n} shot: ${summary}` : `Đã tách thành ${n} storyboard`)
   } catch (e) {
-    ElMessage.error(e.message || '拆镜失败')
+    ElMessage.error(e.message || 'Tách shot thất bại')
   } finally {
     splitByAudioLoading.value = false
   }
@@ -6415,7 +6415,7 @@ async function onSaveVideoParams() {
     await onSaveSbVideoFields(sb)
     showVideoParamsDialog.value = false
   } catch (e) {
-    ElMessage.error(e.message || '保存失败')
+    ElMessage.error(e.message || 'Lưu thất bại')
   } finally {
     videoParamsSaving.value = false
   }
@@ -6427,9 +6427,9 @@ async function onBatchInferParams() {
   try {
     const res = await storyboardsAPI.batchInferParams(currentEpisodeId.value, false)
     await loadDrama()
-    ElMessage.success(`摄影参数推断完成，更新了 ${res?.updated ?? 0} 条分镜`)
+    ElMessage.success(`Suy luận tham số quay hoàn tất, cập nhật ${res?.updated ?? 0} storyboard`)
   } catch (e) {
-    ElMessage.error(e.message || '推断失败')
+    ElMessage.error(e.message || 'Suy luận thất bại')
   } finally {
     inferringParams.value = false
   }
@@ -6451,14 +6451,14 @@ async function onRegenerateLayoutDescription(sb) {
       // 避免覆盖我们刚刚写入的 sbLayoutDescription 等本地字段）
       try { await refreshStoryboardsOnly() } catch (_) {}
 
-      ElMessage.success('布局描述已由 AI 重新优化并保存（已参考上下分镜连贯性）')
+      ElMessage.success('AI đã tối ưu lại mô tả layout và lưu (đã tham chiếu sự liên kết giữa storyboard trước sau)')
       // 注意：不再调用 loadDrama()，因为它会全量重建所有 sbXxx 映射，可能用服务端旧数据覆盖本次结果。
       // 等后端 rowToStoryboard 补全 layout_description 字段后，关闭再打开对话框即可看到持久化值。
     } else {
-      ElMessage.warning('AI 未返回有效的布局描述')
+      ElMessage.warning('AI không trả về mô tả layout hợp lệ')
     }
   } catch (e) {
-    ElMessage.error(e.message || '重新生成布局描述失败')
+    ElMessage.error(e.message || 'Tạo lại mô tả layout thất bại')
   } finally {
     regeneratingLayoutSbIds.delete(sb.id)
   }
@@ -6493,26 +6493,26 @@ async function onGenerateSbVideo(sb) {
   if (!hasAnyImage) {
     if (!universal) {
       await ElMessageBox.alert(
-        '当前为传统模式，生视频需要分镜参考图。请先生成或上传分镜图片后再试。',
-        '传统模式缺少分镜图',
-        { confirmButtonText: '知道了', type: 'warning' }
+        'Đang ở chế độ Classic, tạo video cần ảnh reference cho storyboard. Vui lòng tạo hoặc upload ảnh storyboard trước rồi thử lại.',
+        'Classic thiếu ảnh storyboard',
+        { confirmButtonText: 'Đã hiểu', type: 'warning' }
       )
       return
     }
     try {
       await ElMessageBox.confirm(
         universalOmniApi
-          ? '当前没有可用的参考图（场景/角色/道具等；不含经典分镜主图），将按纯文案提交 Omni-Video（模型以 AI 配置为准），效果可能不稳定。确认继续？'
-          : '当前没有分镜主图且无场景参考图，将仅按文字提示词生成视频，效果可能不稳定。确认继续？',
-        universalOmniApi ? '全能模式无参考图' : '全能降级无参考图',
-        { confirmButtonText: '继续生成', cancelButtonText: '取消', type: 'warning' }
+          ? 'Hiện không có ảnh reference khả dụng (scene/nhân vật/đạo cụ; không tính ảnh chính storyboard Classic). Sẽ gửi Omni-Video chỉ với text (model theo cấu hình AI), kết quả có thể không ổn định. Xác nhận tiếp tục?'
+          : 'Hiện không có ảnh chính storyboard và không có ảnh scene reference. Sẽ chỉ tạo video theo prompt text, kết quả có thể không ổn định. Xác nhận tiếp tục?',
+        universalOmniApi ? 'Omni không có ảnh reference' : 'Omni downgrade không có ảnh reference',
+        { confirmButtonText: 'Tiếp tục tạo', cancelButtonText: 'Huỷ', type: 'warning' }
       )
     } catch {
       return
     }
   }
   generatingSbVideoIds.add(sb.id)
-  const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, '分镜视频')
+  const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, 'Video storyboard')
   genStore.markRunning(meta)
   sbVideoErrors.value[sb.id] = ''
   // 清除前端选中状态 + 清除后端手动指定的 video_url，让合成时自动取最新生成的视频
@@ -6563,18 +6563,18 @@ async function onGenerateSbVideo(sb) {
     if (res?.task_id) {
       const pollRes = await pollTask(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
       if (pollRes?.status === 'failed') {
-        sbVideoErrors.value[sb.id] = pollRes.error || '视频生成失败'
+        sbVideoErrors.value[sb.id] = pollRes.error || 'Tạo video thất bại'
       } else if (pollRes?.status === 'completed') {
         sbVideoErrors.value[sb.id] = ''
-        ElMessage.success('视频生成完成')
+        ElMessage.success('Đã tạo video')
       }
     } else {
       await loadSingleStoryboardMedia(sb.id)
-      ElMessage.success('视频生成已提交，请稍后查看')
+      ElMessage.success('Đã gửi task tạo video, vui lòng xem sau')
     }
   } catch (e) {
-    sbVideoErrors.value[sb.id] = e.message || '提交失败'
-    ElMessage.error(e.message || '提交失败')
+    sbVideoErrors.value[sb.id] = e.message || 'Gửi thất bại'
+    ElMessage.error(e.message || 'Gửi thất bại')
   } finally {
     generatingSbVideoIds.delete(sb.id)
     genStore.markDone(meta)
@@ -6587,19 +6587,19 @@ async function onLinkTailFrameToNext(sb) {
   if (!dramaId.value || !sb?.id) return
   const nextSb = getNextStoryboard(sb.id)
   if (!nextSb) {
-    ElMessage.warning('已是最后一个分镜，没有下一个分镜可衔接')
+    ElMessage.warning('Đây đã là storyboard cuối, không có storyboard tiếp theo để nối')
     return
   }
   const video = getSbVideo(sb.id)
   if (!video) {
-    ElMessage.warning('当前分镜没有视频')
+    ElMessage.warning('Storyboard hiện tại chưa có video')
     return
   }
   try {
     await ElMessageBox.confirm(
-      `确定将 #${sb.storyboard_number ?? sb.id} 视频的尾帧设为 #${nextSb.storyboard_number ?? nextSb.id} 的首帧？\n原首帧将自动进入历史。`,
-      '尾帧衔接',
-      { confirmButtonText: '确认执行', cancelButtonText: '取消', type: 'warning' }
+      `Xác nhận đặt frame cuối của video #${sb.storyboard_number ?? sb.id} làm frame đầu của #${nextSb.storyboard_number ?? nextSb.id}?\nFrame đầu cũ sẽ tự động vào lịch sử.`,
+      'Nối frame cuối',
+      { confirmButtonText: 'Xác nhận', cancelButtonText: 'Huỷ', type: 'warning' }
     )
   } catch {
     return
@@ -6610,14 +6610,14 @@ async function onLinkTailFrameToNext(sb) {
     if (data?.error) {
       throw new Error(data.error)
     }
-    ElMessage.success(`已将尾帧设为 #${nextSb.storyboard_number ?? nextSb.id} 的首帧`)
+    ElMessage.success(`Đã đặt frame cuối làm frame đầu của #${nextSb.storyboard_number ?? nextSb.id}`)
     // 刷新两个分镜的媒体
     await Promise.all([
       loadSingleStoryboardMedia(sb.id),
       loadSingleStoryboardMedia(nextSb.id)
     ])
   } catch (e) {
-    ElMessage.error(e.message || '尾帧衔接失败')
+    ElMessage.error(e.message || 'Nối frame cuối thất bại')
   } finally {
     linkingTailFrameIds.delete(sb.id)
   }
@@ -6628,12 +6628,12 @@ async function onUsePrevTailAsFirst(sb) {
   if (!dramaId.value || !sb?.id) return
   const prevSb = getPrevStoryboard(sb.id)
   if (!prevSb) {
-    ElMessage.warning('已是第一个分镜，没有上一分镜可取尾帧')
+    ElMessage.warning('Đây đã là storyboard đầu tiên, không có storyboard trước để lấy frame cuối')
     return
   }
   const prevLastImg = getSbLastImage(prevSb.id)
   if (!prevLastImg) {
-    ElMessage.warning(`上一分镜 #${prevSb.storyboard_number ?? prevSb.id} 尚无尾帧图片`)
+    ElMessage.warning(`Storyboard trước #${prevSb.storyboard_number ?? prevSb.id} chưa có ảnh frame cuối`)
     return
   }
 
@@ -6646,14 +6646,14 @@ async function onUsePrevTailAsFirst(sb) {
       drama_id: dramaId.value,
       image_url: prevLastImg.image_url || '',
       local_path: prevLastImg.local_path || undefined,
-      prompt: `上镜尾帧（直接复用 #${prevSb.storyboard_number ?? prevSb.id} 尾帧高清原图）`,
+      prompt: `Frame cuối shot trước (dùng lại trực tiếp ảnh HD frame cuối #${prevSb.storyboard_number ?? prevSb.id})`,
       frame_type: 'storyboard_first'
     })
     if (uploaded?.id) {
       // 手动设置本地选中，确保显示立即切换；同时调用 onSelect 做一次 server patch（与 upload 里的 bind 互补）
       onSelectSbFrameImage(sb, uploaded, 'first')
     }
-    ElMessage.success(`已将 #${prevSb.storyboard_number ?? prevSb.id} 尾帧设为本分镜首帧（高清原图）`)
+    ElMessage.success(`Đã đặt frame cuối #${prevSb.storyboard_number ?? prevSb.id} làm frame đầu storyboard này (ảnh HD)`)
 
     // 刷新分镜元数据（拿回服务器最新的 first_frame_image_id）+ 媒体列表
     await Promise.all([
@@ -6663,7 +6663,7 @@ async function onUsePrevTailAsFirst(sb) {
     // 清除可能残留的手动选中（让服务器权威绑定 id 生效）
     delete sbSelectedImgId.value[sb.id]
   } catch (e) {
-    ElMessage.error(e.message || '上镜尾帧设置失败')
+    ElMessage.error(e.message || 'Đặt frame cuối shot trước thất bại')
   } finally {
     usingPrevTailAsFirstIds.delete(sb.id)
   }
@@ -6695,7 +6695,7 @@ async function onGenerateStoryboard() {
   trackFilmCreateAction('generate_storyboard_click')
   const epId = currentEpisodeId.value
   if (!epId) return
-  const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.GENERATE_STORYBOARD, 'AI生成分镜')
+  const meta = buildExtractTaskMeta(store, dramaId.value, epId, GEN_RESOURCE.GENERATE_STORYBOARD, 'AI tạo storyboard')
   genStore.markRunning(meta)
   // 生成期间每 2 秒刷新该集分镜列表，让已解析的分镜逐步出现（切集后仍更新原集缓存）
   const refreshTimer = setInterval(() => refreshStoryboardsForEpisode(epId), 2000)
@@ -6727,16 +6727,16 @@ async function onGenerateStoryboard() {
     ElMessage.success(
       storyboardUniversalOmni.value
         ? polishedN > 0
-          ? `全能分镜生成完成，已自动润色 ${polishedN} 条片段`
-          : '全能分镜生成完成'
-        : '分镜生成完成'
+          ? `Đã tạo xong storyboard Omni, đã tự động polish ${polishedN} segment`
+          : 'Đã tạo xong storyboard Omni'
+        : 'Đã tạo xong storyboard'
     )
     trackFilmCreateAction('generate_storyboard_complete', {
       extra: { storyboard_count: (store.storyboards || []).length },
     })
   } catch (e) {
     // HTTP 错误由 request 拦截器统一展示，此处仅处理拦截器未覆盖的异常
-    if (!e.response) ElMessage.error(e.message || '生成失败')
+    if (!e.response) ElMessage.error(e.message || 'Tạo thất bại')
   } finally {
     clearInterval(refreshTimer)
     genStore.markDone(meta)
@@ -6745,7 +6745,7 @@ async function onGenerateStoryboard() {
 
 async function onAddSingleStoryboard(){
   if (!currentEpisodeId.value) {
-    ElMessage.warning('请先选择集')
+    ElMessage.warning('Vui lòng chọn tập trước')
     return
   }
   try {
@@ -6756,29 +6756,29 @@ async function onAddSingleStoryboard(){
     await storyboardsAPI.create({
       episode_id: currentEpisodeId.value,
       storyboard_number: maxNum + 1,
-      title: `镜头 ${maxNum + 1}`,
+      title: `Shot ${maxNum + 1}`,
       description: '',
     })
-    ElMessage.success('添加成功')
+    ElMessage.success('Đã thêm')
     await loadDrama() // 刷新列表
   } catch (e) {
-    ElMessage.error(e.message || '添加失败')
+    ElMessage.error(e.message || 'Thêm thất bại')
   }
 }
 
 async function onDeleteSingleStoryboard(id){
   try {
-    await ElMessageBox.confirm('确定要删除这个分镜吗？', '提示', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm('Bạn có chắc muốn xoá storyboard này?', 'Thông báo', {
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
       type: 'warning'
     })
     await storyboardsAPI.delete(id)
-    ElMessage.success('删除成功')
+    ElMessage.success('Đã xoá')
     await loadDrama() // 刷新列表
   } catch (e) {
     if (e !== 'cancel') {
-      ElMessage.error(e.message || '删除失败')
+      ElMessage.error(e.message || 'Xoá thất bại')
     }
   }
 }
@@ -6786,10 +6786,10 @@ async function onDeleteSingleStoryboard(id){
 async function onInsertStoryboardBefore(sb) {
   try {
     await storyboardsAPI.insertBefore(sb.id)
-    ElMessage.success('已在此位置前新增空白分镜')
+    ElMessage.success('Đã thêm storyboard trống trước vị trí này')
     await loadDrama()
   } catch (e) {
-    ElMessage.error(e.message || '新增失败')
+    ElMessage.error(e.message || 'Tạo mới thất bại')
   }
 }
 
@@ -6806,7 +6806,7 @@ async function startBatchImageGeneration() {
     const boards = store.storyboards || []
     const todo = boards.filter((sb) => !hasSbImage(sb))
     if (todo.length === 0) {
-      ElMessage.info('所有分镜均已有图片，无需重新生成')
+      ElMessage.info('Tất cả storyboard đã có ảnh, không cần tạo lại')
       return
     }
     batchImageProgress.value = { current: 0, total: todo.length, failed: 0 }
@@ -6839,7 +6839,7 @@ async function startBatchImageGeneration() {
           if (res?.task_id) {
             const pollRes = await pollTask(res.task_id, () => loadSingleStoryboardMedia(sb.id))
             if (pollRes?.status === 'failed') {
-              batchImageErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${pollRes.error || '生成失败'}`)
+              batchImageErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${pollRes.error || 'Tạo thất bại'}`)
               batchImageProgress.value = { ...batchImageProgress.value, failed: batchImageProgress.value.failed + 1 }
             }
           } else {
@@ -6850,7 +6850,7 @@ async function startBatchImageGeneration() {
             delete sbSelectedImgId.value[sb.id]
           }
         } catch (e) {
-          batchImageErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${e.message || '提交失败'}`)
+          batchImageErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${e.message || 'Gửi thất bại'}`)
           batchImageProgress.value = { ...batchImageProgress.value, failed: batchImageProgress.value.failed + 1 }
         }
         doneCount++
@@ -6861,10 +6861,10 @@ async function startBatchImageGeneration() {
     if (!batchImageStopping.value) {
       // 最终统一恢复选中状态，确保所有首帧生成后服务器绑定立即生效（与单条生成路径一致）
       restoreSelectionsFromBackend()
-      if (batchImageProgress.value.failed === 0) ElMessage.success(`分镜图批量生成完成（共 ${todo.length} 条）`)
-      else ElMessage.warning(`批量完成，${batchImageProgress.value.failed}/${todo.length} 条失败`)
+      if (batchImageProgress.value.failed === 0) ElMessage.success(`Đã tạo ảnh storyboard hàng loạt (${todo.length} shot)`)
+      else ElMessage.warning(`Hoàn tất hàng loạt, ${batchImageProgress.value.failed}/${todo.length} shot thất bại`)
     } else {
-      ElMessage.info('批量生成已停止')
+      ElMessage.info('Đã dừng tạo hàng loạt')
     }
   } finally {
     batchImageRunning.value = false
@@ -6893,7 +6893,7 @@ async function startBatchVideoGeneration() {
       return !!getSbFirstFrameUrl(sb)
     })
     if (todo.length === 0) {
-      ElMessage.info('没有需要生成视频的分镜（分镜缺少图片，或视频已全部生成）')
+      ElMessage.info('Không có storyboard nào cần tạo video (storyboard thiếu ảnh hoặc video đã tạo hết)')
       return
     }
     batchVideoProgress.value = { current: 0, total: todo.length, failed: 0 }
@@ -6971,10 +6971,10 @@ async function startBatchVideoGeneration() {
             duration: getSbVideoDurationForApi(sb),
           })
           if (res?.task_id) {
-            const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, '分镜视频')
+            const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, 'Video storyboard')
             const pollRes = await pollTask(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
             if (pollRes?.status === 'failed') {
-              batchVideoErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${pollRes.error || '生成失败'}`)
+              batchVideoErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${pollRes.error || 'Tạo thất bại'}`)
               batchVideoProgress.value = { ...batchVideoProgress.value, failed: batchVideoProgress.value.failed + 1 }
               prevVideoItem = null
             } else if (contiguity && pollRes?.status === 'completed') {
@@ -6990,7 +6990,7 @@ async function startBatchVideoGeneration() {
             }
           }
         } catch (e) {
-          batchVideoErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${e.message || '提交失败'}`)
+          batchVideoErrors.value.push(`#${sb.storyboard_number ?? sb.id}: ${e.message || 'Gửi thất bại'}`)
           batchVideoProgress.value = { ...batchVideoProgress.value, failed: batchVideoProgress.value.failed + 1 }
           if (contiguity) prevVideoItem = null
         } finally {
@@ -7002,10 +7002,10 @@ async function startBatchVideoGeneration() {
     }
     await Promise.allSettled(Array.from({ length: Math.min(videoConcurrency, todo.length) }, () => videoWorker()))
     if (!batchVideoStopping.value) {
-      if (batchVideoProgress.value.failed === 0) ElMessage.success(`分镜视频批量生成完成（共 ${todo.length} 条）`)
-      else ElMessage.warning(`批量完成，${batchVideoProgress.value.failed}/${todo.length} 条失败`)
+      if (batchVideoProgress.value.failed === 0) ElMessage.success(`Đã tạo video storyboard hàng loạt (${todo.length} shot)`)
+      else ElMessage.warning(`Hoàn tất hàng loạt, ${batchVideoProgress.value.failed}/${todo.length} shot thất bại`)
     } else {
-      ElMessage.info('批量生成已停止')
+      ElMessage.info('Đã dừng tạo hàng loạt')
     }
   } finally {
     batchVideoRunning.value = false
@@ -7026,7 +7026,7 @@ async function onGenerateVideo() {
   const did = dramaId.value
   const dramaTitle = store.drama?.title || ''
   const epNum = store.currentEpisode?.episode_number
-  const epLabel = dramaTitle ? `${dramaTitle} · 第${epNum ?? ''}集` : `第${epNum ?? ''}集`
+  const epLabel = dramaTitle ? `${dramaTitle} · Tập ${epNum ?? ''}` : `Tập ${epNum ?? ''}`
   const mergeMeta = {
     dramaId: did,
     episodeId: epId,
@@ -7034,7 +7034,7 @@ async function onGenerateVideo() {
     episodeNumber: epNum,
     resourceType: GEN_RESOURCE.EPISODE_MERGE,
     resourceId: epId,
-    label: `${epLabel} 合成视频`,
+    label: `${epLabel} Ghép video`,
   }
   store.setVideoStatus('generating', did, epId)
   store.setVideoProgress(5, did, epId)
@@ -7044,35 +7044,35 @@ async function onGenerateVideo() {
     const result = await dramaAPI.finalizeEpisode(epId, getFinalizeMergeOptions())
     if (result?.task_id != null) {
       store.setVideoProgress(10, did, epId)
-      ElMessage.success(result?.message || '视频合成任务已提交，请稍后查看')
+      ElMessage.success(result?.message || 'Đã gửi task ghép video, vui lòng xem sau')
       const pollResult = await pollTask(result.task_id, () => loadDrama(), mergeMeta)
       await loadDrama()
       if (pollResult?.status === 'completed') {
         store.setVideoProgress(100, did, epId)
         if (currentEpisodeVideoUrl.value) {
           store.setVideoStatus('done', did, epId)
-          ElMessage.success('视频生成完成')
+          ElMessage.success('Đã tạo video')
         } else {
           store.setVideoStatus('error', did, epId)
-          videoErrorMsg.value = '视频生成完成但未获取到播放地址，请稍后刷新'
+          videoErrorMsg.value = 'Video tạo xong nhưng chưa có link phát, vui lòng làm mới sau'
           ElMessage.warning(videoErrorMsg.value)
         }
       } else if (pollResult?.status === 'failed') {
         store.setVideoStatus('error', did, epId)
-        videoErrorMsg.value = pollResult?.error || '视频生成失败'
+        videoErrorMsg.value = pollResult?.error || 'Tạo video thất bại'
       } else if (pollResult?.status === 'timeout') {
         store.setVideoStatus('generating', did, epId)
-        videoErrorMsg.value = '任务仍在排队或生成中，请稍后刷新查看'
+        videoErrorMsg.value = 'Task vẫn đang xếp hàng hoặc đang tạo, vui lòng làm mới sau'
         ElMessage.warning(videoErrorMsg.value)
       }
     } else {
       store.setVideoStatus('error', did, epId)
-      const msg = result?.message || '本集没有可合成的视频片段'
+      const msg = result?.message || 'Tập này không có đoạn video để ghép'
       videoErrorMsg.value = msg
       ElMessage.warning(msg)
     }
   } catch (e) {
-    videoErrorMsg.value = e.message || '生成失败'
+    videoErrorMsg.value = e.message || 'Tạo thất bại'
     store.setVideoStatus('error', did, epId)
   } finally {
     if (store.getVideoStatus(did, epId) !== 'generating') {
@@ -7121,12 +7121,12 @@ function pollTaskWithPause(taskId, onDone, meta = {}) {
     const finishStore = (status, error) => {
       if (!trackInStore || !taskId) return
       if (status === 'completed') genStore.markDone({ ...resolvedMeta, taskId })
-      else genStore.markFailed({ ...resolvedMeta, taskId }, error || '任务失败')
+      else genStore.markFailed({ ...resolvedMeta, taskId }, error || 'Task thất bại')
     }
     const tick = async () => {
       if (pipelineAbortRequested.value) {
-        finishStore('failed', '全流程已取消')
-        reject(Object.assign(new Error('全流程已取消'), { pipelineAborted: true }))
+        finishStore('failed', 'Đã huỷ toàn bộ luồng')
+        reject(Object.assign(new Error('Đã huỷ toàn bộ luồng'), { pipelineAborted: true }))
         return
       }
       if (pipelinePaused.value) {
@@ -7137,8 +7137,8 @@ function pollTaskWithPause(taskId, onDone, meta = {}) {
       try {
         const t = await taskAPI.get(taskId)
         if (pipelineAbortRequested.value) {
-          finishStore('failed', '全流程已取消')
-          reject(Object.assign(new Error('全流程已取消'), { pipelineAborted: true }))
+          finishStore('failed', 'Đã huỷ toàn bộ luồng')
+          reject(Object.assign(new Error('Đã huỷ toàn bộ luồng'), { pipelineAborted: true }))
           return
         }
         if (t.status === 'completed') {
@@ -7148,7 +7148,7 @@ function pollTaskWithPause(taskId, onDone, meta = {}) {
           return
         }
         if (t.status === 'failed') {
-          const errMsg = (t.error || t.message || '任务失败').trim()
+          const errMsg = (t.error || t.message || 'Task thất bại').trim()
           finishStore('failed', errMsg)
           resolve({ status: 'failed', error: errMsg })
           return
@@ -7158,7 +7158,7 @@ function pollTaskWithPause(taskId, onDone, meta = {}) {
       }
       if (attempts < maxAttempts) setTimeout(tick, interval)
       else {
-        const timeoutMsg = '任务查询超时（超过15分钟）'
+        const timeoutMsg = 'Truy vấn task timeout (quá 15 phút)'
         finishStore('failed', timeoutMsg)
         resolve({ status: 'timeout', error: timeoutMsg })
       }
@@ -7188,11 +7188,11 @@ function addPipelineError(step, message) {
 
 async function checkPause() {
   if (pipelineAbortRequested.value) {
-    throw Object.assign(new Error('全流程已取消'), { pipelineAborted: true })
+    throw Object.assign(new Error('Đã huỷ toàn bộ luồng'), { pipelineAborted: true })
   }
   while (pipelinePaused.value) {
     if (pipelineAbortRequested.value) {
-      throw Object.assign(new Error('全流程已取消'), { pipelineAborted: true })
+      throw Object.assign(new Error('Đã huỷ toàn bộ luồng'), { pipelineAborted: true })
     }
     await waitForResume()
   }
@@ -7237,7 +7237,7 @@ async function pipelineWithRetry(stepName, fn, maxRetries = 3) {
       if (r < maxRetries - 1) await pipelineRest()
     }
   }
-  addPipelineError(stepName, '重试3次均失败: ' + (lastErr?.message || String(lastErr)))
+  addPipelineError(stepName, 'Retry 3 lần đều thất bại: ' + (lastErr?.message || String(lastErr)))
   return false
 }
 
@@ -7284,7 +7284,7 @@ async function startTextFrameworkPipeline() {
 
 function setPipelineStep(idx, text) {
   pipelineStepIndex.value = idx
-  pipelineCurrentStep.value = `[步骤 ${idx}/${pipelineStepTotal.value}] ${text}`
+  pipelineCurrentStep.value = `[Bước ${idx}/${pipelineStepTotal.value}] ${text}`
 }
 
 async function runOneClickPipeline(textOnly = false) {
@@ -7302,7 +7302,7 @@ async function runOneClickPipeline(textOnly = false) {
     await checkPause()
     let chars = store.currentEpisode?.characters ?? []
     if (chars.length === 0) {
-      setPipelineStep(1, '提取角色...')
+      setPipelineStep(1, 'Trích nhân vật...')
       try {
         const outline = (store.scriptContent || '').toString().trim() || (storyInput.value || '').toString().trim() || undefined
         const res = await generationAPI.generateCharacters(dramaIdVal, { episode_id: store.currentEpisode?.id ?? undefined, outline: outline || undefined })
@@ -7310,68 +7310,68 @@ async function runOneClickPipeline(textOnly = false) {
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('提取角色', result.error); return }
+          if (result?.error) { addPipelineError('Trích nhân vật', result.error); return }
         } else {
           await loadDrama()
         }
         await pipelineRest()
       } catch (e) {
-        addPipelineError('提取角色', e.message || String(e))
+        addPipelineError('Trích nhân vật', e.message || String(e))
         return
       }
       chars = store.currentEpisode?.characters ?? []
     } else {
-      setPipelineStep(1, `已有 ${chars.length} 个角色，跳过提取`)
+      setPipelineStep(1, `Đã có ${chars.length} nhân vật, bỏ qua bước trích`)
     }
 
     // 步骤 2：提取场景
     await checkPause()
     let sceneList = store.currentEpisode?.scenes ?? []
     if (sceneList.length === 0) {
-      setPipelineStep(2, '提取场景...')
+      setPipelineStep(2, 'Trích scene...')
       try {
         const res = await dramaAPI.extractBackgrounds(episodeId, { model: undefined, style, language: scriptLanguage.value })
         const taskId = res?.task_id
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('提取场景', result.error); return }
+          if (result?.error) { addPipelineError('Trích scene', result.error); return }
         } else {
           await loadDrama()
         }
         await pipelineRest()
       } catch (e) {
-        addPipelineError('提取场景', e.message || String(e))
+        addPipelineError('Trích scene', e.message || String(e))
         return
       }
       sceneList = store.currentEpisode?.scenes ?? []
     } else {
-      setPipelineStep(2, `已有 ${sceneList.length} 个场景，跳过提取`)
+      setPipelineStep(2, `Đã có ${sceneList.length} scene, bỏ qua bước trích`)
     }
 
     // 步骤 3：提取道具
     await checkPause()
     let propList = store.props ?? []
     if (propList.length === 0) {
-      setPipelineStep(3, '提取道具...')
+      setPipelineStep(3, 'Trích đạo cụ...')
       try {
         const res = await propAPI.extractFromScript(episodeId)
         const taskId = res?.task_id
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('提取道具', result.error); return }
+          if (result?.error) { addPipelineError('Trích đạo cụ', result.error); return }
         } else {
           await loadDrama()
         }
         await pipelineRest()
       } catch (e) {
-        addPipelineError('提取道具', e.message || String(e))
+        addPipelineError('Trích đạo cụ', e.message || String(e))
         // 道具提取失败不中断流程
       }
       propList = store.props ?? []
     } else {
-      setPipelineStep(3, `已有 ${propList.length} 个道具，跳过提取`)
+      setPipelineStep(3, `Đã có ${propList.length} đạo cụ, bỏ qua bước trích`)
     }
 
     // 步骤 4：生成分镜脚本
@@ -7380,7 +7380,7 @@ async function runOneClickPipeline(textOnly = false) {
     let boards = store.storyboards || []
     const hadBoardsBeforeStep4 = boards.length > 0
     if (boards.length === 0) {
-      setPipelineStep(4, '生成分镜脚本...')
+      setPipelineStep(4, 'Tạo kịch bản storyboard...')
       // 与手动生成一样，每 2 秒刷新一次分镜列表，让已解析的分镜逐步显示
       const sbRefreshTimer = setInterval(refreshStoryboardsOnly, 2000)
       try {
@@ -7399,7 +7399,7 @@ async function runOneClickPipeline(textOnly = false) {
           if (result?.error) {
             // 任务失败，但后端可能已保存了部分分镜，确保最新状态显示出来再停止
             await loadDrama()
-            addPipelineError('生成分镜', result.error)
+            addPipelineError('Tạo storyboard', result.error)
             clearInterval(sbRefreshTimer)
             return
           }
@@ -7411,7 +7411,7 @@ async function runOneClickPipeline(textOnly = false) {
         await loadDrama()
         await pipelineRest()
       } catch (e) {
-        addPipelineError('生成分镜', e.message || String(e))
+        addPipelineError('Tạo storyboard', e.message || String(e))
         clearInterval(sbRefreshTimer)
         return
       }
@@ -7419,7 +7419,7 @@ async function runOneClickPipeline(textOnly = false) {
       await loadStoryboardMedia()
       boards = store.storyboards || []
     } else {
-      setPipelineStep(4, `已有 ${boards.length} 个分镜，跳过生成`)
+      setPipelineStep(4, `Đã có ${boards.length} storyboard, bỏ qua bước tạo`)
     }
 
     const generatedSbThisPipeline = !hadBoardsBeforeStep4
@@ -7430,25 +7430,25 @@ async function runOneClickPipeline(textOnly = false) {
         onShotProgress: (cur, total, sb) =>
           setPipelineStep(
             4,
-            `润色全能分镜(${cur}/${total}) #${sb.storyboard_number ?? cur} ${(sb.title || '').slice(0, 16)}`
+            `Polish storyboard Omni (${cur}/${total}) #${sb.storyboard_number ?? cur} ${(sb.title || '').slice(0, 16)}`
           ),
         onShotError: (sb, msg) =>
-          addPipelineError('润色全能分镜', `镜#${sb.storyboard_number ?? sb.id}: ${msg}`),
+          addPipelineError('Polish storyboard Omni', `Shot #${sb.storyboard_number ?? sb.id}: ${msg}`),
       })
       await loadDrama()
       await loadStoryboardMedia()
     }
 
     if (textOnly) {
-      pipelineCurrentStep.value = '文本框架已就绪（未生成图片与视频）'
-      ElMessage.success('文本框架已生成：角色、场景、道具与分镜脚本已就绪')
+      pipelineCurrentStep.value = 'Khung text đã sẵn sàng (chưa tạo ảnh và video)'
+      ElMessage.success('Đã tạo khung text: nhân vật, scene, đạo cụ và kịch bản storyboard đã sẵn sàng')
       return
     }
 
     // ════════════════════════════════════════════════════════
     // ⏱ 倒计时 20 秒：请浏览分镜内容，确认后开始生成角色/场景/道具图片
     // ════════════════════════════════════════════════════════
-    await runPipelineCountdown(20, '分镜脚本生成完毕，请浏览确认内容。倒计时结束后将开始生成角色、场景、道具图片。')
+    await runPipelineCountdown(20, 'Đã tạo xong kịch bản storyboard, vui lòng xem lại nội dung. Hết đếm ngược sẽ bắt đầu tạo ảnh nhân vật, scene, đạo cụ.')
     await checkPause()
 
     // ════════════════════════════════════════════════════════
@@ -7459,12 +7459,12 @@ async function runOneClickPipeline(textOnly = false) {
     {
       const charsWithoutImage = chars.filter((c) => !hasAssetImage(c))
       const concurrency = pipelineConcurrency.value
-      setPipelineStep(5, `生成角色图（${charsWithoutImage.length} 个，并发 ${concurrency}）...`)
+      setPipelineStep(5, `Tạo ảnh nhân vật (${charsWithoutImage.length}, concurrency ${concurrency})...`)
       const { paused } = await runConcurrently(charsWithoutImage, concurrency, async (char) => {
         await checkPause()
         generatingCharIds.add(char.id)
         try {
-          const stepName = '角色图 ' + (char.name || char.id)
+          const stepName = 'Ảnh nhân vật ' + (char.name || char.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const res = await characterAPI.generateImage(char.id, undefined, style)
             const taskId = res?.image_generation?.task_id ?? res?.task_id
@@ -7485,7 +7485,7 @@ async function runOneClickPipeline(textOnly = false) {
         } finally {
           generatingCharIds.delete(char.id)
         }
-      }, { getLabel: (char) => '角色图 ' + (char.name || char.id) })
+      }, { getLabel: (char) => 'Ảnh nhân vật ' + (char.name || char.id) })
       if (paused) { await waitForResume() }
     }
 
@@ -7493,13 +7493,13 @@ async function runOneClickPipeline(textOnly = false) {
     {
       const scenesWithoutImage = sceneList.filter((s) => !hasAssetImage(s))
       const concurrency = pipelineConcurrency.value
-      setPipelineStep(6, `生成场景图（${scenesWithoutImage.length} 个，并发 ${concurrency}）...`)
+      setPipelineStep(6, `Tạo ảnh scene (${scenesWithoutImage.length}, concurrency ${concurrency})...`)
       await checkPause()
       const { paused } = await runConcurrently(scenesWithoutImage, concurrency, async (scene) => {
         await checkPause()
         generatingSceneIds.add(scene.id)
         try {
-          const stepName = '场景图 ' + (scene.location || scene.id)
+          const stepName = 'Ảnh scene ' + (scene.location || scene.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const useQuad = !!sceneUseQuadGrid.value
             const res = await sceneAPI.generateImage({ scene_id: scene.id, model: undefined, style, use_quad_grid: useQuad })
@@ -7521,7 +7521,7 @@ async function runOneClickPipeline(textOnly = false) {
         } finally {
           generatingSceneIds.delete(scene.id)
         }
-      }, { getLabel: (scene) => '场景图 ' + (scene.location || scene.id) })
+      }, { getLabel: (scene) => 'Ảnh scene ' + (scene.location || scene.id) })
       if (paused) { await waitForResume() }
     }
 
@@ -7529,13 +7529,13 @@ async function runOneClickPipeline(textOnly = false) {
     {
       const propsWithoutImage = propList.filter((p) => !hasAssetImage(p))
       const concurrency = pipelineConcurrency.value
-      setPipelineStep(7, `生成道具图（${propsWithoutImage.length} 个，并发 ${concurrency}）...`)
+      setPipelineStep(7, `Tạo ảnh đạo cụ (${propsWithoutImage.length}, concurrency ${concurrency})...`)
       await checkPause()
       const { paused } = await runConcurrently(propsWithoutImage, concurrency, async (prop) => {
         await checkPause()
         generatingPropIds.add(prop.id)
         try {
-          const stepName = '道具图 ' + (prop.name || prop.id)
+          const stepName = 'Ảnh đạo cụ ' + (prop.name || prop.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const res = await propAPI.generateImage(prop.id, undefined, style)
             const taskId = res?.image_generation?.task_id ?? res?.task_id
@@ -7556,14 +7556,14 @@ async function runOneClickPipeline(textOnly = false) {
         } finally {
           generatingPropIds.delete(prop.id)
         }
-      }, { getLabel: (prop) => '道具图 ' + (prop.name || prop.id) })
+      }, { getLabel: (prop) => 'Ảnh đạo cụ ' + (prop.name || prop.id) })
       if (paused) { await waitForResume() }
     }
 
     // ════════════════════════════════════════════════════════
     // ⏱ 倒计时 30 秒：请浏览角色/场景/道具图，确认后开始生成分镜图
     // ════════════════════════════════════════════════════════
-    await runPipelineCountdown(30, '角色、场景、道具图片生成完毕，请浏览确认效果。倒计时结束后将开始生成分镜图（消耗较多 Token）。')
+    await runPipelineCountdown(30, 'Đã tạo ảnh nhân vật, scene, đạo cụ, vui lòng xem lại. Hết đếm ngược sẽ bắt đầu tạo ảnh storyboard (tốn nhiều token).')
     await checkPause()
 
     // ════════════════════════════════════════════════════════
@@ -7576,12 +7576,12 @@ async function runOneClickPipeline(textOnly = false) {
       boards = store.storyboards || []
       const boardsWithoutImg = boards.filter((sb) => !hasSbImage(sb))
       const concurrency = pipelineConcurrency.value
-      setPipelineStep(8, `生成分镜图（${boardsWithoutImg.length} 个，并发 ${concurrency}）...`)
+      setPipelineStep(8, `Tạo ảnh storyboard (${boardsWithoutImg.length}, concurrency ${concurrency})...`)
       const { paused } = await runConcurrently(boardsWithoutImg, concurrency, async (sb) => {
         await checkPause()
         generatingSbImageIds.add(sb.id)
         try {
-          const stepName = '分镜图 #' + (sb.storyboard_number ?? sb.id)
+          const stepName = 'Ảnh storyboard #' + (sb.storyboard_number ?? sb.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const useFirstLast = storyboardUseFirstLastFrame.value && !isSbUniversalMode(sb.id)
             let prompt = sb.polished_prompt || sb.image_prompt || sb.description || ''
@@ -7609,14 +7609,14 @@ async function runOneClickPipeline(textOnly = false) {
         } finally {
           generatingSbImageIds.delete(sb.id)
         }
-      }, { getLabel: (sb) => '分镜图 #' + (sb.storyboard_number ?? sb.id) })
+      }, { getLabel: (sb) => 'Ảnh storyboard #' + (sb.storyboard_number ?? sb.id) })
       if (paused) { await waitForResume() }
     }
 
     // ════════════════════════════════════════════════════════
     // ⏱ 倒计时 20 秒：请浏览分镜图，确认后开始生成分镜视频
     // ════════════════════════════════════════════════════════
-    await runPipelineCountdown(20, '分镜图生成完毕，请浏览确认图片效果。倒计时结束后将开始生成分镜视频（消耗最多 Token）。')
+    await runPipelineCountdown(20, 'Đã tạo xong ảnh storyboard, vui lòng xem lại. Hết đếm ngược sẽ bắt đầu tạo video storyboard (tốn token nhiều nhất).')
     await checkPause()
 
     // ════════════════════════════════════════════════════════
@@ -7636,12 +7636,12 @@ async function runOneClickPipeline(textOnly = false) {
         return !!getSbFirstFrameUrl(sb)
       })
       const concurrency = pipelineVideoConcurrency.value
-      setPipelineStep(9, `生成分镜视频（${boards2.length} 个，并发 ${concurrency}）...`)
+      setPipelineStep(9, `Tạo video storyboard (${boards2.length}, concurrency ${concurrency})...`)
       const { paused } = await runConcurrently(boards2, concurrency, async (sb) => {
         await checkPause()
         generatingSbVideoIds.add(sb.id)
         try {
-          const stepName = '分镜视频 #' + (sb.storyboard_number ?? sb.id)
+          const stepName = 'Video storyboard #' + (sb.storyboard_number ?? sb.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const universal = isSbUniversalMode(sb.id)
             const omniRefs = universal ? collectSbOmniReferenceAbsoluteUrls(sb) : []
@@ -7668,7 +7668,7 @@ async function runOneClickPipeline(textOnly = false) {
               duration: getSbVideoDurationForApi(sb),
             })
             if (res?.task_id) {
-              const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, '分镜视频')
+              const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, 'Video storyboard')
               const result = await pollTaskWithPause(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
               if (result?.paused) return { paused: true }
               if (result?.error) throw new Error(result.error)
@@ -7678,34 +7678,34 @@ async function runOneClickPipeline(textOnly = false) {
         } finally {
           generatingSbVideoIds.delete(sb.id)
         }
-      }, { getLabel: (sb) => '分镜视频 #' + (sb.storyboard_number ?? sb.id) })
+      }, { getLabel: (sb) => 'Video storyboard #' + (sb.storyboard_number ?? sb.id) })
       if (paused) { await waitForResume() }
     }
 
     // 步骤 10：合成整集视频
     await checkPause()
-    setPipelineStep(10, '合成整集视频...')
+    setPipelineStep(10, 'Ghép video cả tập...')
     try {
       const result = await dramaAPI.finalizeEpisode(episodeId, getFinalizeMergeOptions())
       if (result?.task_id != null) {
         const pollResult = await pollTaskWithPause(result.task_id, () => loadDrama())
         if (pollResult?.paused) { await waitForResume(); return }
-        if (pollResult?.error) addPipelineError('合成整集视频', pollResult.error)
+        if (pollResult?.error) addPipelineError('Ghép video cả tập', pollResult.error)
         else await pipelineRest()
       } else {
-        addPipelineError('合成整集视频', result?.message || '本集没有可合成的视频片段')
+        addPipelineError('Ghép video cả tập', result?.message || 'Tập này không có đoạn video để ghép')
       }
     } catch (e) {
-      addPipelineError('合成整集视频', e.message || String(e))
+      addPipelineError('Ghép video cả tập', e.message || String(e))
     }
 
-    pipelineCurrentStep.value = '一键生成视频流程已执行完成'
-    ElMessage.success('一键生成视频流程已执行完成')
+    pipelineCurrentStep.value = 'Luồng one-click tạo video đã hoàn tất'
+    ElMessage.success('Luồng one-click tạo video đã hoàn tất')
     trackFilmCreateAction('one_click_generate_complete', {
       extra: { error_count: pipelineErrorLog.value.length },
     })
   } catch (e) {
-    addPipelineError('流程', e.message || String(e))
+    addPipelineError('Luồng', e.message || String(e))
     trackFilmCreateAction('one_click_generate_failed', {
       extra: { message: String(e?.message || 'failed').slice(0, 120) },
     })
@@ -7735,14 +7735,14 @@ async function runRepairPipeline() {
   const style = getSelectedStyle()
 
   try {
-    pipelineCurrentStep.value = '正在加载数据...'
+    pipelineCurrentStep.value = 'Đang tải dữ liệu...'
     await loadDrama()
 
     // 1. 角色：没有则生成角色；再为每个无图角色生成图
     let chars = store.currentEpisode?.characters ?? []
     if (chars.length === 0) {
       await checkPause()
-      pipelineCurrentStep.value = '正在生成角色列表...'
+      pipelineCurrentStep.value = 'Đang tạo danh sách nhân vật...'
       try {
         const outline = (store.scriptContent || '').toString().trim() || (storyInput.value || '').toString().trim() || undefined
         const res = await generationAPI.generateCharacters(dramaIdVal, { episode_id: store.currentEpisode?.id ?? undefined, outline: outline || undefined })
@@ -7750,11 +7750,11 @@ async function runRepairPipeline() {
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('生成角色', result.error); return }
+          if (result?.error) { addPipelineError('Tạo nhân vật', result.error); return }
         } else await loadDrama()
         await pipelineRest()
       } catch (e) {
-        addPipelineError('生成角色', e.message || String(e))
+        addPipelineError('Tạo nhân vật', e.message || String(e))
         return
       }
       chars = store.currentEpisode?.characters ?? []
@@ -7762,10 +7762,10 @@ async function runRepairPipeline() {
     const charsWithoutImage = chars.filter((c) => !hasAssetImage(c))
     {
       const concurrency = pipelineConcurrency.value
-      pipelineCurrentStep.value = `正在生成角色图（并发${concurrency}）...`
+      pipelineCurrentStep.value = `Đang tạo ảnh nhân vật (concurrency ${concurrency})...`
       const { paused } = await runConcurrently(charsWithoutImage, concurrency, async (char) => {
         await checkPause()
-        const stepName = '角色图 ' + (char.name || char.id)
+        const stepName = 'Ảnh nhân vật ' + (char.name || char.id)
         const ok = await pipelineWithRetry(stepName, async () => {
           const res = await characterAPI.generateImage(char.id, undefined, style)
           const taskId = res?.image_generation?.task_id ?? res?.task_id
@@ -7783,7 +7783,7 @@ async function runRepairPipeline() {
           }
         })
         if (ok && typeof ok === 'object' && ok.paused) return { paused: true }
-      }, { getLabel: (char) => '角色图 ' + (char.name || char.id) })
+      }, { getLabel: (char) => 'Ảnh nhân vật ' + (char.name || char.id) })
       if (paused) { await waitForResume() }
     }
 
@@ -7791,18 +7791,18 @@ async function runRepairPipeline() {
     let sceneList = store.currentEpisode?.scenes ?? []
     if (sceneList.length === 0) {
       await checkPause()
-      pipelineCurrentStep.value = '正在提取场景...'
+      pipelineCurrentStep.value = 'Đang trích scene...'
       try {
         const res = await dramaAPI.extractBackgrounds(episodeId, { model: undefined, style, language: scriptLanguage.value })
         const taskId = res?.task_id
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('提取场景', result.error); return }
+          if (result?.error) { addPipelineError('Trích scene', result.error); return }
         } else await loadDrama()
         await pipelineRest()
       } catch (e) {
-        addPipelineError('提取场景', e.message || String(e))
+        addPipelineError('Trích scene', e.message || String(e))
         return
       }
       sceneList = store.currentEpisode?.scenes ?? []
@@ -7810,10 +7810,10 @@ async function runRepairPipeline() {
     const scenesWithoutImage = sceneList.filter((s) => !hasAssetImage(s))
     {
       const concurrency = pipelineConcurrency.value
-      pipelineCurrentStep.value = `正在生成场景图（并发${concurrency}）...`
+      pipelineCurrentStep.value = `Đang tạo ảnh scene (concurrency ${concurrency})...`
       const { paused } = await runConcurrently(scenesWithoutImage, concurrency, async (scene) => {
         await checkPause()
-        const stepName = '场景图 ' + (scene.location || scene.id)
+        const stepName = 'Ảnh scene ' + (scene.location || scene.id)
         const ok = await pipelineWithRetry(stepName, async () => {
           const useQuad = !!sceneUseQuadGrid.value
           const res = await sceneAPI.generateImage({ scene_id: scene.id, model: undefined, style, use_quad_grid: useQuad })
@@ -7832,7 +7832,7 @@ async function runRepairPipeline() {
           }
         })
         if (ok && typeof ok === 'object' && ok.paused) return { paused: true }
-      }, { getLabel: (scene) => '场景图 ' + (scene.location || scene.id) })
+      }, { getLabel: (scene) => 'Ảnh scene ' + (scene.location || scene.id) })
       if (paused) { await waitForResume() }
     }
 
@@ -7840,31 +7840,31 @@ async function runRepairPipeline() {
     let propList2 = store.props ?? []
     if (propList2.length === 0) {
       await checkPause()
-      pipelineCurrentStep.value = '正在提取道具...'
+      pipelineCurrentStep.value = 'Đang trích đạo cụ...'
       try {
         const res = await propAPI.extractFromScript(episodeId)
         const taskId = res?.task_id
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('提取道具', result.error); /* 不中断 */ }
+          if (result?.error) { addPipelineError('Trích đạo cụ', result.error); /* 不中断 */ }
         } else await loadDrama()
         await pipelineRest()
       } catch (e) {
-        addPipelineError('提取道具', e.message || String(e))
+        addPipelineError('Trích đạo cụ', e.message || String(e))
       }
       propList2 = store.props ?? []
     }
     const propsWithoutImage2 = propList2.filter((p) => !hasAssetImage(p))
     {
       const concurrency = pipelineConcurrency.value
-      pipelineCurrentStep.value = `正在生成道具图（并发${concurrency}）...`
+      pipelineCurrentStep.value = `Đang tạo ảnh đạo cụ (concurrency ${concurrency})...`
       await checkPause()
       const { paused } = await runConcurrently(propsWithoutImage2, concurrency, async (prop) => {
         await checkPause()
         generatingPropIds.add(prop.id)
         try {
-          const stepName = '道具图 ' + (prop.name || prop.id)
+          const stepName = 'Ảnh đạo cụ ' + (prop.name || prop.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const res = await propAPI.generateImage(prop.id, undefined, style)
             const taskId = res?.image_generation?.task_id ?? res?.task_id
@@ -7885,7 +7885,7 @@ async function runRepairPipeline() {
         } finally {
           generatingPropIds.delete(prop.id)
         }
-      }, { getLabel: (prop) => '道具图 ' + (prop.name || prop.id) })
+      }, { getLabel: (prop) => 'Ảnh đạo cụ ' + (prop.name || prop.id) })
       if (paused) { await waitForResume() }
     }
 
@@ -7894,7 +7894,7 @@ async function runRepairPipeline() {
     const hadBoardsBeforeRepairSb = boards.length > 0
     if (boards.length === 0) {
       await checkPause()
-      pipelineCurrentStep.value = '正在生成分镜...'
+      pipelineCurrentStep.value = 'Đang tạo storyboard...'
       try {
         const res = await dramaAPI.generateStoryboard(episodeId, {
           aspect_ratio: projectAspectRatio.value || '16:9',
@@ -7907,12 +7907,12 @@ async function runRepairPipeline() {
         if (taskId) {
           const result = await pollTaskWithPause(taskId, () => loadDrama())
           if (result?.paused) { await waitForResume(); return }
-          if (result?.error) { addPipelineError('分镜生成', result.error); return }
+          if (result?.error) { addPipelineError('Tạo storyboard', result.error); return }
         }
         await loadDrama()
         await pipelineRest()
       } catch (e) {
-        addPipelineError('分镜生成', e.message || String(e))
+        addPipelineError('Tạo storyboard', e.message || String(e))
         return
       }
       boards = store.storyboards || []
@@ -7922,10 +7922,10 @@ async function runRepairPipeline() {
       await polishUniversalSegmentsAfterGeneration({
         checkPause,
         onShotProgress: (cur, total, sb) => {
-          pipelineCurrentStep.value = `润色全能分镜(${cur}/${total}) #${sb.storyboard_number ?? cur} ${(sb.title || '').slice(0, 16)}`
+          pipelineCurrentStep.value = `Polish storyboard Omni (${cur}/${total}) #${sb.storyboard_number ?? cur} ${(sb.title || '').slice(0, 16)}`
         },
         onShotError: (sb, msg) =>
-          addPipelineError('润色全能分镜', `镜#${sb.storyboard_number ?? sb.id}: ${msg}`),
+          addPipelineError('Polish storyboard Omni', `Shot #${sb.storyboard_number ?? sb.id}: ${msg}`),
       })
       await loadDrama()
     }
@@ -7934,7 +7934,7 @@ async function runRepairPipeline() {
     const boardsWithoutImg = boards.filter((sb) => !hasSbImage(sb))
     {
       const concurrency = pipelineConcurrency.value
-      pipelineCurrentStep.value = `正在生成分镜图（并发${concurrency}）...`
+      pipelineCurrentStep.value = `Đang tạo ảnh storyboard (concurrency ${concurrency})...`
       const { paused } = await runConcurrently(boardsWithoutImg, concurrency, async (sb) => {
         await checkPause()
         const stepName = '分镜图 #' + (sb.storyboard_number ?? sb.id)
@@ -7962,7 +7962,7 @@ async function runRepairPipeline() {
           } else await loadSingleStoryboardMedia(sb.id)
         })
         if (ok && typeof ok === 'object' && ok.paused) return { paused: true }
-      }, { getLabel: (sb) => '分镜图 #' + (sb.storyboard_number ?? sb.id) })
+      }, { getLabel: (sb) => 'Ảnh storyboard #' + (sb.storyboard_number ?? sb.id) })
       if (paused) { await waitForResume() }
     }
     await loadStoryboardMedia()
@@ -7977,12 +7977,12 @@ async function runRepairPipeline() {
     })
     {
       const concurrency = pipelineVideoConcurrency.value
-      pipelineCurrentStep.value = `正在生成分镜视频（并发${concurrency}）...`
+      pipelineCurrentStep.value = `Đang tạo video storyboard (concurrency ${concurrency})...`
       const { paused } = await runConcurrently(boards2, concurrency, async (sb) => {
         await checkPause()
         generatingSbVideoIds.add(sb.id)
         try {
-          const stepName = '分镜视频 #' + (sb.storyboard_number ?? sb.id)
+          const stepName = 'Video storyboard #' + (sb.storyboard_number ?? sb.id)
           const ok = await pipelineWithRetry(stepName, async () => {
             const universal = isSbUniversalMode(sb.id)
             const omniRefs = universal ? collectSbOmniReferenceAbsoluteUrls(sb) : []
@@ -8008,7 +8008,7 @@ async function runRepairPipeline() {
               duration: getSbVideoDurationForApi(sb),
             })
             if (res?.task_id) {
-              const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, '分镜视频')
+              const meta = buildSbGenMeta(sb, GEN_RESOURCE.SB_VIDEO, 'Video storyboard')
               const result = await pollTaskWithPause(res.task_id, () => loadSingleStoryboardMedia(sb.id), meta)
               if (result?.paused) return { paused: true }
               if (result?.error) throw new Error(result.error)
@@ -8018,31 +8018,31 @@ async function runRepairPipeline() {
         } finally {
           generatingSbVideoIds.delete(sb.id)
         }
-      }, { getLabel: (sb) => '分镜视频 #' + (sb.storyboard_number ?? sb.id) })
+      }, { getLabel: (sb) => 'Video storyboard #' + (sb.storyboard_number ?? sb.id) })
       if (paused) { await waitForResume() }
     }
 
     // 4. 生成整集视频（合成整个视频）
     await checkPause()
-    pipelineCurrentStep.value = '正在生成整集视频...'
+    pipelineCurrentStep.value = 'Đang tạo video cả tập...'
     try {
       const result = await dramaAPI.finalizeEpisode(episodeId, getFinalizeMergeOptions())
       if (result?.task_id != null) {
         const pollResult = await pollTaskWithPause(result.task_id, () => loadDrama())
         if (pollResult?.paused) { await waitForResume(); return }
-        if (pollResult?.error) addPipelineError('生成整集视频', pollResult.error)
+        if (pollResult?.error) addPipelineError('Tạo video cả tập', pollResult.error)
         else await pipelineRest()
       } else {
-        addPipelineError('生成整集视频', result?.message || '本集没有可合成的视频片段')
+        addPipelineError('Tạo video cả tập', result?.message || 'Tập này không có đoạn video để ghép')
       }
     } catch (e) {
-      addPipelineError('生成整集视频', e.message || String(e))
+      addPipelineError('Tạo video cả tập', e.message || String(e))
     }
 
-    pipelineCurrentStep.value = '补全并生成流程已执行完成'
-    ElMessage.success('修复缺失流程已执行完成')
+    pipelineCurrentStep.value = 'Luồng bổ sung và tạo đã hoàn tất'
+    ElMessage.success('Luồng sửa thiếu đã hoàn tất')
   } catch (e) {
-    addPipelineError('流程', e.message || String(e))
+    addPipelineError('Luồng', e.message || String(e))
   }
 }
 
@@ -8359,7 +8359,7 @@ html.light .btn-theme {
   --el-button-hover-border-color: rgba(99, 102, 241, 0.3);
   --el-button-hover-text-color: #4f46e5;
 }
-/* ===== 左侧固定侧边栏 ===== */
+/* ===== Sidebar cố định bên trái ===== */
 .quick-nav {
   position: fixed;
   left: 0;
@@ -8402,7 +8402,7 @@ html.light .quick-nav {
   .main { padding: 16px 12px 48px; }
   .asset-list-two { grid-template-columns: 1fr; }
 }
-/* 当前任务面板 */
+/* Panel task hiện tại */
 .atp-panel {
   margin-top: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
@@ -8511,7 +8511,7 @@ html.light .quick-nav {
   color: #71717a;
   padding: 2px 10px 2px 19px;
 }
-/* 折叠态任务徽章 */
+/* Badge task khi thu gọn */
 .atp-collapsed-badge {
   display: flex;
   flex-direction: column;
@@ -8892,7 +8892,7 @@ html.light .section-title { color: #1e1b4b; }
   margin-bottom: 4px;
   word-break: break-all;
 }
-/* 阶段间倒计时 */
+/* Đếm ngược giữa các giai đoạn */
 .pipeline-countdown {
   display: flex;
   align-items: flex-start;
@@ -8946,7 +8946,7 @@ html.light .section-title { color: #1e1b4b; }
   font-size: 12px;
   color: var(--el-color-warning);
 }
-/* 批量生成分镜图/视频 */
+/* Tạo hàng loạt ảnh/video storyboard */
 .sb-batch-actions {
   display: flex;
   align-items: center;
@@ -9004,7 +9004,7 @@ html.light .section-title { color: #1e1b4b; }
   margin-bottom: 3px;
   word-break: break-all;
 }
-/* 角色/场景/道具 → 影响的分镜 */
+/* Nhân vật/scene/đạo cụ -> storyboard bị ảnh hưởng */
 .asset-storyboard-link {
   display: flex;
   align-items: center;
@@ -9066,7 +9066,7 @@ html.light .section-title { color: #1e1b4b; }
   margin-left: 4px;
   flex-shrink: 0;
 }
-/* 参考图上传区（添加角色/道具/场景弹窗顶部） */
+/* Vùng tải ảnh tham chiếu (trên đầu dialog thêm nhân vật/đạo cụ/scene) */
 .ref-image-zone {
   display: flex;
   align-items: center;
@@ -9115,7 +9115,7 @@ html.light .section-title { color: #1e1b4b; }
   gap: 8px;
 }
 
-/* 资源管理大面板 + 可折叠标题 */
+/* Panel quản lý tài nguyên + tiêu đề có thể thu gọn */
 .resource-panel {
   padding: 0;
   overflow: hidden;
@@ -9357,7 +9357,7 @@ html.light .section-desc { color: #6b7280; }
 .asset-item-left-right .asset-name span { flex: 1; min-width: 0; }
 .btn-delete-icon { flex-shrink: 0; padding: 2px 4px !important; opacity: 0.45; transition: opacity 0.15s; }
 .btn-delete-icon:hover { opacity: 1; }
-/* 图片 + 操作按钮 竖向包裹 */
+/* Ảnh + nút thao tác, xếp dọc */
 .asset-cover-wrap {
   display: flex;
   flex-direction: column;
@@ -9372,7 +9372,7 @@ html.light .section-desc { color: #6b7280; }
 }
 .asset-cover-actions .el-button { flex: 1; justify-content: center; }
 html.light .asset-cover-actions { border-top-color: rgba(139,92,246,0.1); }
-/* 额外参考图缩略图条 */
+/* Dải thumbnail ảnh tham chiếu bổ sung */
 .extra-images-strip {
   display: flex;
   flex-wrap: wrap;
@@ -9447,7 +9447,7 @@ html.light .extra-images-strip { background: rgba(139,92,246,0.05); }
   padding: 16px 0;
 }
 
-/* 亮色模式：资源卡片 */
+/* Chế độ sáng: card tài nguyên */
 html.light .asset-item {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(139, 92, 246, 0.12);
@@ -9482,12 +9482,12 @@ html.light .empty-tip {
   color: #9ca3af;
 }
 
-/* 分镜：每行一个，三列布局 */
+/* Storyboard: mỗi hàng một cái, layout 3 cột */
 @keyframes sb-fade-in {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-/* ── 段落分隔标头 ─────────────────────────────── */
+/* ── Header phân đoạn ─────────────────────────────── */
 .segment-header {
   margin: 24px 0 14px;
   position: relative;
@@ -9532,7 +9532,7 @@ html.light .segment-title-text { color: #1e1b4b; }
 html.light .segment-index-badge { color: #7c3aed; background: rgba(124,58,237,0.08); }
 html.light .segment-shot-range { color: #9ca3af; }
 
-/* 左侧导航段落标签 */
+/* Nhãn phân đoạn trong sidebar trái */
 .nav-segment-label {
   display: flex;
   align-items: center;
@@ -9582,7 +9582,7 @@ html.light .storyboard-row:hover {
   transform: translateY(-1px);
 }
 .storyboard-row:last-child { margin-bottom: 0; }
-/* ── 分镜控制栏（卡片外，缩进） ── */
+/* ── Thanh điều khiển storyboard (ngoài card, thụt vào) ── */
 .sb-ctrl-bar {
   display: flex;
   align-items: center;
@@ -9972,7 +9972,7 @@ html.light .sb-ctrl-mode-btn.el-button:hover {
   color: #fff;
   background: #16a34a;
 }
-/* 有四宫格或多图时，image-area 改为纵向滚动布局 */
+/* Khi có lưới 4 ô hoặc nhiều ảnh, image-area chuyển sang layout cuộn dọc */
 .sb-image-area--first-last {
   min-height: 220px;
   max-height: none;
@@ -10059,7 +10059,7 @@ html.light .sb-ctrl-mode-btn.el-button:hover {
   overflow-y: auto;
   max-height: 340px;
 }
-/* 普通多图缩略图条 */
+/* Dải thumbnail đa ảnh thông thường */
 .sb-imgs-strip {
   display: flex;
   flex-direction: row;
@@ -10110,7 +10110,7 @@ html.light .sb-ctrl-mode-btn.el-button:hover {
   background: rgba(0,0,0,0.45);
   pointer-events: none;
 }
-/* 主图容器 */
+/* Container ảnh chính */
 .sb-main-image-wrap {
   display: flex;
   flex-direction: column;
@@ -10118,7 +10118,7 @@ html.light .sb-ctrl-mode-btn.el-button:hover {
   justify-content: center;
   min-height: 80px;
 }
-/* 主图下方提示词预览 */
+/* Preview prompt bên dưới ảnh chính */
 .sb-main-img-prompt {
   width: 100%;
   font-size: 10px;
@@ -10135,9 +10135,9 @@ html.light .sb-ctrl-mode-btn.el-button:hover {
   word-break: break-all;
   cursor: default;
 }
-/* 四宫格整图作为上方预览时稍微缩小 */
+/* Ảnh lưới 4 ô khi làm preview phía trên thì thu nhỏ một chút */
 .sb-quad-preview { max-height: 160px; }
-/* 四宫格拆分中占位 */
+/* Placeholder khi tách lưới 4 ô */
 .quad-splitting-tip {
   display: flex;
   align-items: center;
@@ -10390,7 +10390,7 @@ html.light .sb-video-placeholder {
 .sb-truncated-warning span {
   flex: 1;
 }
-/* 分镜生成中提示条 */
+/* Thanh gợi ý khi đang tạo storyboard */
 .sb-generating-tip {
   display: flex;
   align-items: center;
@@ -10457,7 +10457,7 @@ html.light .sb-video-placeholder {
   font-size: 0.85rem;
   margin: 0 4px;
 }
-/* 解说导出行：避免浅色主题下勾选文案与卡片背景对比度不足 */
+/* Hàng xuất narration: tránh tương phản không đủ giữa text checkbox và nền card ở chế độ sáng */
 .sb-narration-export-row :deep(.el-checkbox__label) {
   color: #e4e4e7;
   font-size: 0.875rem;
@@ -10489,7 +10489,7 @@ html.light .sb-export-srt-btn.el-button--primary.is-plain {
   gap: 8px;
   margin-top: 8px;
 }
-/* 分镜内解说旁白输入框：强制字/底对比，避免主题变量与页面继承冲突导致「看不见字」 */
+/* Input narration/lời dẫn trong storyboard: ép tương phản chữ/nền, tránh conflict theme khiến "không thấy chữ" */
 .sb-narration-input :deep(.el-textarea__inner) {
   color: #e4e4e7 !important;
   background-color: rgba(24, 24, 27, 0.85) !important;
@@ -10533,7 +10533,7 @@ html.light .sb-narration-input :deep(.el-textarea__inner::placeholder) {
   background: #1a1b24;
 }
 
-/* 公共库弹窗 */
+/* Dialog thư viện chung */
 .library-dialog .el-dialog__body { padding-top: 8px; }
 .sd2-cert-dialog .el-dialog__body { padding-top: 10px; }
 .sd2-cert-desc :deep(.el-descriptions__cell) {
@@ -10612,7 +10612,7 @@ html.light .sb-narration-input :deep(.el-textarea__inner::placeholder) {
   color: #5a5a66;
 }
 
-/* 专业帧提示词弹窗 - 干净美观版 */
+/* Dialog prompt frame chuyên nghiệp - bản gọn đẹp */
 .sb-frame-prompt-clean .el-message-box__content {
   padding: 16px 20px 8px;
 }
@@ -10650,7 +10650,7 @@ html.light .sb-prompt-meta-line {
   color: #64748b;
 }
 
-/* 首尾帧提示词编辑器 */
+/* Editor prompt frame đầu/cuối */
 .frame-prompt-editor-body {
   padding: 4px 0;
 }
@@ -10669,7 +10669,7 @@ html.light .frame-prompt-editor-hint {
   line-height: 1.65;
 }
 
-/* 空间布局锚点展示（首尾帧一致性合同） */
+/* Hiển thị anchor bố cục không gian (hợp đồng nhất quán frame đầu/cuối) */
 .frame-layout-anchor {
   background: #f8fafc;
   border: 1px solid #e2e8f0;

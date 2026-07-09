@@ -8,42 +8,42 @@
     @wheel.stop
   >
     <div class="panel-head">
-      <span>剧本 · 第 {{ episode?.episode_number ?? '?' }} 集</span>
+      <span>Kịch bản · Tập {{ episode?.episode_number ?? '?' }}</span>
       <div class="head-right">
         <span v-if="busyLabel" class="busy-tag">{{ busyLabel }}</span>
-        <el-button link size="small" @click.stop="closePanel">收起</el-button>
+        <el-button link size="small" @click.stop="closePanel">Thu gọn</el-button>
       </div>
     </div>
 
-    <p class="flow-hint">创作起点：编写剧本 → 提取角色/场景/道具 → AI 生成分镜 → 生图/生视频</p>
+    <p class="flow-hint">Điểm bắt đầu: viết kịch bản → trích nhân vật/scene/đạo cụ → AI tạo storyboard → tạo ảnh/video</p>
 
     <el-form label-position="left" label-width="44px" size="small" class="compact-form">
-      <el-form-item label="集标题">
-        <el-input v-model="form.title" placeholder="第 N 集" />
+      <el-form-item label="Tiêu đề tập">
+        <el-input v-model="form.title" placeholder="Tập N" />
       </el-form-item>
-      <el-form-item label="剧本">
+      <el-form-item label="Kịch bản">
         <el-input
           v-model="form.scriptContent"
           type="textarea"
           :rows="6"
           resize="vertical"
-          placeholder="在此粘贴或编写本集剧本…"
+          placeholder="Dán hoặc soạn kịch bản của tập này ở đây…"
           class="script-textarea"
         />
       </el-form-item>
     </el-form>
 
     <div class="stats-row">
-      <span>素材：{{ charCount }} 角色 · {{ sceneCount }} 场景 · {{ propCount }} 道具</span>
-      <span class="len">{{ scriptLen }} 字</span>
+      <span>Tư liệu: {{ charCount }} nhân vật · {{ sceneCount }} scene · {{ propCount }} đạo cụ</span>
+      <span class="len">{{ scriptLen }} ký tự</span>
     </div>
 
     <div class="panel-actions">
-      <el-button size="small" type="primary" :loading="saving" @click.stop="onSave">保存剧本</el-button>
-      <el-button size="small" :loading="extracting" @click.stop="onExtractChars">提取角色</el-button>
-      <el-button size="small" :loading="extracting" @click.stop="onExtractScenes">提取场景</el-button>
-      <el-button size="small" :loading="extracting" @click.stop="onExtractProps">提取道具</el-button>
-      <el-button size="small" type="warning" :loading="extracting" @click.stop="onExtractAll">一键提取</el-button>
+      <el-button size="small" type="primary" :loading="saving" @click.stop="onSave">Lưu kịch bản</el-button>
+      <el-button size="small" :loading="extracting" @click.stop="onExtractChars">Trích nhân vật</el-button>
+      <el-button size="small" :loading="extracting" @click.stop="onExtractScenes">Trích scene</el-button>
+      <el-button size="small" :loading="extracting" @click.stop="onExtractProps">Trích đạo cụ</el-button>
+      <el-button size="small" type="warning" :loading="extracting" @click.stop="onExtractAll">Trích tất cả</el-button>
     </div>
   </div>
 </template>
@@ -77,7 +77,7 @@ const busyLabel = computed(() => {
 })
 
 function syncForm(ep) {
-  form.title = ep?.title || `第${ep?.episode_number ?? ''}集`
+  form.title = ep?.title || `Tập ${ep?.episode_number ?? ''}`
   form.scriptContent = ep?.script_content || ''
 }
 
@@ -93,7 +93,7 @@ function getScriptApi() {
 
 async function onSave() {
   if (!form.scriptContent.trim()) {
-    ElMessage.warning('请先填写剧本内容')
+    ElMessage.warning('Vui lòng nhập nội dung kịch bản trước')
     return
   }
   saving.value = true
@@ -103,7 +103,7 @@ async function onSave() {
       title: form.title,
     })
   } catch (e) {
-    ElMessage.error(e?.message || '保存失败')
+    ElMessage.error(e?.message || 'Lưu thất bại')
   } finally {
     saving.value = false
   }
@@ -136,7 +136,7 @@ async function onExtractProps() {
 
 async function onExtractAll() {
   if (!form.scriptContent.trim()) {
-    ElMessage.warning('请先填写剧本')
+    ElMessage.warning('Vui lòng nhập kịch bản trước')
     return
   }
   await runExtract(() =>

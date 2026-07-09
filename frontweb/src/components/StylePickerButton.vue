@@ -1,6 +1,6 @@
 <template>
   <div class="style-picker-wrap">
-    <!-- 触发按钮，外观与 el-select 一致 -->
+    <!-- Nút trigger, giống el-select -->
     <div
       class="style-picker-trigger"
       :class="{ 'has-value': !!modelValue }"
@@ -17,10 +17,10 @@
       </span>
     </div>
 
-    <!-- 选择弹窗 -->
+    <!-- Dialog chọn -->
     <el-dialog
       v-model="visible"
-      title="选择生成风格"
+      title="Chọn phong cách"
       width="90vw"
       style="max-width: 1100px"
       class="style-picker-dialog"
@@ -30,14 +30,14 @@
       <div class="spd-search">
         <el-input
           v-model="search"
-          placeholder="搜索风格名称..."
+          placeholder="Tìm phong cách..."
           clearable
           style="width: 240px"
         >
           <template #prefix><el-icon><Search /></el-icon></template>
         </el-input>
         <span v-if="modelValue" class="spd-selected-hint">
-          已选：{{ selectedOption?.label }}
+          Đã chọn: {{ selectedOption?.label }}
         </span>
       </div>
 
@@ -67,12 +67,12 @@
             </div>
           </div>
         </template>
-        <div v-if="filteredGroups.length === 0" class="spd-empty">没有匹配的风格</div>
+        <div v-if="filteredGroups.length === 0" class="spd-empty">Không có phong cách phù hợp</div>
       </div>
 
       <template #footer>
-        <el-button @click="clearAndClose">清除选择</el-button>
-        <el-button type="primary" @click="visible = false">完成</el-button>
+        <el-button @click="clearAndClose">Xoá lựa chọn</el-button>
+        <el-button type="primary" @click="visible = false">Hoàn tất</el-button>
       </template>
     </el-dialog>
   </div>
@@ -85,7 +85,7 @@ import { ArrowDown, CircleClose, Search } from '@element-plus/icons-vue'
 const props = defineProps({
   modelValue: { type: String, default: '' },
   options: { type: Array, default: () => [] },
-  placeholder: { type: String, default: '图片/视频风格' },
+  placeholder: { type: String, default: 'Phong cách ảnh/video' },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -184,7 +184,7 @@ function clearAndClose() {
   color: var(--el-color-primary);
 }
 
-/* 弹窗内部 */
+/* Nội dung dialog */
 .spd-search {
   display: flex;
   align-items: center;

@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const NAV_AUTO_COLLAPSE_WIDTH = 960
 
 /**
- * 左侧导航折叠/展开逻辑
+ * Logic thu gọn/mở rộng navigation bên trái
  */
 export function useNavigation() {
   const navCollapsed = ref(false)

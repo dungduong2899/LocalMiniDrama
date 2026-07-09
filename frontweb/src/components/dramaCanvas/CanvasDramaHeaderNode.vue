@@ -1,11 +1,11 @@
 <template>
   <div class="canvas-drama-header">
-    <div class="title">{{ data.drama?.title || '未命名项目' }}</div>
+    <div class="title">{{ data.drama?.title || 'Dự án chưa đặt tên' }}</div>
     <div class="meta">
-      <span v-if="data.drama?.style">风格 {{ data.drama.style }}</span>
-      <span>{{ (data.drama?.episodes || []).length }} 集</span>
-      <span>{{ assetCount }} 素材</span>
-      <span>{{ storyboardCount }} 分镜</span>
+      <span v-if="data.drama?.style">Phong cách {{ data.drama.style }}</span>
+      <span>{{ (data.drama?.episodes || []).length }} tập</span>
+      <span>{{ assetCount }} tư liệu</span>
+      <span>{{ storyboardCount }} storyboard</span>
     </div>
   </div>
 </template>
