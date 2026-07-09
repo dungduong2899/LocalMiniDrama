@@ -40,6 +40,9 @@
               <el-button size="small" @click="playAudio(v.sample_url)">
                 <el-icon><VideoPlay /></el-icon>试听
               </el-button>
+              <el-button size="small" @click="downloadAudio(v.sample_url, v.name)">
+                <el-icon><Download /></el-icon>下载
+              </el-button>
               <el-button
                 size="small"
                 :type="v.id === defaultNarrationId ? 'warning' : 'default'"
@@ -93,6 +96,9 @@
           <template v-if="designPreview">
             <el-form-item label="试听结果">
               <el-button @click="playAudio(designPreview.sample_url)"><el-icon><VideoPlay /></el-icon>播放</el-button>
+              <el-button @click="downloadAudio(designPreview.sample_url, designForm.name || 'design_preview')">
+                <el-icon><Download /></el-icon>下载
+              </el-button>
             </el-form-item>
             <el-form-item label="名称"><el-input v-model="designForm.name" placeholder="展示名" /></el-form-item>
             <el-form-item label="描述"><el-input v-model="designForm.description" type="textarea" :rows="2" /></el-form-item>
@@ -129,6 +135,12 @@
           <el-form-item label="测试文本"><el-input v-model="testText" type="textarea" :rows="3" placeholder="输入任意文本" /></el-form-item>
           <el-form-item>
             <el-button type="primary" :loading="testing" @click="doTest">试听</el-button>
+            <el-button v-if="testSampleUrl" :loading="downloading" @click="downloadTestSample">
+              <el-icon><Download /></el-icon>下载 MP3
+            </el-button>
+          </el-form-item>
+          <el-form-item v-if="testSampleUrl" label="试听结果">
+            <audio controls :src="testSampleUrl" style="width: 100%; max-width: 480px" />
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -139,7 +151,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, VideoPlay } from '@element-plus/icons-vue'
+import { ArrowLeft, VideoPlay, Download } from '@element-plus/icons-vue'
 import { voiceLibraryAPI } from '@/api/voiceLibrary'
 
 const activeTab = ref('library')
@@ -198,6 +210,32 @@ function playAudio(url) {
     ElMessage.error('播放失败')
     if (previewAudio === a) previewAudio = null
   })
+}
+
+function sanitizeFilename(s) {
+  return String(s || 'voice').replace(/[^\w一-龥.-]+/g, '_').slice(0, 80) || 'voice'
+}
+
+async function downloadAudio(url, filename) {
+  if (!url) { ElMessage.warning('无音频可下载'); return }
+  try {
+    const resp = await fetch(url)
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    const blob = await resp.blob()
+    // Original file may be .wav (OmniVoice) or .mp3 (ElevenLabs sample); infer from URL.
+    const m = /\.(mp3|wav|m4a|ogg|flac)(?:\?|$)/i.exec(url)
+    const ext = m ? m[1].toLowerCase() : 'mp3'
+    const objUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objUrl
+    a.download = `${sanitizeFilename(filename)}.${ext}`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(objUrl), 60_000)
+  } catch (e) {
+    ElMessage.error(e.message || '下载失败')
+  }
 }
 
 async function confirmDeleteVoice(voice) {
@@ -307,6 +345,8 @@ async function doDesignSave() {
 const testVoiceId = ref(null)
 const testText = ref('')
 const testing = ref(false)
+const testSampleUrl = ref('')
+const downloading = ref(false)
 
 async function doTest() {
   if (!testVoiceId.value) { ElMessage.warning('请选择语音'); return }
@@ -314,11 +354,25 @@ async function doTest() {
   testing.value = true
   try {
     const data = await voiceLibraryAPI.test(testVoiceId.value, testText.value.trim())
+    testSampleUrl.value = data.sample_url
     playAudio(data.sample_url)
   } catch (e) {
     ElMessage.error(e.message || '试听失败')
   } finally {
     testing.value = false
+  }
+}
+
+async function downloadTestSample() {
+  if (!testSampleUrl.value) return
+  downloading.value = true
+  try {
+    const voice = voices.value.find((v) => v.id === testVoiceId.value)
+    const voiceLabel = voice ? voice.name : `voice-${testVoiceId.value}`
+    const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
+    await downloadAudio(testSampleUrl.value, `${voiceLabel}_${stamp}`)
+  } finally {
+    downloading.value = false
   }
 }
 
