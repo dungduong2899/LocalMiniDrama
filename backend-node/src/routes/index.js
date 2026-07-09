@@ -304,6 +304,8 @@ function setupRouter(cfg, db, log) {
 
   // ---------- voice-library ----------
   r.get('/voice-library', voiceLibrary.list);
+  r.get('/voice-library/default-narration', voiceLibrary.getDefaultNarration);
+  r.put('/voice-library/default-narration', voiceLibrary.setDefaultNarration);
   r.post('/voice-library/import-elevenlabs', voiceLibrary.importElevenLabs);
   r.post('/voice-library/design/preview', voiceLibrary.designPreview);
   r.post('/voice-library/design/save', voiceLibrary.designSave);

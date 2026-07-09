@@ -26,7 +26,10 @@
         </div>
         <div v-loading="voicesLoading" class="voice-grid">
           <div v-for="v in voices" :key="v.id" class="voice-card">
-            <div class="voice-card-name">{{ v.name }}</div>
+            <div class="voice-card-name">
+              {{ v.name }}
+              <el-tag v-if="v.id === defaultNarrationId" size="small" type="warning" class="narr-badge">🎙 默认旁白</el-tag>
+            </div>
             <div class="voice-card-meta">
               <el-tag v-if="v.gender" size="small">{{ v.gender }}</el-tag>
               <el-tag v-if="v.age_range" size="small" type="info">{{ v.age_range }}</el-tag>
@@ -36,6 +39,13 @@
             <div class="voice-card-actions">
               <el-button size="small" @click="playAudio(v.sample_url)">
                 <el-icon><VideoPlay /></el-icon>试听
+              </el-button>
+              <el-button
+                size="small"
+                :type="v.id === defaultNarrationId ? 'warning' : 'default'"
+                @click="toggleDefaultNarration(v)"
+              >
+                {{ v.id === defaultNarrationId ? '取消默认旁白' : '设为默认旁白' }}
               </el-button>
               <el-button size="small" type="danger" plain @click="confirmDeleteVoice(v)">删除</el-button>
             </div>
@@ -138,6 +148,7 @@ const voices = ref([])
 const voicesLoading = ref(false)
 const filterGender = ref('')
 const filterSource = ref('')
+const defaultNarrationId = ref(null)
 
 function sourceLabel(source) {
   if (source === 'elevenlabs') return 'ElevenLabs 克隆'
@@ -150,10 +161,23 @@ async function loadVoices() {
   try {
     const data = await voiceLibraryAPI.list({ gender: filterGender.value || undefined, source: filterSource.value || undefined })
     voices.value = data?.items || []
+    const found = voices.value.find((v) => v.is_default_narration)
+    defaultNarrationId.value = found ? found.id : null
   } catch (e) {
     ElMessage.error(e.message || '加载语音库失败')
   } finally {
     voicesLoading.value = false
+  }
+}
+
+async function toggleDefaultNarration(voice) {
+  const isCurrent = voice.id === defaultNarrationId.value
+  try {
+    const data = await voiceLibraryAPI.setDefaultNarration(isCurrent ? null : voice.id)
+    defaultNarrationId.value = data?.voice?.id || null
+    ElMessage.success(isCurrent ? '已取消默认旁白' : `已设「${voice.name}」为默认旁白`)
+  } catch (e) {
+    ElMessage.error(e.message || '设置默认旁白失败')
   }
 }
 
@@ -311,7 +335,8 @@ onMounted(() => {
 .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
 .voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .voice-card { border: 1px solid var(--el-border-color); border-radius: 8px; padding: 14px; }
-.voice-card-name { font-weight: 600; margin-bottom: 6px; }
+.voice-card-name { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.voice-card-name .narr-badge { font-size: 11px; }
 .voice-card-meta { display: flex; gap: 6px; margin-bottom: 8px; }
 .voice-card-desc { color: var(--el-text-color-secondary); font-size: 13px; min-height: 36px; margin-bottom: 10px; }
 .voice-card-actions { display: flex; gap: 8px; }

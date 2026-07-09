@@ -226,6 +226,9 @@ async function runMergedEpisodePostProcess(db, log, opts) {
   const tempRoot = path.join(require('os').tmpdir(), 'drama-merged-post', String(episodeId || 0), String(Date.now()));
   fs.mkdirSync(tempRoot, { recursive: true });
   const ttsService = require('./ttsService');
+  const voiceLibraryService = require('./voiceLibraryService');
+  const defaultNarrationVoice = voiceLibraryService.getDefaultNarrationVoice(db);
+  const defaultNarrationVoiceId = defaultNarrationVoice ? defaultNarrationVoice.id : null;
 
   try {
     let alignedAudioPath = null;
@@ -281,6 +284,7 @@ async function runMergedEpisodePostProcess(db, log, opts) {
                 text: narrText,
                 storyboard_id: null,
                 storage_base: storageRoot,
+                voice_library_id: defaultNarrationVoiceId,
               });
             } catch (e) {
               log.warn('merged post: narration TTS failed', { segment: i, error: e.message });

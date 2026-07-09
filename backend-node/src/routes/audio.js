@@ -18,6 +18,12 @@ function resolveVoiceLibraryIdFromStoryboard(db, storyboardId) {
   return voice ? voice.id : null;
 }
 
+// Narration voice: no character context, so use the voice marked is_default_narration in voice_library.
+function resolveDefaultNarrationVoiceId(db) {
+  const row = db.prepare('SELECT id FROM voice_library WHERE is_default_narration = 1 AND deleted_at IS NULL AND is_active = 1 LIMIT 1').get();
+  return row ? row.id : null;
+}
+
 function routes(db, log, cfg) {
   function getStoragePath() {
     const loadConfig = require('../config').loadConfig;
@@ -51,9 +57,11 @@ function routes(db, log, cfg) {
           return response.badRequest(res, '分镜对白为空，无法合成语音');
         }
       }
-      // Dialogue: dùng voice của character (nếu đã assign qua AI recommend). Narration: chưa hỗ trợ voice-cast.
+      // Dialogue: character's assigned voice. Narration: default narration voice (no character context).
       const voiceLibraryId = bodyVoiceLibraryId
-        || (kind === 'dialogue' ? resolveVoiceLibraryIdFromStoryboard(db, storyboard_id) : null);
+        || (kind === 'dialogue'
+              ? resolveVoiceLibraryIdFromStoryboard(db, storyboard_id)
+              : resolveDefaultNarrationVoiceId(db));
       try {
         const ttsService = require('../services/ttsService');
         const result = await ttsService.synthesize(db, log, {

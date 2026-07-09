@@ -228,6 +228,9 @@ async function runNarrationSubtitlePostProcess(db, log, opts) {
   const tempRoot = path.join(require('os').tmpdir(), 'drama-narr-post', String(episodeId || 0), String(Date.now()));
   fs.mkdirSync(tempRoot, { recursive: true });
   const ttsService = require('./ttsService');
+  const voiceLibraryService = require('./voiceLibraryService');
+  const defaultNarrationVoice = voiceLibraryService.getDefaultNarrationVoice(db);
+  const defaultNarrationVoiceId = defaultNarrationVoice ? defaultNarrationVoice.id : null;
 
   try {
     for (let i = 0; i < scenes.length; i++) {
@@ -259,6 +262,7 @@ async function runNarrationSubtitlePostProcess(db, log, opts) {
             text,
             storyboard_id: null,
             storage_base: storageRoot,
+            voice_library_id: defaultNarrationVoiceId,
           });
         } catch (e) {
           log.warn('narration post: TTS failed', { segment: i, error: e.message });

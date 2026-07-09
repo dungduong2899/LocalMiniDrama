@@ -19,5 +19,11 @@ export const voiceLibraryAPI = {
   },
   delete(id, force) {
     return request.delete(`/voice-library/${id}`, { params: force ? { force: 1 } : {} })
+  },
+  getDefaultNarration() {
+    return request.get('/voice-library/default-narration')
+  },
+  setDefaultNarration(voiceId) {
+    return request.put('/voice-library/default-narration', { voice_id: voiceId })
   }
 }

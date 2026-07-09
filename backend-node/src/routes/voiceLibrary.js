@@ -65,6 +65,30 @@ function routes(db, cfg, log) {
         response.badRequest(res, err.message);
       }
     },
+    getDefaultNarration: (req, res) => {
+      try {
+        const voice = voiceLibraryService.getDefaultNarrationVoice(db);
+        response.success(res, { voice });
+      } catch (err) {
+        log.error('voice-library default-narration get', { error: err.message });
+        response.internalError(res, err.message);
+      }
+    },
+    setDefaultNarration: (req, res) => {
+      try {
+        const voiceId = req.body?.voice_id;
+        if (voiceId === null || voiceId === undefined || voiceId === '') {
+          voiceLibraryService.clearDefaultNarrationVoice(db, log);
+          response.success(res, { voice: null });
+          return;
+        }
+        const voice = voiceLibraryService.setDefaultNarrationVoice(db, log, voiceId);
+        response.success(res, { voice });
+      } catch (err) {
+        log.error('voice-library default-narration set', { error: err.message });
+        response.badRequest(res, err.message);
+      }
+    },
     delete: (req, res) => {
       try {
         const force = req.query.force === '1' || req.query.force === 'true';

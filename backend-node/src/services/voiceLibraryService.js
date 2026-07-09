@@ -23,9 +23,36 @@ function rowToVoice(r) {
     sample_url: r.sample_url || (r.ref_audio_path ? '/static/' + r.ref_audio_path : ''),
     language: r.language,
     is_active: !!r.is_active,
+    is_default_narration: !!r.is_default_narration,
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
+}
+
+function getDefaultNarrationVoice(db) {
+  const row = db.prepare('SELECT * FROM voice_library WHERE is_default_narration = 1 AND deleted_at IS NULL AND is_active = 1 LIMIT 1').get();
+  return row ? rowToVoice(row) : null;
+}
+
+function setDefaultNarrationVoice(db, log, voiceId) {
+  const id = Number(voiceId);
+  if (!id) throw new Error('voice_id 不能为空');
+  const target = db.prepare('SELECT id FROM voice_library WHERE id = ? AND deleted_at IS NULL AND is_active = 1').get(id);
+  if (!target) throw new Error('语音不存在或未激活');
+  const now = new Date().toISOString();
+  const tx = db.transaction(() => {
+    db.prepare('UPDATE voice_library SET is_default_narration = 0, updated_at = ? WHERE is_default_narration = 1').run(now);
+    db.prepare('UPDATE voice_library SET is_default_narration = 1, updated_at = ? WHERE id = ?').run(now, id);
+  });
+  tx();
+  log.info('Voice library default narration updated', { voice_id: id });
+  return getVoice(db, id);
+}
+
+function clearDefaultNarrationVoice(db, log) {
+  const now = new Date().toISOString();
+  db.prepare('UPDATE voice_library SET is_default_narration = 0, updated_at = ? WHERE is_default_narration = 1').run(now);
+  log.info('Voice library default narration cleared');
 }
 
 function listVoices(db, filters = {}) {
@@ -202,5 +229,8 @@ module.exports = {
   previewDesign,
   saveDesign,
   testSynthesize,
+  getDefaultNarrationVoice,
+  setDefaultNarrationVoice,
+  clearDefaultNarrationVoice,
   DEFAULT_DESIGN_SAMPLE_TEXT,
 };
