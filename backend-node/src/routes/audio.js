@@ -1,6 +1,23 @@
 const response = require('../response');
 const path = require('path');
 
+// storyboards.characters lưu JSON array [id, id, ...]; character đầu tiên là speaker chính của dialogue.
+// Nếu character đó có voice_id trỏ tới voice_library đang active, trả về id đó cho omnivoice ref_audio cloning.
+function resolveVoiceLibraryIdFromStoryboard(db, storyboardId) {
+  if (!storyboardId) return null;
+  const sb = db.prepare('SELECT characters FROM storyboards WHERE id = ? AND deleted_at IS NULL').get(Number(storyboardId));
+  if (!sb || !sb.characters) return null;
+  let charIds;
+  try { charIds = JSON.parse(sb.characters); } catch (_) { return null; }
+  if (!Array.isArray(charIds) || charIds.length === 0) return null;
+  const primary = Number(charIds[0]);
+  if (!primary) return null;
+  const row = db.prepare('SELECT voice_id FROM characters WHERE id = ? AND deleted_at IS NULL').get(primary);
+  if (!row || !row.voice_id) return null;
+  const voice = db.prepare('SELECT id FROM voice_library WHERE id = ? AND deleted_at IS NULL AND is_active = 1').get(Number(row.voice_id));
+  return voice ? voice.id : null;
+}
+
 function routes(db, log, cfg) {
   function getStoragePath() {
     const loadConfig = require('../config').loadConfig;
@@ -13,7 +30,7 @@ function routes(db, log, cfg) {
   return {
     /** 为单条分镜生成 TTS：对白 → audio_local_path；旁白 → narration_audio_local_path（body.tts_kind === 'narration'） */
     extract: async (req, res) => {
-      const { storyboard_id, text, tts_kind } = req.body || {};
+      const { storyboard_id, text, tts_kind, voice_library_id: bodyVoiceLibraryId } = req.body || {};
       if (!text && !storyboard_id) return response.badRequest(res, '请提供 storyboard_id 或 text');
       const kind = String(tts_kind || 'dialogue').toLowerCase() === 'narration' ? 'narration' : 'dialogue';
       let ttsText = text;
@@ -34,12 +51,16 @@ function routes(db, log, cfg) {
           return response.badRequest(res, '分镜对白为空，无法合成语音');
         }
       }
+      // Dialogue: dùng voice của character (nếu đã assign qua AI recommend). Narration: chưa hỗ trợ voice-cast.
+      const voiceLibraryId = bodyVoiceLibraryId
+        || (kind === 'dialogue' ? resolveVoiceLibraryIdFromStoryboard(db, storyboard_id) : null);
       try {
         const ttsService = require('../services/ttsService');
         const result = await ttsService.synthesize(db, log, {
           text: ttsText,
           storyboard_id: storyboard_id || null,
           storage_base: getStoragePath(),
+          voice_library_id: voiceLibraryId,
         });
         if (storyboard_id && result.local_path) {
           const now = new Date().toISOString();
@@ -76,12 +97,14 @@ function routes(db, log, cfg) {
           results.push({ storyboard_id: sbId, error: '对白为空' });
           continue;
         }
+        const voiceLibraryId = resolveVoiceLibraryIdFromStoryboard(db, row.id);
         try {
           const ttsService = require('../services/ttsService');
           const result = await ttsService.synthesize(db, log, {
             text: row.dialogue,
             storyboard_id: row.id,
             storage_base: storagePath,
+            voice_library_id: voiceLibraryId,
           });
           if (result.local_path) {
             const now = new Date().toISOString();
