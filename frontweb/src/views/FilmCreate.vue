@@ -16,7 +16,7 @@
           placeholder="Chọn tập"
           clearable
           size="small"
-          style="width: 130px"
+          style="width: 200px"
           @change="onEpisodeSelect"
         >
           <el-option
@@ -26,21 +26,19 @@
             :value="ep.id"
           />
         </el-select>
-        <el-button v-if="dramaId" class="btn-back-drama" @click="router.push('/drama/' + dramaId)">
-          <el-icon><ArrowLeft /></el-icon>
-          Quay lại phim
+        <el-button v-if="dramaId" class="btn-back-drama btn-icon-only" title="Quay lại phim" @click="router.push('/drama/' + dramaId)">
+          <el-icon><ArrowLeft /></el-icon><span>Quay lại phim</span>
         </el-button>
         <el-button v-if="dramaId" type="primary" plain class="btn-canvas-mode" @click="goCanvasMode">
           <el-icon><Grid /></el-icon>
           Chế độ Canvas
         </el-button>
-        <div class="header-actions">
-          <el-button class="btn-theme" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
-            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? 'Sáng' : 'Tối' }}
-          </el-button><el-button class="btn-ai-config" @click="showAiConfigDialog = true">
-            <el-icon><Setting /></el-icon>
-            Cấu hình AI
+        <div class="header-actions header-actions-group">
+          <el-button class="btn-theme btn-icon-only" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
+            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon><span>{{ isDark ? 'Sáng' : 'Tối' }}</span>
+          </el-button>
+          <el-button class="btn-ai-config btn-icon-only" title="Cấu hình AI" @click="showAiConfigDialog = true">
+            <el-icon><Setting /></el-icon><span>Cấu hình AI</span>
           </el-button>
         </div>
       </div>
@@ -8264,8 +8262,11 @@ html.light .header {
 .header-inner {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .logo {
   margin: 0;
   cursor: pointer;

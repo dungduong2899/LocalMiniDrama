@@ -6,40 +6,35 @@
           <span class="logo-main">Trợ lý phim ngắn</span>
           <span class="logo-sub">LocalMiniDrama</span>
         </h1>
-        <!-- 公共资源库（左侧，靛紫调） -->
-        <div class="header-library">
-          <el-button class="btn-library" @click="showCharLibrary = true">
-            <el-icon><User /></el-icon>Tư liệu nhân vật
+        <!-- Nhóm thư viện tư liệu (icon-only) -->
+        <div class="header-actions-group group-library" title="Thư viện tư liệu chung">
+          <el-button class="btn-library btn-icon-only" title="Tư liệu nhân vật" @click="showCharLibrary = true">
+            <el-icon><User /></el-icon><span>Nhân vật</span>
           </el-button>
-          <el-button class="btn-library" @click="showSceneLibrary = true">
-            <el-icon><PictureFilled /></el-icon>Tư liệu scene
+          <el-button class="btn-library btn-icon-only" title="Tư liệu scene" @click="showSceneLibrary = true">
+            <el-icon><PictureFilled /></el-icon><span>Scene</span>
           </el-button>
-          <el-button class="btn-library" @click="showPropLibrary = true">
-            <el-icon><Box /></el-icon>Tư liệu đạo cụ
+          <el-button class="btn-library btn-icon-only" title="Tư liệu đạo cụ" @click="showPropLibrary = true">
+            <el-icon><Box /></el-icon><span>Đạo cụ</span>
           </el-button>
         </div>
-        <!-- 右侧操作区 -->
-        <div class="header-actions">
-          <!-- 暂时隐藏，功能待完善 -->
-          <!-- <el-button class="btn-library" title="Sáng tạo tự do" @click="$router.push('/free-create')">
-            <el-icon><MagicStick /></el-icon>Sáng tạo tự do
+        <!-- Nhóm cài đặt & tiện ích (icon-only) -->
+        <div class="header-actions header-actions-group group-settings">
+          <el-button v-if="!vendorLockEnabled" class="btn-wechat btn-icon-only" title="Quét mã liên hệ tác giả (WeChat)" @click="showWechat = true">
+            <el-icon><ChatDotSquare /></el-icon><span>WeChat</span>
           </el-button>
-          <el-button class="btn-library" title="Thư viện media" @click="$router.push('/media-library')">
-            <el-icon><Files /></el-icon>Thư viện tư liệu
-          </el-button> -->
-          <el-button v-if="!vendorLockEnabled" class="btn-wechat" title="Quét mã liên hệ tác giả" @click="showWechat = true">
-            <el-icon><ChatDotSquare /></el-icon>WeChat
+          <el-button class="btn-library btn-icon-only" title="Quản lý lồng tiếng" @click="$router.push('/voice-library')">
+            <el-icon><Microphone /></el-icon><span>Voice</span>
           </el-button>
-          <el-button class="btn-library" title="Quản lý lồng tiếng" @click="$router.push('/voice-library')">
-            <el-icon><Microphone /></el-icon>Quản lý lồng tiếng
+          <el-button class="btn-theme btn-icon-only" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
+            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon><span>{{ isDark ? 'Sáng' : 'Tối' }}</span>
           </el-button>
-          <el-button class="btn-theme" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
-            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? 'Sáng' : 'Tối' }}
+          <el-button class="btn-settings btn-icon-only" title="Cấu hình AI" @click="showAiConfigDialog = true">
+            <el-icon><Setting /></el-icon><span>Cấu hình AI</span>
           </el-button>
-          <el-button class="btn-settings" @click="showAiConfigDialog = true">
-            <el-icon><Setting /></el-icon>Cấu hình AI
-          </el-button>
+        </div>
+        <!-- Primary actions (giữ label) -->
+        <div class="header-primary-actions">
           <el-button class="btn-import" :loading="importing" @click="triggerImport">
             <el-icon><Upload /></el-icon>Nhập dự án
           </el-button>
@@ -69,7 +64,7 @@
               <div v-if="exampleList.length > 0" class="action-card-example">
                 <div class="example-hint">
                   <el-icon class="example-hint-icon"><QuestionFilled /></el-icon>
-                  <span class="example-hint-text">Mới bắt đầu? Thử nhập dự án mẫu để trải nghiệm nhanh</span>
+                  <span class="example-hint-text">Thử nhập dự án mẫu để trải nghiệm</span>
                 </div>
                 <div class="example-list">
                   <el-button
@@ -103,10 +98,20 @@
               <div class="project-badges">
                 <span class="badge badge-status" :class="'badge-status--' + (d.status || 'draft')">{{ formatStatus(d.status) }}</span>
                 <span v-if="d.episodes?.length" class="badge badge-episodes">{{ d.episodes.length }} tập</span>
-                <span v-if="totalStoryboards(d) > 0" class="badge badge-storyboards">{{ totalStoryboards(d) }} storyboard</span>
-                <span v-if="d.metadata?.aspect_ratio" class="badge badge-ratio">{{ d.metadata.aspect_ratio }}</span>
-                <span v-if="d.style" class="badge badge-style">{{ formatStyle(d.style) }}</span>
-                <span v-if="d.genre" class="badge badge-genre">{{ formatGenre(d.genre) }}</span>
+              </div>
+              <div class="card-meta-row">
+                <span v-if="totalStoryboards(d) > 0" class="meta-chip" :title="'Tổng ' + totalStoryboards(d) + ' storyboard'">
+                  <el-icon><Picture /></el-icon>{{ totalStoryboards(d) }}
+                </span>
+                <span v-if="d.metadata?.aspect_ratio" class="meta-chip" :title="'Tỉ lệ khung hình ' + d.metadata.aspect_ratio">
+                  <el-icon><Aim /></el-icon>{{ d.metadata.aspect_ratio }}
+                </span>
+                <span v-if="d.style" class="meta-chip" :title="'Phong cách: ' + formatStyle(d.style)">
+                  <el-icon><Brush /></el-icon>{{ formatStyle(d.style) }}
+                </span>
+                <span v-if="d.genre" class="meta-chip" :title="'Thể loại: ' + formatGenre(d.genre)">
+                  <el-icon><Film /></el-icon>{{ formatGenre(d.genre) }}
+                </span>
               </div>
               <p class="project-meta">{{ formatDate(d.updated_at) }}</p>
             </div>
@@ -359,7 +364,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Delete, Setting, Plus, User, PictureFilled, Box, Sunny, Moon, ChatDotSquare, Download, Upload, QuestionFilled, FolderOpened, MagicStick, Files, Microphone } from '@element-plus/icons-vue'
+import { Edit, Delete, Setting, Plus, User, PictureFilled, Box, Sunny, Moon, ChatDotSquare, Download, Upload, QuestionFilled, FolderOpened, Microphone, Picture, Aim, Brush, Film } from '@element-plus/icons-vue'
 import { useTheme } from '@/composables/useTheme'
 import { dramaAPI } from '@/api/drama'
 import { characterLibraryAPI } from '@/api/characterLibrary'
@@ -856,12 +861,13 @@ onMounted(async () => {
   box-shadow: 0 1px 0 rgba(99, 102, 241, 0.08), 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 .header-inner {
-  max-width: min(1400px, 96vw);
+  max-width: var(--header-container-max);
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
+  row-gap: 8px;
 }
 .logo {
   margin: 0;
@@ -893,17 +899,22 @@ onMounted(async () => {
   color: #a1a1aa;
   font-size: 0.95rem;
 }
-.header-library {
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-left: 20px;
+  gap: 4px;
 }
-.header-actions {
+.header-primary-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+.group-library { margin-left: 12px; }
+.group-settings { margin-left: auto; }
+@media (max-width: 900px) {
+  .group-settings { margin-left: 0; }
+  .header-primary-actions { margin-left: 0; }
 }
 
 /* 资源库按钮 —— 靛紫调 */
@@ -1138,7 +1149,7 @@ html.light .btn-import {
   --el-button-hover-text-color: #22c55e;
 }
 .project-card-body {
-  padding-right: 56px;
+  padding-right: 108px;
 }
 .project-title {
   font-size: 1.05rem;

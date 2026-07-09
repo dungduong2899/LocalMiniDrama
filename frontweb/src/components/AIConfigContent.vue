@@ -112,17 +112,17 @@
           </el-table>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Cài đặt nâng cao (Prompt)" name="prompts">
+      <el-tab-pane label="Prompt nâng cao" name="prompts">
         <div class="tab-content">
           <PromptEditor />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Cài đặt nâng cao (Scene nghiệp vụ)" name="sceneModelMap">
+      <el-tab-pane label="Scene nghiệp vụ" name="sceneModelMap">
         <div class="tab-content">
           <SceneModelMap />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Cài đặt generate" name="generation">
+      <el-tab-pane label="Cài đặt Generate" name="generation">
         <div class="tab-content generation-settings">
           <div class="gs-section-title">⚡ Cài đặt concurrency generate</div>
           <p class="gs-desc">Điều khiển số lượng task chạy song song trong pipeline "Tạo video nhanh" và "Bổ sung và tạo". Concurrency càng cao càng nhanh, nhưng quá cao có thể trigger rate limit của API (lỗi 429). Chọn theo quota API của bạn.</p>
@@ -194,7 +194,7 @@
           </div>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Quản lý SD2 asset" name="sd2_assets">
+      <el-tab-pane label="Asset SD2" name="sd2_assets">
         <div class="tab-content">
           <Sd2AssetManagement :configs="list" @saved="loadList" />
         </div>

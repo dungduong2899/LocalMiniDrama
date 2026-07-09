@@ -455,6 +455,85 @@ html.light .main {
 }
 
 /* =====================================================
+   VN density tokens & helpers
+   Vietnamese text runs ~2-3x wider than the original Chinese —
+   these tokens keep headers/badges/forms breathable at that width.
+   ===================================================== */
+:root {
+  --header-btn-gap: 8px;
+  --header-icon-btn-size: 34px;
+  --header-container-max: min(1440px, 96vw);
+  --card-meta-gap: 6px;
+}
+
+.header-inner {
+  flex-wrap: wrap !important;
+  row-gap: 8px !important;
+}
+
+.btn-icon-only.el-button {
+  width: var(--header-icon-btn-size);
+  min-width: var(--header-icon-btn-size);
+  height: var(--header-icon-btn-size);
+  padding: 0 !important;
+}
+.btn-icon-only.el-button .el-icon {
+  margin: 0 !important;
+  font-size: 16px;
+}
+/* Element Plus tự bọc content vào một <span>. Ẩn span text bên trong (span cấp 2),
+   giữ span outer để icon vẫn hiển thị. */
+.btn-icon-only.el-button > span > span {
+  display: none;
+}
+.btn-icon-only.el-button.el-button--small { width: 28px; min-width: 28px; height: 28px; }
+
+.header-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.14);
+}
+html.light .header-actions-group {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* Card meta row — one line of small icon+value chips instead of tall badge stack */
+.card-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--card-meta-gap);
+  align-items: center;
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.card-meta-row .meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.card-meta-row .meta-chip .el-icon {
+  font-size: 12px;
+  opacity: 0.75;
+}
+html.light .card-meta-row .meta-chip {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.12);
+  color: #52525b;
+}
+
+/* =====================================================
    全局 ElMessage：更大、更易读、略长停留（与 main.js message.duration 配合）
    placement=top 时横向已为居中，此处强化宽度与正文排版
    ===================================================== */

@@ -206,28 +206,84 @@ function insertVoice(db, log, fields) {
   return getVoice(db, info.lastInsertRowid);
 }
 
+// ElevenLabs "age" labels → local age_range enum used by voice-match UI.
+function mapElevenAgeToRange(age) {
+  const a = String(age || '').toLowerCase().trim();
+  if (!a) return null;
+  if (a.includes('child') || a.includes('kid') || a.includes('young_teen') || a.includes('preteen')) return 'child';
+  if (a.includes('young') || a.includes('teen')) return 'young';
+  if (a.includes('old') || a.includes('elder') || a.includes('senior') || a.includes('mature_adult')) return 'elderly';
+  return 'adult';
+}
+
+// Normalize free-form gender labels ElevenLabs returns ("Female", "male", "non-binary" …).
+function mapElevenGender(gender) {
+  const g = String(gender || '').toLowerCase().trim();
+  if (g === 'male' || g === 'female') return g;
+  if (g.includes('male') && g.includes('fe')) return 'female';
+  if (g.includes('male')) return 'male';
+  if (!g) return null;
+  return 'neutral';
+}
+
+function buildTagsFromLabels(labels) {
+  const out = [];
+  const push = (v) => {
+    if (!v) return;
+    String(v).split(/[,;/]+/).map((s) => s.trim().toLowerCase()).filter(Boolean).forEach((t) => {
+      if (!out.includes(t)) out.push(t);
+    });
+  };
+  push(labels?.accent);
+  push(labels?.descriptive);
+  push(labels?.use_case);
+  return out;
+}
+
+// Flow: user submits { voice_id, language? }. Backend:
+//   1) GET /v1/voices/{id} → verify voice exists in the user's My Voices.
+//      404/401/403 → throw a specific error so the UI can guide them.
+//   2) POST /v1/text-to-speech/{id} → produce a ~10s pangram sample.
+//   3) Persist row with metadata pulled from ElevenLabs (name, description,
+//      labels → gender/age_range/tags). User doesn't type any of these.
 async function importFromElevenLabs(db, log, storageBase, req) {
   const voiceId = (req.voice_id || '').trim();
-  if (!voiceId) throw new Error('voice_id 不能为空');
-  if (!req.name || !req.name.trim()) throw new Error('name 不能为空');
+  if (!voiceId) throw new Error('voice_id không được để trống.');
+  const language = String(req.language || 'en').toLowerCase().trim() || 'en';
+
   const { apiKey, baseUrl } = elevenlabsService.getElevenLabsConfig(db);
+
+  // 1) Verify + pull metadata (no TTS credit spent).
+  const meta = await elevenlabsService.getVoiceMetadata(apiKey, baseUrl, voiceId);
+  log.info('ElevenLabs voice metadata fetched', {
+    voice_id: voiceId,
+    name: meta.name,
+    category: meta.category,
+    labels: meta.labels,
+  });
+
+  // 2) Synthesize pangram sample at the highest-fidelity format the account
+  //    allows (PCM 24kHz WAV → PCM 22050 → PCM 16000 → MP3 fallback).
   const sampleText = elevenlabsService.ELEVENLABS_SAMPLE_TEXT;
-  const audioBuffer = await elevenlabsService.fetchSampleAudio(apiKey, baseUrl, voiceId, sampleText);
+  const sample = await elevenlabsService.fetchSampleAudio(apiKey, baseUrl, voiceId, sampleText);
+  log.info('ElevenLabs sample fetched', { voice_id: voiceId, format: sample.format, bytes: sample.buffer.length });
   const dir = voiceLibraryDir(storageBase);
   const safeVoiceId = voiceId.replace(/[^a-zA-Z0-9_-]/g, '');
-  const filename = `el_${safeVoiceId}_${randomUUID().slice(0, 8)}.mp3`;
-  fs.writeFileSync(path.join(dir, filename), audioBuffer);
+  const filename = `el_${safeVoiceId}_${randomUUID().slice(0, 8)}.${sample.ext}`;
+  fs.writeFileSync(path.join(dir, filename), sample.buffer);
+
+  // 3) Build DB fields from metadata.
   return insertVoice(db, log, {
-    name: req.name,
-    description: req.description,
-    gender: req.gender,
-    age_range: req.age_range,
-    tags: req.tags,
+    name: meta.name || `Voice ${safeVoiceId}`,
+    description: meta.description || null,
+    gender: mapElevenGender(meta.labels.gender),
+    age_range: mapElevenAgeToRange(meta.labels.age),
+    tags: buildTagsFromLabels(meta.labels),
     source: 'elevenlabs',
     source_ref: voiceId,
     ref_audio_path: `voice_library/${filename}`,
     ref_text: sampleText,
-    language: req.language || 'en',
+    language,
   });
 }
 

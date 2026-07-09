@@ -270,12 +270,20 @@ onMounted(loadMedia)
   background: #f5f7fa;
   padding: 20px;
 }
+.media-library-page > * {
+  max-width: min(1400px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  row-gap: 8px;
 }
 
 .header-left {
@@ -429,6 +437,7 @@ onMounted(loadMedia)
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
+  max-width: min(94vw, 720px);
   background: #1a1a2e;
   color: #fff;
   padding: 10px 20px;
@@ -436,6 +445,9 @@ onMounted(loadMedia)
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  justify-content: center;
   font-size: 14px;
   box-shadow: 0 4px 16px rgba(0,0,0,.2);
 }

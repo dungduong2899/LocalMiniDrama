@@ -45,12 +45,17 @@
               </el-button>
               <el-button
                 size="small"
+                class="btn-icon-only"
                 :type="v.id === defaultNarrationId ? 'warning' : 'default'"
+                :title="v.id === defaultNarrationId ? 'Bỏ narration mặc định' : 'Đặt làm narration mặc định'"
                 @click="toggleDefaultNarration(v)"
               >
-                {{ v.id === defaultNarrationId ? 'Bỏ narration mặc định' : 'Đặt làm narration mặc định' }}
+                <el-icon><StarFilled v-if="v.id === defaultNarrationId" /><Star v-else /></el-icon>
+                <span>{{ v.id === defaultNarrationId ? 'Bỏ narration mặc định' : 'Đặt làm narration mặc định' }}</span>
               </el-button>
-              <el-button size="small" type="danger" plain @click="confirmDeleteVoice(v)">Xoá</el-button>
+              <el-button size="small" type="danger" plain class="btn-icon-only" title="Xoá voice" @click="confirmDeleteVoice(v)">
+                <el-icon><Delete /></el-icon><span>Xoá</span>
+              </el-button>
             </div>
           </div>
           <div v-if="!voicesLoading && voices.length === 0" class="voice-empty">Chưa có voice, vui lòng vào «Clone import» hoặc «Voice design» để thêm</div>
@@ -58,26 +63,28 @@
       </el-tab-pane>
 
       <el-tab-pane label="Clone import (ElevenLabs)" name="import">
-        <el-form :model="importForm" label-width="90px" class="voice-form">
-          <el-form-item label="Voice ID"><el-input v-model="importForm.voice_id" placeholder="ElevenLabs voice_id" /></el-form-item>
-          <el-form-item label="Tên"><el-input v-model="importForm.name" placeholder="Tên hiển thị, ví dụ Rachel (giọng Anh nhẹ nhàng)" /></el-form-item>
-          <el-form-item label="Mô tả"><el-input v-model="importForm.description" type="textarea" :rows="2" placeholder="Mô tả tự do, dùng để AI match nhân vật" /></el-form-item>
-          <el-form-item label="Giới tính">
-            <el-select v-model="importForm.gender" placeholder="Chọn giới tính" style="width: 160px">
-              <el-option label="Nam" value="male" />
-              <el-option label="Nữ" value="female" />
-              <el-option label="Trung tính" value="neutral" />
+        <el-alert
+          type="info"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 16px;"
+          title="Chỉ cần voice_id + ngôn ngữ"
+          description="Backend sẽ tự kiểm tra voice_id trên ElevenLabs và kéo tên, mô tả, giới tính, độ tuổi, tag về theo đúng metadata của voice đó. Nếu voice_id không có trong My Voices trên ElevenLabs, bạn sẽ nhận cảnh báo và không có credit nào bị tiêu."
+        />
+        <el-form :model="importForm" label-position="top" class="voice-form">
+          <el-form-item label="Voice ID"><el-input v-model="importForm.voice_id" placeholder="ElevenLabs voice_id, ví dụ 21m00Tcm4TlvDq8ikWAM" /></el-form-item>
+          <el-form-item label="Ngôn ngữ">
+            <el-select v-model="importForm.language" placeholder="Chọn ngôn ngữ voice sẽ dùng để tổng hợp" style="width: 240px">
+              <el-option label="Tiếng Việt" value="vi" />
+              <el-option label="Tiếng Anh" value="en" />
+              <el-option label="Tiếng Trung" value="zh" />
+              <el-option label="Tiếng Nhật" value="ja" />
+              <el-option label="Tiếng Hàn" value="ko" />
+              <el-option label="Tiếng Pháp" value="fr" />
+              <el-option label="Tiếng Đức" value="de" />
+              <el-option label="Tiếng Tây Ban Nha" value="es" />
             </el-select>
           </el-form-item>
-          <el-form-item label="Độ tuổi">
-            <el-select v-model="importForm.age_range" placeholder="Chọn độ tuổi" style="width: 160px">
-              <el-option label="Trẻ em" value="child" />
-              <el-option label="Thanh niên" value="young" />
-              <el-option label="Người lớn" value="adult" />
-              <el-option label="Người lớn tuổi" value="elderly" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="Tag"><el-input v-model="importForm.tagsInput" placeholder="Ngăn bởi dấu phẩy, ví dụ gentle,mature" /></el-form-item>
           <el-form-item>
             <el-button type="primary" :loading="importing" @click="doImport">Nhập và clone</el-button>
           </el-form-item>
@@ -85,7 +92,7 @@
       </el-tab-pane>
 
       <el-tab-pane label="Voice design" name="design">
-        <el-form :model="designForm" label-width="90px" class="voice-form">
+        <el-form :model="designForm" label-position="top" class="voice-form">
           <el-form-item label="Attributes">
             <el-input v-model="designForm.instruct" type="textarea" :rows="2" placeholder='Ví dụ: "female, low pitch, gentle, british accent"' />
           </el-form-item>
@@ -126,7 +133,7 @@
       </el-tab-pane>
 
       <el-tab-pane label="Bàn test voice" name="test">
-        <el-form label-width="90px" class="voice-form">
+        <el-form label-position="top" class="voice-form">
           <el-form-item label="Chọn voice">
             <el-select v-model="testVoiceId" placeholder="Chọn voice để nghe thử" style="width: 280px">
               <el-option v-for="v in voices" :key="v.id" :label="v.name" :value="v.id" />
@@ -151,7 +158,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, VideoPlay, Download } from '@element-plus/icons-vue'
+import { ArrowLeft, VideoPlay, Download, StarFilled, Star, Delete } from '@element-plus/icons-vue'
 import { voiceLibraryAPI } from '@/api/voiceLibrary'
 
 const activeTab = ref('library')
@@ -284,28 +291,26 @@ async function confirmDeleteVoice(voice) {
   }
 }
 
-const importForm = ref({ voice_id: '', name: '', description: '', gender: '', age_range: '', tagsInput: '' })
+const importForm = ref({ voice_id: '', language: 'vi' })
 const importing = ref(false)
 
 async function doImport() {
   if (!importForm.value.voice_id?.trim()) { ElMessage.warning('Vui lòng nhập ElevenLabs voice_id'); return }
-  if (!importForm.value.name?.trim()) { ElMessage.warning('Vui lòng nhập tên'); return }
+  if (!importForm.value.language) { ElMessage.warning('Vui lòng chọn ngôn ngữ'); return }
   importing.value = true
   try {
-    await voiceLibraryAPI.importElevenLabs({
+    const created = await voiceLibraryAPI.importElevenLabs({
       voice_id: importForm.value.voice_id.trim(),
-      name: importForm.value.name.trim(),
-      description: importForm.value.description || null,
-      gender: importForm.value.gender || null,
-      age_range: importForm.value.age_range || null,
-      tags: importForm.value.tagsInput ? importForm.value.tagsInput.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      language: importForm.value.language,
     })
-    ElMessage.success('Nhập thành công')
-    importForm.value = { voice_id: '', name: '', description: '', gender: '', age_range: '', tagsInput: '' }
+    const label = created?.name || importForm.value.voice_id.trim()
+    ElMessage.success(`Đã clone và lưu voice «${label}» vào thư viện.`)
+    importForm.value = { voice_id: '', language: 'vi' }
     activeTab.value = 'library'
     loadVoices()
   } catch (e) {
-    ElMessage.error(e.message || 'Nhập thất bại')
+    const msg = e.response?.data?.error?.message || e.message || 'Nhập thất bại'
+    ElMessage({ type: 'error', message: msg, duration: 6000, showClose: true })
   } finally {
     importing.value = false
   }
@@ -412,7 +417,7 @@ onMounted(() => {
 .voice-card-name .narr-badge { font-size: 11px; }
 .voice-card-meta { display: flex; gap: 6px; margin-bottom: 8px; }
 .voice-card-desc { color: var(--el-text-color-secondary); font-size: 13px; min-height: 36px; margin-bottom: 10px; }
-.voice-card-actions { display: flex; gap: 8px; }
+.voice-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .voice-empty { grid-column: 1 / -1; text-align: center; color: var(--el-text-color-secondary); padding: 40px 0; }
 .voice-form { max-width: 480px; }
 </style>

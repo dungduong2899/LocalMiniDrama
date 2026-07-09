@@ -29,32 +29,31 @@
         <span v-else-if="layoutSaveState === 'saved'" class="layout-status saved">Đã lưu</span>
         <span v-else-if="layoutSaveState === 'error'" class="layout-status error">Lưu thất bại</span>
 
-        <div class="header-actions">
-          <el-button size="small" type="warning" plain @click="focusScriptNode">
-            Kịch bản
+        <div class="header-actions-group group-add">
+          <span class="group-label">Thêm</span>
+          <el-button size="small" title="Thêm storyboard" @click="openCreateDialog('storyboard')">
+            <el-icon><Plus /></el-icon>Storyboard
           </el-button>
-          <el-button size="small" @click="openCreateDialog('storyboard')">
-            <el-icon><Plus /></el-icon>
-            Storyboard
+          <el-button size="small" title="Thêm nhân vật" @click="openCreateDialog('character')">Nhân vật</el-button>
+          <el-button size="small" title="Thêm scene" @click="openCreateDialog('scene')">Scene</el-button>
+          <el-button size="small" title="Thêm đạo cụ" @click="openCreateDialog('prop')">Đạo cụ</el-button>
+          <el-button size="small" title="Thêm tập" @click="openCreateDialog('episode')">
+            <el-icon><Plus /></el-icon>Tập
           </el-button>
-          <el-button size="small" @click="openCreateDialog('character')">Nhân vật</el-button>
-          <el-button size="small" @click="openCreateDialog('scene')">Scene</el-button>
-          <el-button size="small" @click="openCreateDialog('prop')">Đạo cụ</el-button>
-          <el-button size="small" @click="openCreateDialog('episode')">
-            <el-icon><Plus /></el-icon>
-            Tập
+        </div>
+
+        <div class="header-actions-group group-mode">
+          <el-button size="small" type="warning" plain title="Sửa kịch bản" @click="focusScriptNode">
+            <el-icon><EditPen /></el-icon>Kịch bản
           </el-button>
-          <el-button size="small" :loading="aligningNodes" @click="onAlignNodes">
-            <el-icon><Grid /></el-icon>
-            Căn chỉnh node
+          <el-button size="small" class="btn-icon-only" :loading="aligningNodes" title="Căn chỉnh node" @click="onAlignNodes">
+            <el-icon><Grid /></el-icon><span>Căn chỉnh</span>
           </el-button>
-          <el-button type="primary" plain @click="goListMode">
-            <el-icon><List /></el-icon>
-            Chế độ danh sách
+          <el-button size="small" type="primary" plain title="Chế độ danh sách" @click="goListMode">
+            <el-icon><List /></el-icon>Danh sách
           </el-button>
-          <el-button class="btn-theme" @click="toggleTheme">
-            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? 'Sáng' : 'Tối' }}
+          <el-button size="small" class="btn-theme btn-icon-only" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
+            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon><span>{{ isDark ? 'Sáng' : 'Tối' }}</span>
           </el-button>
         </div>
       </div>
@@ -126,7 +125,15 @@
         >
           Tạo video hàng loạt
         </el-button>
-        <span class="gen-hint" title="Pipeline sáng tạo đầy đủ">Kịch bản → Trích xuất nhân vật/scene/đạo cụ → Storyboard → Tạo ảnh → Video</span>
+        <el-tooltip placement="bottom" effect="dark">
+          <template #content>
+            <div style="max-width: 260px; line-height: 1.5;">
+              Pipeline sáng tạo đầy đủ:<br>
+              Kịch bản → Trích xuất nhân vật/scene/đạo cụ<br>→ Storyboard → Tạo ảnh → Video
+            </div>
+          </template>
+          <el-icon class="gen-hint-icon"><QuestionFilled /></el-icon>
+        </el-tooltip>
       </div>
       <div v-if="episodeGenProgress" class="workflow-progress episode-gen">{{ episodeGenProgress }}</div>
     </header>
@@ -265,7 +272,7 @@ import { VueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
-import { List, Moon, Plus, Sunny, Grid } from '@element-plus/icons-vue'
+import { List, Moon, Plus, Sunny, Grid, EditPen, QuestionFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import '@vue-flow/core/dist/style.css'
@@ -985,8 +992,43 @@ onBeforeUnmount(() => {
 .gen-hint {
   font-size: 11px;
   color: #52525b;
-  flex: 1;
-  min-width: 200px;
+}
+.gen-hint-icon {
+  color: #a1a1aa;
+  font-size: 16px;
+  margin-left: 4px;
+  cursor: help;
+  transition: color 0.15s;
+}
+.gen-hint-icon:hover { color: #6366f1; }
+html.light .gen-hint-icon { color: #71717a; }
+
+/* Header actions groups — 2 pill nhóm rõ ràng */
+.header-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 3px 3px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.14);
+  background: rgba(99, 102, 241, 0.06);
+}
+.header-actions-group .group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint, #52525b);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding-right: 2px;
+  user-select: none;
+}
+html.light .header-actions-group {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.14);
+}
+.group-mode { margin-left: auto; }
+@media (max-width: 900px) {
+  .group-mode { margin-left: 0; }
 }
 
 .logo {
@@ -1037,7 +1079,7 @@ onBeforeUnmount(() => {
 }
 
 .canvas-sidebar {
-  width: 220px;
+  width: 240px;
   flex-shrink: 0;
   border-right: 1px solid var(--border-color, #27272a);
   background: var(--bg-card, #18181b);

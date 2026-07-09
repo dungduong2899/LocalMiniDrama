@@ -7,14 +7,13 @@
           <span class="logo-sub">LocalMiniDrama</span>
         </h1>
         <span class="breadcrumb-sep">›</span>
-        <span class="page-title">{{ drama?.title || 'Quản lý phim' }}</span>
-        <el-button class="btn-back-list" @click="router.push('/')">
-          <el-icon><ArrowLeft /></el-icon>Quay lại danh sách
+        <span class="page-title" :title="drama?.title || 'Quản lý phim'">{{ drama?.title || 'Quản lý phim' }}</span>
+        <el-button class="btn-back-list btn-icon-only" title="Quay lại danh sách" @click="router.push('/')">
+          <el-icon><ArrowLeft /></el-icon><span>Quay lại danh sách</span>
         </el-button>
         <div class="header-actions">
-          <el-button class="btn-theme" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
-            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-            {{ isDark ? 'Sáng' : 'Tối' }}
+          <el-button class="btn-theme btn-icon-only" :title="isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme">
+            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon><span>{{ isDark ? 'Sáng' : 'Tối' }}</span>
           </el-button>
           <el-button type="primary" @click="goCreate">
             <el-icon><VideoPlay /></el-icon>Vào sản xuất
@@ -30,7 +29,7 @@
       <!-- 基本信息 + 设置 -->
       <section class="section card">
         <div class="section-title">Thông tin phim</div>
-        <el-form :model="infoForm" label-width="110px" label-position="left" class="info-form">
+        <el-form :model="infoForm" label-position="top" class="info-form">
           <el-row :gutter="24">
             <el-col :span="12">
               <el-form-item label="Tiêu đề">
@@ -137,7 +136,7 @@
               />
             </div>
             <div class="episode-title">{{ ep.title || 'Chưa đặt tên' }}</div>
-            <div class="episode-preview">{{ (ep.script_content || '').slice(0, 20) || 'Chưa có kịch bản' }}</div>
+            <div class="episode-preview">{{ (ep.script_content || '').slice(0, 40) || 'Chưa có kịch bản' }}</div>
             <div class="episode-stats">
               <span class="ep-stat">
                 <span class="ep-stat-num">{{ ep.storyboards?.length ?? 0 }}</span> storyboard
@@ -155,23 +154,30 @@
       <!-- 本剧资源库（Tab 切换） -->
       <section class="section card res-section">
         <nav class="res-tabbar">
-          <span class="res-tab-group-label">Thư viện tư liệu</span>
-          <button
-            v-for="t in [{v:'lib-char',label:'Nhân vật'},{v:'lib-scene',label:'Scene'},{v:'lib-prop',label:'Đạo cụ'}]"
-            :key="t.v"
-            class="res-tab res-tab--lib"
-            :class="{ active: activeResTab === t.v }"
-            @click="activeResTab = t.v"
-          >{{ t.label }}</button>
-          <span class="res-tab-spacer"></span>
-          <span class="res-tab-group-label res-tab-group-label--prod">Tư liệu sản xuất</span>
-          <button
-            v-for="t in [{v:'drama-char',label:'Nhân vật'},{v:'drama-scene',label:'Scene'},{v:'drama-prop',label:'Đạo cụ'}]"
-            :key="t.v"
-            class="res-tab res-tab--drama"
-            :class="{ active: activeResTab === t.v }"
-            @click="activeResTab = t.v"
-          >{{ t.label }}</button>
+          <div class="res-tab-group">
+            <span class="res-tab-group-label">Thư viện tư liệu</span>
+            <div class="res-tab-row">
+              <button
+                v-for="t in [{v:'lib-char',label:'Nhân vật'},{v:'lib-scene',label:'Scene'},{v:'lib-prop',label:'Đạo cụ'}]"
+                :key="t.v"
+                class="res-tab res-tab--lib"
+                :class="{ active: activeResTab === t.v }"
+                @click="activeResTab = t.v"
+              >{{ t.label }}</button>
+            </div>
+          </div>
+          <div class="res-tab-group">
+            <span class="res-tab-group-label res-tab-group-label--prod">Tư liệu sản xuất</span>
+            <div class="res-tab-row">
+              <button
+                v-for="t in [{v:'drama-char',label:'Nhân vật'},{v:'drama-scene',label:'Scene'},{v:'drama-prop',label:'Đạo cụ'}]"
+                :key="t.v"
+                class="res-tab res-tab--drama"
+                :class="{ active: activeResTab === t.v }"
+                @click="activeResTab = t.v"
+              >{{ t.label }}</button>
+            </div>
+          </div>
         </nav>
 
         <!-- 角色库 -->
@@ -345,7 +351,7 @@
 
     <!-- 制作角色 编辑 -->
     <el-dialog v-model="editDramaCharVisible" title="Sửa nhân vật sản xuất" width="500px" @close="editDramaCharForm = null">
-      <el-form v-if="editDramaCharForm" label-width="80px">
+      <el-form v-if="editDramaCharForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editDramaCharForm))">
@@ -379,7 +385,7 @@
 
     <!-- 制作场景 编辑 -->
     <el-dialog v-model="editDramaSceneVisible" title="Sửa scene sản xuất" width="500px" @close="editDramaSceneForm = null">
-      <el-form v-if="editDramaSceneForm" label-width="80px">
+      <el-form v-if="editDramaSceneForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editDramaSceneForm))">
@@ -406,7 +412,7 @@
 
     <!-- 制作道具 编辑 -->
     <el-dialog v-model="editDramaPropVisible" title="Sửa đạo cụ sản xuất" width="500px" @close="editDramaPropForm = null">
-      <el-form v-if="editDramaPropForm" label-width="80px">
+      <el-form v-if="editDramaPropForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editDramaPropForm))">
@@ -433,7 +439,7 @@
 
     <!-- 编辑角色 -->
     <el-dialog v-model="editCharVisible" title="Sửa thư viện nhân vật" width="480px" @close="editCharForm = null">
-      <el-form v-if="editCharForm" label-width="80px">
+      <el-form v-if="editCharForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editCharForm))">
@@ -460,7 +466,7 @@
 
     <!-- 编辑场景 -->
     <el-dialog v-model="editSceneVisible" title="Sửa thư viện scene" width="480px" @close="editSceneForm = null">
-      <el-form v-if="editSceneForm" label-width="80px">
+      <el-form v-if="editSceneForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editSceneForm))">
@@ -488,7 +494,7 @@
 
     <!-- 编辑道具 -->
     <el-dialog v-model="editPropVisible" title="Sửa thư viện đạo cụ" width="480px" @close="editPropForm = null">
-      <el-form v-if="editPropForm" label-width="80px">
+      <el-form v-if="editPropForm" label-position="top">
         <el-form-item label="Ảnh">
           <div class="lib-img-editor">
             <div class="lib-img-thumb" @click="openPreview(assetImageUrl(editPropForm))">
@@ -1335,7 +1341,7 @@ html.light .drama-detail .logo-sub {
   color: #9ca3af;
   -webkit-text-fill-color: #9ca3af;
 }
-.header-inner { max-width: min(1200px, 96vw); margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+.header-inner { max-width: var(--header-container-max); margin: 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; row-gap: 8px; }
 .breadcrumb-sep {
   color: #3f3f46;
   font-size: 1rem;
@@ -1352,7 +1358,9 @@ html.light .breadcrumb-sep { color: #d1d5db; }
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 3px 10px;
-  max-width: 220px;
+  min-width: 0;
+  flex: 1 1 180px;
+  max-width: 360px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1365,8 +1373,8 @@ html.light .page-title {
 .btn-back-list {
   flex-shrink: 0;
 }
-.header-actions { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
-.main { max-width: min(1200px, 96vw); margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.main { max-width: var(--header-container-max); margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
 .section.card {
   background: rgba(24, 24, 27, 0.75);
   backdrop-filter: blur(12px);
@@ -1392,14 +1400,14 @@ html.light .section.card:hover {
 }
 .section-title { font-size: 1rem; font-weight: 600; color: #fafafa; margin-bottom: 16px; }
 html.light .section-title { color: #18181b; }
-.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; row-gap: 8px; }
 .section-header .section-title { margin-bottom: 0; }
 .section-count { color: #71717a; font-size: 0.85rem; }
 .info-form { max-width: 100%; }
 .empty-tip { color: #71717a; text-align: center; padding: 32px; }
 
 /* 分集卡片 */
-.episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .episode-card {
   background: rgba(28, 28, 30, 0.8);
   border: 1px solid rgba(63, 63, 70, 0.6);
@@ -1479,34 +1487,38 @@ html.light .section-title { color: #18181b; }
 .library-empty { text-align: center; color: #71717a; padding: 40px 20px; }
 .library-pagination { margin-top: 12px; display: flex; justify-content: center; }
 
-/* ——— 编辑器风格 Tab 栏 ——— */
+/* ——— 编辑器风格 Tab 栏 (VN restructure: 2 groups, wrap tự nhiên) ——— */
 .res-section { padding-bottom: 0 !important; }
 .res-tabbar {
   display: flex;
-  align-items: center;
-  gap: 0;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  row-gap: 12px;
   border-bottom: 1px solid var(--border-color, #27272a);
-  padding: 0 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
   margin: -4px -20px 0;
-  padding-left: 20px;
+  padding: 0 20px;
 }
-.res-tabbar::-webkit-scrollbar { display: none; }
+.res-tab-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.res-tab-row {
+  display: flex;
+  gap: 0;
+}
 .res-tab-group-label {
   font-size: 11px;
   color: var(--text-faint, #52525b);
-  padding: 0 8px 0 4px;
+  padding: 0 4px;
   white-space: nowrap;
   user-select: none;
   letter-spacing: 0.03em;
-  align-self: center;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 .res-tab-group-label--prod { color: #a78bfa; }
-.res-tab-spacer {
-  flex: 1;
-  min-width: 40px;
-}
 .res-tab {
   position: relative;
   display: inline-flex;

@@ -356,6 +356,8 @@ async function pollVideoTask(taskId, item) {
   color: #6b7280;
   font-size: 14px;
   margin: 0;
+  max-width: 640px;
+  line-height: 1.5;
 }
 
 .create-layout {
@@ -365,12 +367,17 @@ async function pollVideoTask(taskId, item) {
 }
 
 .input-panel {
-  width: 380px;
+  width: 420px;
   flex-shrink: 0;
   background: #fff;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+@media (max-width: 900px) {
+  .input-panel { width: 100%; }
+  .result-panel { width: 100%; }
+  .create-layout { flex-direction: column; }
 }
 
 .mode-tabs {
@@ -397,12 +404,13 @@ async function pollVideoTask(taskId, item) {
 }
 
 .form-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
 }
 
 .form-item {
-  flex: 1;
+  min-width: 0;
 }
 
 .form-item .el-select {
@@ -447,6 +455,9 @@ async function pollVideoTask(taskId, item) {
 .upload-tip {
   font-size: 12px;
   color: #9ca3af;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 260px;
 }
 
 .generate-btn {
