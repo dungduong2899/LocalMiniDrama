@@ -2334,16 +2334,28 @@ function agnesSnapNumFrames(durationSec, frameRate = 24) {
 
 /**
  * Agnes 视频入参图片策略（可单测）：
- * - 顶层 image 仅支持 string（服务端 Go 结构体不接受 array）
- * - 全能多图参考：extra_body.image 数组，且禁止 mode: keyframes
- * - 经典首尾帧：extra_body.mode = keyframes + 恰好两张图
+ * 参考官方文档 https://agnes-ai.com/en/docs/agnes-video-v20 —— agnes-video-v2.0 仅支持 3 种模式：
+ * - 文生视频（无 image）
+ * - ti2vid（图生视频）：顶层 image = 单张 URL 字符串（string），最多 1 张
+ * - keyframes（首尾帧）：extra_body = { mode: 'keyframes', image: [首帧, 尾帧] }，恰好 2 张
+ *
+ * 全能多图（scene + 角色 + 道具 …）在 Agnes 侧没有原生 mode 支持；
+ * 若不带 mode 直接塞 extra_body.image 数组，服务端会退回默认 ti2vid，报错
+ * `ti2vid supports at most 1 image`。因此这里的策略是：
+ * - 2 张及以上参考图 → 取前两张走 keyframes（第 1 张做首帧，最后 1 张做尾帧，尽量保留场景+主角）
+ * - 恰好 1 张参考图 → 顶层 image 走 ti2vid
+ * - 传统首尾帧 → keyframes（同官方）；传统 i2v → 顶层 image
  */
 function buildAgnesVideoImagePayload({ useOmniReference, resolvedRefs, firstResolved, lastResolved }) {
   const refs = Array.isArray(resolvedRefs) ? resolvedRefs.filter(Boolean) : [];
   if (useOmniReference && refs.length >= 2) {
+    // 保留场景 + 最后一张（通常是核心主角）做尾帧；避免 tại2vid 只吃 1 张的报错
+    const first = refs[0];
+    const last = refs[refs.length - 1];
     return {
-      strategy: 'omni_reference_extra_body',
-      extra_body: { image: refs.slice(0, 10) },
+      strategy: 'omni_reference_as_keyframes',
+      extra_body: { mode: 'keyframes', image: [first, last] },
+      dropped_refs: refs.length > 2 ? refs.slice(1, -1) : [],
     };
   }
   if (useOmniReference && refs.length === 1) {
@@ -2469,6 +2481,12 @@ async function callAgnesVideoApi(db, config, log, opts) {
     last_resolved: lastResolved,
     image_strategy: imagePayload.strategy,
   });
+  if (imagePayload.dropped_refs && imagePayload.dropped_refs.length > 0) {
+    log.warn(
+      '[Agnes] agnes-video-v2.0 仅支持 keyframes(2 图) 或 ti2vid(1 图)，多余参考图已被舍弃',
+      { video_gen_id, kept: 2, dropped: imagePayload.dropped_refs }
+    );
+  }
 
   logVideoPostRequest(log, 'Agnes', url, body, video_gen_id, {
     model: body.model,

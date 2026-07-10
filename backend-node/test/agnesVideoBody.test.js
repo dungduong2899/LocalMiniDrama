@@ -26,7 +26,7 @@ describe('formatVideoPostBodyForLog', () => {
 });
 
 describe('buildAgnesVideoImagePayload', () => {
-  it('uses extra_body.image array for omni multi-reference without keyframes mode', () => {
+  it('maps omni multi-reference (>=2 imgs) to keyframes mode with 2 images', () => {
     const refs = ['https://cdn/a.jpg', 'https://cdn/b.png', 'https://cdn/c.png'];
     const out = buildAgnesVideoImagePayload({
       useOmniReference: true,
@@ -34,10 +34,29 @@ describe('buildAgnesVideoImagePayload', () => {
       firstResolved: 'https://cdn/a.jpg',
       lastResolved: 'https://cdn/z.jpg',
     });
-    assert.equal(out.strategy, 'omni_reference_extra_body');
-    assert.deepEqual(out.extra_body, { image: refs });
+    assert.equal(out.strategy, 'omni_reference_as_keyframes');
+    assert.deepEqual(out.extra_body, {
+      mode: 'keyframes',
+      image: ['https://cdn/a.jpg', 'https://cdn/c.png'],
+    });
     assert.equal(out.image, undefined);
-    assert.equal(out.extra_body.mode, undefined);
+    assert.deepEqual(out.dropped_refs, ['https://cdn/b.png']);
+  });
+
+  it('keeps first + last only for exactly 2 omni refs (no dropped)', () => {
+    const refs = ['https://cdn/scene.jpg', 'https://cdn/char.jpg'];
+    const out = buildAgnesVideoImagePayload({
+      useOmniReference: true,
+      resolvedRefs: refs,
+      firstResolved: null,
+      lastResolved: null,
+    });
+    assert.equal(out.strategy, 'omni_reference_as_keyframes');
+    assert.deepEqual(out.extra_body, {
+      mode: 'keyframes',
+      image: ['https://cdn/scene.jpg', 'https://cdn/char.jpg'],
+    });
+    assert.deepEqual(out.dropped_refs, []);
   });
 
   it('uses single top-level image string for one omni reference', () => {
@@ -51,7 +70,7 @@ describe('buildAgnesVideoImagePayload', () => {
     assert.equal(out.image, 'https://cdn/scene.jpg');
   });
 
-  it('uses extra_body keyframes only for classic first/last (not omni)', () => {
+  it('uses extra_body keyframes for classic first/last (not omni)', () => {
     const out = buildAgnesVideoImagePayload({
       useOmniReference: false,
       resolvedRefs: [],
@@ -66,7 +85,7 @@ describe('buildAgnesVideoImagePayload', () => {
     assert.equal(out.image, undefined);
   });
 
-  it('does not use keyframes mode when omni refs exist', () => {
+  it('omni refs always take keyframes mode with exactly 2 images', () => {
     const refs = ['https://cdn/s.jpg', 'https://cdn/c.jpg'];
     const out = buildAgnesVideoImagePayload({
       useOmniReference: true,
@@ -74,7 +93,20 @@ describe('buildAgnesVideoImagePayload', () => {
       firstResolved: 'https://cdn/s.jpg',
       lastResolved: 'https://cdn/l.jpg',
     });
-    assert.equal(out.strategy, 'omni_reference_extra_body');
-    assert.equal(out.extra_body.mode, undefined);
+    assert.equal(out.strategy, 'omni_reference_as_keyframes');
+    assert.equal(out.extra_body.mode, 'keyframes');
+    assert.equal(out.extra_body.image.length, 2);
+  });
+
+  it('falls back to text_only when no refs and no frames', () => {
+    const out = buildAgnesVideoImagePayload({
+      useOmniReference: false,
+      resolvedRefs: [],
+      firstResolved: null,
+      lastResolved: null,
+    });
+    assert.equal(out.strategy, 'text_only');
+    assert.equal(out.image, undefined);
+    assert.equal(out.extra_body, undefined);
   });
 });
