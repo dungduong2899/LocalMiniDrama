@@ -24,6 +24,13 @@
 
 **Ngoài phạm vi Đợt 1** (đã ghi trong spec, làm ở đợt sau): tab UI riêng để sửa nội dung rule packs (đợt này packs sửa bằng file; 2 prompt key mới đã hiện trong PromptEditor sẵn có); tiêm packs `shot-grammar`/`emotion-to-behavior`/`continuity` vào prompt storyboard/ảnh/video (Đợt 2); Gate 2/3 (Đợt 3).
 
+**Ranh giới chống dẫm chân giữa các rule packs** (bắt buộc tuân thủ khi tiêm pack ở Đợt 2):
+1. `shot-grammar` áp rule 1-1-1 và 3-6s cho **sub-shot (cắt nội bộ)**, KHÔNG áp cho storyboard beat — beat giữ nguyên quy tắc hiện hành 5-15s + 1-4 cắt nội bộ trong `storyboard_system` (promptI18n.js ~dòng 190). Cấm để 2 quy tắc mâu thuẫn cùng xuất hiện trong 1 prompt.
+2. `emotion-to-behavior` chỉ cấm tên cảm xúc trong **text prompt ảnh/video**; KHÔNG áp cho trường dữ liệu `emotion` của storyboard JSON (trường này bắt buộc điền tên cảm xúc). Khi tiêm, dùng `prompt_zh` (image prompt hệ này bắt buộc thuần Trung); `prompt_en` để dành cho provider tiếng Anh.
+3. `continuity` khi tiêm vào first/last frame prompt phải **thay thế hoặc tham chiếu** các "铁律" trùng ý đã có sẵn (promptI18n.js ~dòng 706-786), không append chồng 2 bản cùng ý khác chữ.
+4. `qc-gates` là nguồn chân lý duy nhất cho tiêu chí Gate; các mục Gate 2/3 là mirror của rule tầng gen (`shot-grammar`/`continuity`) — sửa bên gen thì phải sửa mirror.
+5. Chồng lấn hook/cliffhanger giữa `series-bible` (tầng thiết kế đề cương) và `episode-script` (tầng thực thi) là **có chủ đích** — mỗi tầng chỉ nhận pack của mình, không bao giờ tiêm 2 pack này vào cùng 1 prompt.
+
 ---
 
 ### Task 1: Rule packs + rulepackService
@@ -73,12 +80,13 @@
 `backend-node/prompts/rulepacks/shot-grammar.md`:
 ```markdown
 【镜头语法规则｜用于：分镜拆解（第2批次接入）】
+说明：本项目分镜结构为两层——「storyboard beat」（叙事节拍，5-15秒，可含1-4个内部切镜）与其中的「内部切镜（sub-shot）」。以下规则按层生效，不改变 beat 层现行规则（见 storyboard_system）。
 1. 每场戏遵循 coverage 结构：先交代空间的全景/中景，再进中近景，情绪高点用特写。
 2. 全程遵守 180 度轴线；同一场戏内禁止无动机跳轴。
-3. 一个镜头 = 一个主要动作 = 一次情绪变化（1-1-1 规则）。
-4. 平均镜头时长 4-6 秒；对白镜头一句台词对应一个镜头。
+3. 【sub-shot 层】每个内部切镜 = 一个主要动作 = 一次情绪变化（1-1-1 规则）；beat 层允许 1-4 个连续动作合并（现行规则不变）。
+4. 【sub-shot 层】单个内部切镜时长约 3-6 秒；对白一句台词对应一个内部切镜。beat 总时长仍按项目配置（通常 5-15 秒）。
 5. 推镜（push-in）只用于情绪强度上升的时刻；手持只用于紧张/纪实感；禁止无动机运镜。
-6. 重要对白场必须有听者反应镜头（reaction shot）。
+6. 重要对白场必须有听者反应镜头（reaction shot），可作为内部切镜。
 7. 情绪高潮之后安排一个喘息镜头（pillow shot：空镜/物件/环境）。
 8. 新机位优先复用已有机位；开新机位时景别只允许相邻递进（全景→中景→特写），禁止全景直跳特写。
 ```
@@ -120,14 +128,14 @@
 `backend-node/prompts/rulepacks/qc-gates.md`:
 ```markdown
 【质检门规则｜用于：Gate 1 覆盖检查（本批次）与 Gate 2/3（后续批次）】
-Gate 1（剧本 vs 大纲）：
+Gate 1（剧本 vs 大纲）——本包是 Gate 1 判定标准的唯一权威来源（coverage 检查 prompt 直接拼入本包，勿在别处复述）：
 1. 本集剧本必须体现被分配的每一个情节点；未体现 = missing。
 2. 开头是否呈现 opening_hook（具体动作/冲突，非旁白铺陈）。
 3. 结尾是否落在 cliffhanger 的未回答问题上。
 4. 判定只依据剧本文本，禁止脑补"隐含体现"。
-Gate 2/3（预留，第3批次接入）：
-5. 关键帧须与角色参考图一致（性别/年龄/发型/服装/体型/脸部特征）。
-6. 合成前须检查：每个分镜有视频、总时长在目标±10%、旁白/对白音频齐备。
+Gate 2/3（预留，第3批次接入；条目为 shot-grammar/continuity 生成侧规则的检查侧镜像，修改时须同步）：
+5. 关键帧须与角色参考图一致（性别/年龄/发型/服装/体型/脸部特征）——镜像 continuity 规则。
+6. 合成前须检查：每个分镜有视频、总时长在目标±10%、旁白/对白音频齐备、情绪高潮后有喘息镜头、重要对白场有反应镜头——后两项镜像 shot-grammar #6/#7。
 ```
 
 - [ ] **Step 2: Viết failing test cho rulepackService**
@@ -803,9 +811,10 @@ describe('episode script prompts', () => {
 });
 
 describe('coverage check prompts', () => {
-  it('system prompt demands strict JSON verdict', () => {
+  it('system prompt demands strict JSON verdict and composes qc-gates pack', () => {
     const sys = promptI18n.getCoverageCheckSystemPrompt(cfgZh);
     assert.ok(sys.includes('"missing_ids"'));
+    assert.ok(sys.includes('质检门规则'), 'tiêu chí Gate 1 phải đến từ pack qc-gates, không duplicate trong body');
   });
 
   it('user prompt lists plot points with ids', () => {
@@ -866,7 +875,9 @@ function getCoverageCheckSystemPrompt(cfg) {
   if (isEnglish(cfg)) {
     return `You are a strict script QC reviewer. Given a list of plot points assigned to an episode and the episode script, verify which plot points are actually depicted in the text. Judge ONLY from the text; no benefit of the doubt. Also verify the script opens on the given hook action and ends on the given cliffhanger question.${jsonNote}`;
   }
-  return `你是一位严格的剧本质检员。给定本集被分配的情节点列表与剧本正文，逐一核对每个情节点是否在正文中被实际呈现。只依据文本判断，禁止脑补"隐含体现"。同时核对：开头是否呈现指定的开场钩子动作；结尾是否落在指定悬念问题上。${jsonNote}`;
+  // Tiêu chí phán định lấy từ pack qc-gates (nguồn chân lý duy nhất), body chỉ giữ vai trò
+  const packs = rulepackService.composePacks(['qc-gates']);
+  return `你是一位严格的剧本质检员。按下列质检门规则核对本集剧本与大纲。${packs ? `\n\n${packs}` : ''}${jsonNote}`;
 }
 
 /**
