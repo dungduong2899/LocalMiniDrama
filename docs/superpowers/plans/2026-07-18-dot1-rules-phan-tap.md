@@ -17,7 +17,9 @@
 - Prompt mặc định viết tiếng Trung (khớp pipeline hiện có); phần format JSON là locked suffix KHÔNG override được (pattern `_overrideCache[key]` + `getDefaultPromptBody`/`getLockedSuffix` trong `promptI18n.js`).
 - UI copy tiếng Việt; log/error message backend tiếng Trung (khớp style hiện có).
 - AI call qua `aiClient.generateText(db, log, 'text', userPrompt, systemPrompt, { scene_key, temperature, min_max_tokens, model })`; KHÔNG dùng `json_mode` (lý do đã ghi ở `storyGenerationService.js:26-27`).
-- Parse JSON từ AI bằng `safeParseAIJSON(rawText, log)` từ `../utils/safeJson`.
+- Parse JSON từ AI bằng `safeParseAIJSON(aiResponse, v, log)` từ `../utils/safeJson` — **chữ ký thật có 3 tham số**: tham số 2 là container báo kiểu mong đợi (`{}` cho object, `[]` cho array). Gọi `safeParseAIJSON(raw, {}, log)`. (Lưu ý: `storyGenerationService.js:44` đang gọi sai kiểu 2 tham số — không bắt chước.)
+- **CẤM gọi `dramaService.saveEpisodes` với danh sách con** — hàm này xóa mềm mọi tập không nằm trong danh sách gửi lên (`dramaService.js:682-689`); viết từng tập phải dùng `upsertEpisode` tự viết (Task 6).
+- `dramaService.getDramaById` KHÔNG trả kèm `episodes` (chỉ `getDrama` mới có) — muốn đọc tập đã có phải query bảng `episodes` trực tiếp.
 - Response route: `response.success(res, data)` / `response.badRequest(res, msg)` / `response.internalError(res, msg)`.
 - Migration: file SQL mới `backend-node/migrations/25_story_outlines.sql` + `CREATE TABLE IF NOT EXISTS` trong `src/db/migrate.js` (pattern sẵn có).
 - Commit message tiếng Việt/tiếng Anh đều được, prefix `feat:`/`test:`/`docs:`, kèm dòng `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
@@ -454,6 +456,19 @@ function createTestDb() {
     status TEXT DEFAULT 'draft',
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE TABLE episodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    drama_id INTEGER,
+    episode_number INTEGER,
+    title TEXT,
+    script_content TEXT,
+    description TEXT,
+    duration INTEGER DEFAULT 0,
+    status TEXT,
+    created_at TEXT,
+    updated_at TEXT,
+    deleted_at TEXT
   );`);
   return db;
 }
@@ -543,7 +558,7 @@ const { safeParseAIJSON } = require('../utils/safeJson');
 function parseOutlineResponse(rawText, log) {
   let parsed = null;
   try {
-    parsed = safeParseAIJSON(rawText, log);
+    parsed = safeParseAIJSON(rawText, {}, log);
   } catch (_) {
     return null;
   }
@@ -946,9 +961,10 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Test: `backend-node/test/storyOutlineService.test.js` (thêm describe cho `parseEpisodeScriptResponse`)
 
 **Interfaces:**
-- Consumes: `taskService.createTask/updateTaskStatus/updateTaskResult/updateTaskError`; `dramaService.saveEpisodes(db, log, dramaId, { episodes })` + `dramaService.getDramaById`; 4 hàm prompt Task 5; `saveCoverage` (Task 3).
+- Consumes: `taskService.createTask/updateTaskStatus/updateTaskResult/updateTaskError`; `dramaService.getDramaById(db, id)` (chỉ để kiểm tra project tồn tại — KHÔNG kèm `episodes`); 4 hàm prompt Task 5; `saveCoverage`/`getOutline` (Task 3).
 - Produces:
   - `storyOutlineService.parseEpisodeScriptResponse(rawText, episodeNumber, log): { title, content }` — fallback: text thô làm content.
+  - `storyOutlineService.upsertEpisode(db, dramaId, ep): void` — ghi 1 tập theo `episode_number`, không đụng các tập khác (thay cho `dramaService.saveEpisodes` vốn xóa mềm các tập ngoài danh sách gửi lên).
   - `storyOutlineService.startEpisodesFromOutline(db, log, req): taskId` — req: `{ drama_id, episode_numbers?: number[] }`; task type `'story_from_outline'`.
   - Route: `POST /generation/story-from-outline` trả `{ task_id, status: 'pending' }`.
   - Coverage lưu dạng: `{ [episodeNumber]: { missing_ids: string[], hook_ok: boolean, cliffhanger_ok: boolean, notes: string } }`.
@@ -970,6 +986,22 @@ describe('parseEpisodeScriptResponse', () => {
     assert.equal(out.content, '纯文本剧本');
   });
 });
+
+describe('upsertEpisode', () => {
+  it('inserts then updates without soft-deleting other episodes', () => {
+    const db = createTestDb();
+    svc.upsertEpisode(db, 7, { episode_number: 1, title: 'T1', script_content: 'A' });
+    svc.upsertEpisode(db, 7, { episode_number: 2, title: 'T2', script_content: 'B' });
+    svc.upsertEpisode(db, 7, { episode_number: 2, title: 'T2x', script_content: 'B2' });
+    const rows = db
+      .prepare('SELECT episode_number, title, script_content, deleted_at FROM episodes WHERE drama_id = 7 ORDER BY episode_number')
+      .all();
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].deleted_at, null); // tập 1 KHÔNG bị xóa mềm khi upsert tập 2
+    assert.equal(rows[1].title, 'T2x');
+    assert.equal(rows[1].script_content, 'B2');
+  });
+});
 ```
 
 - [ ] **Step 2: Chạy test, xác nhận FAIL**
@@ -985,11 +1017,11 @@ const taskService = require('./taskService');
 const dramaService = require('./dramaService');
 ```
 
-Thêm các hàm (trước `module.exports`), export thêm cả 3:
+Thêm các hàm (trước `module.exports`), export thêm cả 4 (`parseEpisodeScriptResponse`, `upsertEpisode`, `checkEpisodeCoverage`, `startEpisodesFromOutline`):
 ```js
 function parseEpisodeScriptResponse(rawText, episodeNumber, log) {
   let parsed = null;
-  try { parsed = safeParseAIJSON(rawText, log); } catch (_) {}
+  try { parsed = safeParseAIJSON(rawText, {}, log); } catch (_) {}
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.content || parsed.title)) {
     return {
       title: String(parsed.title || `第${episodeNumber}集`).trim(),
@@ -997,6 +1029,27 @@ function parseEpisodeScriptResponse(rawText, episodeNumber, log) {
     };
   }
   return { title: `第${episodeNumber}集`, content: String(rawText || '').trim() };
+}
+
+/**
+ * Upsert 1 tập theo episode_number.
+ * KHÔNG dùng dramaService.saveEpisodes ở đây — hàm đó xóa mềm mọi tập không nằm trong
+ * danh sách gửi lên (dramaService.js:682-689), gọi từng tập sẽ xóa các tập còn lại.
+ */
+function upsertEpisode(db, dramaId, ep) {
+  const now = new Date().toISOString();
+  const existing = db.prepare(
+    'SELECT id FROM episodes WHERE drama_id = ? AND episode_number = ? ORDER BY deleted_at IS NOT NULL ASC, id ASC LIMIT 1'
+  ).get(Number(dramaId), Number(ep.episode_number));
+  if (existing) {
+    db.prepare('UPDATE episodes SET title = ?, script_content = ?, deleted_at = NULL, updated_at = ? WHERE id = ?')
+      .run(ep.title || '', ep.script_content ?? null, now, existing.id);
+  } else {
+    db.prepare(
+      `INSERT INTO episodes (drama_id, episode_number, title, script_content, duration, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 0, 'draft', ?, ?)`
+    ).run(Number(dramaId), Number(ep.episode_number), ep.title || '', ep.script_content ?? null, now, now);
+  }
 }
 
 async function checkEpisodeCoverage(db, log, cfg, outlineEp, plotPoints, scriptContent) {
@@ -1015,7 +1068,7 @@ async function checkEpisodeCoverage(db, log, cfg, outlineEp, plotPoints, scriptC
       temperature: 0.1,
       min_max_tokens: 800,
     });
-    const parsed = safeParseAIJSON(raw, log);
+    const parsed = safeParseAIJSON(raw, {}, log);
     if (parsed && typeof parsed === 'object') {
       return {
         missing_ids: Array.isArray(parsed.missing_ids) ? parsed.missing_ids.map(String) : [],
@@ -1052,10 +1105,15 @@ async function processEpisodesFromOutline(db, log, taskId, req) {
 
     const coverage = row.coverage || {};
     let prevTail = '';
-    // prevTail của tập k lấy từ tập k-1 đã có trong DB (khi viết lại 1 tập) hoặc từ tập vừa viết trong vòng lặp
-    const drama = dramaService.getDramaById(db, dramaId);
-    const existingEpisodes = (drama && drama.episodes) || [];
+    // prevTail của tập k lấy từ tập k-1 đã có trong DB (khi viết lại 1 tập) hoặc từ tập vừa viết trong vòng lặp.
+    // Query bảng episodes trực tiếp — dramaService.getDramaById() KHÔNG kèm episodes (chỉ getDrama() mới có).
     const tailOf = (content) => String(content || '').slice(-400);
+    function getScriptOf(episodeNumber) {
+      const r = db.prepare(
+        'SELECT script_content FROM episodes WHERE drama_id = ? AND episode_number = ? AND deleted_at IS NULL'
+      ).get(dramaId, episodeNumber);
+      return r ? r.script_content : '';
+    }
 
     for (let i = 0; i < targets.length; i++) {
       const ep = targets[i];
@@ -1063,8 +1121,7 @@ async function processEpisodesFromOutline(db, log, taskId, req) {
       taskService.updateTaskStatus(db, taskId, 'processing', pct, `正在撰写第${ep.episode}集…`);
 
       if (i === 0 && ep.episode > 1) {
-        const prev = existingEpisodes.find((e) => Number(e.episode_number) === Number(ep.episode) - 1);
-        prevTail = tailOf(prev && prev.script_content);
+        prevTail = tailOf(getScriptOf(Number(ep.episode) - 1));
       }
 
       const plotTexts = (ep.plot_point_ids || []).map((id) => (pointById.get(id) || {}).text).filter(Boolean);
@@ -1084,9 +1141,7 @@ async function processEpisodesFromOutline(db, log, taskId, req) {
         min_max_tokens: 2200,
       });
       const parsed = parseEpisodeScriptResponse(raw, ep.episode, log);
-      dramaService.saveEpisodes(db, log, dramaId, {
-        episodes: [{ episode_number: ep.episode, title: parsed.title || ep.title, script_content: parsed.content }],
-      });
+      upsertEpisode(db, dramaId, { episode_number: ep.episode, title: parsed.title || ep.title, script_content: parsed.content });
       prevTail = tailOf(parsed.content);
 
       taskService.updateTaskStatus(db, taskId, 'processing', pct + 5, `正在质检第${ep.episode}集（Gate 1）…`);
@@ -1132,12 +1187,6 @@ function startEpisodesFromOutline(db, log, req) {
   return task.id;
 }
 ```
-
-Lưu ý: `dramaService.getDramaById` phải trả kèm `episodes`; nếu thực tế không kèm, dùng query trực tiếp:
-```js
-const existingEpisodes = db.prepare('SELECT episode_number, script_content FROM episodes WHERE drama_id = ? AND deleted_at IS NULL ORDER BY episode_number').all(dramaId);
-```
-(kiểm tra schema bảng episodes trước khi chọn nhánh nào — xem `dramaService.saveEpisodes`).
 
 - [ ] **Step 4: Thêm route**
 
