@@ -150,7 +150,7 @@ function setupRouter(cfg, db, log) {
       response.success(res, result);
     } catch (err) {
       log.error('generation/story-outline', { error: err.message });
-      if (err.message && (err.message.includes('必填') || err.message.includes('请提供'))) {
+      if (err.message && (err.message.includes('必填') || err.message.includes('请提供') || err.message.includes('不存在'))) {
         return response.badRequest(res, err.message);
       }
       response.internalError(res, err.message || '生成分集大纲失败');

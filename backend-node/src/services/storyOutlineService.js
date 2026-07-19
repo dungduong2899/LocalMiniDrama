@@ -3,6 +3,7 @@ const { safeParseAIJSON } = require('../utils/safeJson');
 const aiClient = require('./aiClient');
 const promptI18n = require('./promptI18n');
 const loadConfig = require('../config').loadConfig;
+const dramaService = require('./dramaService');
 
 function parseOutlineResponse(rawText, log) {
   let parsed = null;
@@ -85,6 +86,9 @@ async function generateOutline(db, log, body) {
   if (!premise) throw new Error('请提供故事梗概');
   const dramaId = Number(body.drama_id);
   if (!dramaId) throw new Error('drama_id 必填');
+  if (!dramaService.getDramaById(db, dramaId)) {
+    throw new Error('项目不存在');
+  }
   const cfg = loadConfig();
   const episodeCount = Math.max(1, Math.floor(Number(body.episode_count) || 1));
   const systemPrompt = promptI18n.getStoryOutlineSystemPrompt(cfg);
