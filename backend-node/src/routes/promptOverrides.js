@@ -15,6 +15,11 @@ const PROMPT_META = [
     description: '控制 AI 如何提取情节点并分配到各集（钩子/悬念规则；JSON 格式已锁定）',
   },
   {
+    key: 'episode_script_system',
+    label: '单集剧本提示词',
+    description: '控制 AI 如何按分集大纲撰写单集剧本（钩子/悬念/潜台词规则；JSON 格式已锁定）',
+  },
+  {
     key: 'storyboard_system',
     label: '分镜拆解提示词',
     description: '控制 AI 如何将剧本拆分成分镜头方案（输出格式要求已锁定）',

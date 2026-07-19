@@ -1003,6 +1003,57 @@ function buildStoryOutlineUserPrompt(cfg, premise, style, type, episodeCount) {
 }
 
 /**
+ * 按大纲写单集：system prompt（可 override；JSON 格式锁定）
+ */
+function getEpisodeScriptSystemPrompt(cfg) {
+  const jsonNote = `\n\n**输出格式（必须严格遵守）**：\n返回一个 JSON 对象：{ "title": "本集标题", "content": "本集剧本正文（约800字）" }\n**必须只返回纯 JSON 对象，不要 markdown。直接以 { 开头，以 } 结尾。**`;
+  if (isEnglish(cfg)) {
+    return `You are a professional screenwriter. Write ONE episode (~800 words) strictly following the assigned outline entry: open on the opening_hook action, use only the assigned plot points, and end exactly on the cliffhanger question. Never state emotions by name — show them through actions, subtext and concrete physical detail.${jsonNote}`;
+  }
+  const _o = _overrideCache['episode_script_system'];
+  const base = _o || getDefaultPromptBody('episode_script_system');
+  const packs = rulepackService.composePacks(['episode-script']);
+  return base + (packs ? `\n\n${packs}` : '') + jsonNote;
+}
+
+/**
+ * 按大纲写单集：user prompt
+ */
+function buildEpisodeScriptUserPrompt(cfg, args) {
+  const a = args || {};
+  const points = (a.plotPointTexts || []).map((t, i) => `${i + 1}. ${t}`).join('\n');
+  if (isEnglish(cfg)) {
+    return `Write episode ${a.episodeNumber} "${a.title || ''}".\nEpisode goal: ${a.goal || ''}\nAssigned plot points:\n${points}\nOpening hook (first beat): ${a.openingHook || ''}\nCliffhanger (last beat): ${a.cliffhanger || ''}\nEnd of previous episode (continue from here, do not recap):\n${a.prevTail || '(this is episode 1)'}`;
+  }
+  return `请撰写第${a.episodeNumber}集《${a.title || ''}》。\n本集目标：${a.goal || ''}\n本集分配的情节点：\n${points}\n开场钩子（第一拍必须呈现）：${a.openingHook || ''}\n结尾悬念（最后一拍必须落在此处）：${a.cliffhanger || ''}\n上一集结尾（从此处自然衔接，禁止复述）：\n${a.prevTail || '（本集为第1集）'}`;
+}
+
+/**
+ * Gate 1 覆盖检查：system prompt（锁定 JSON 结论格式）
+ */
+function getCoverageCheckSystemPrompt(cfg) {
+  const jsonNote = `\n\n**输出格式（必须严格遵守）**：\n返回 JSON 对象：{ "covered_ids": ["P1"], "missing_ids": [], "hook_ok": true, "cliffhanger_ok": true, "notes": "简短说明" }\n**必须只返回纯 JSON，不要 markdown。**`;
+  if (isEnglish(cfg)) {
+    return `You are a strict script QC reviewer. Given a list of plot points assigned to an episode and the episode script, verify which plot points are actually depicted in the text. Judge ONLY from the text; no benefit of the doubt. Also verify the script opens on the given hook action and ends on the given cliffhanger question.${jsonNote}`;
+  }
+  // Tiêu chí phán định lấy từ pack qc-gates (nguồn chân lý duy nhất), body chỉ giữ vai trò
+  const packs = rulepackService.composePacks(['qc-gates']);
+  return `你是一位严格的剧本质检员。按下列质检门规则核对本集剧本与大纲。${packs ? `\n\n${packs}` : ''}${jsonNote}`;
+}
+
+/**
+ * Gate 1 覆盖检查：user prompt
+ */
+function buildCoverageCheckUserPrompt(cfg, args) {
+  const a = args || {};
+  const points = (a.plotPoints || []).map((p) => `${p.id}: ${p.text}`).join('\n');
+  if (isEnglish(cfg)) {
+    return `Episode ${a.episodeNumber}\nAssigned plot points:\n${points}\nRequired opening hook: ${a.openingHook || ''}\nRequired cliffhanger: ${a.cliffhanger || ''}\n\nScript:\n${a.scriptContent || ''}`;
+  }
+  return `第${a.episodeNumber}集\n分配的情节点：\n${points}\n要求的开场钩子：${a.openingHook || ''}\n要求的结尾悬念：${a.cliffhanger || ''}\n\n剧本正文：\n${a.scriptContent || ''}`;
+}
+
+/**
  * 返回指定提示词 key 的可编辑默认正文（中文，不含动态锁定部分）。
  * promptOverrides.js 调用此函数，确保 UI 展示的内容与 promptI18n.js 始终一致。
  */
@@ -1022,6 +1073,9 @@ function getDefaultPromptBody(key) {
 
     case 'prop_extraction':
       return '你是一位专业的剧本道具分析师，擅长从剧本中提取具有视觉特征的关键道具。\n\n你的任务是根据提供的剧本内容，提取并整理所有对剧情有重要作用或有特殊视觉特征的关键道具。\n\n要求：\n1. 只提取对剧情发展有重要作用、或有特殊视觉特征的关键道具。\n2. 普通的生活用品（如普通的杯子、笔）如果无特殊剧情意义不需要提取。\n3. 归属者、剧中人名等**只**写在 "description"，**不要**写进 "image_prompt"。\n4. "image_prompt" 按项目语言撰写（中文项目优先用中文），按「产品主图 / 资产白模照」标准撰写：只描述该道具本体（造型、材质、颜色、工艺与磨损），并强制纯色无缝棚拍背景、无场景无杂物。匹配项目中文提示词语音（融入真实尺度、次要元素原则）。\n5. "image_prompt" 须明确排除人物、手、家具、台面、其他物体与环境叙事元素。\n6. "image_prompt" **禁止**出现剧本人名、地名、组织名、台词、剧情专有词；用泛化视觉词替代，且**禁止无依据扩写**（不凭空加配饰、品牌叙事、煽情形容词）。';
+
+    case 'episode_script_system':
+      return '你是一位专业编剧。你的任务是严格按照分集大纲撰写"单独一集"约800字的剧本：以 opening_hook 的动作直接开场，只使用本集被分配的情节点，结尾精确落在 cliffhanger 的未回答问题上。禁止直接说出情绪名称——通过动作、潜台词与具体物理细节表现情绪。可包含场景描述、角色动作与对话，但不要输出分镜格式或场次标记。';
 
     case 'story_outline_system':
       return '你是一位剧本统筹（总编剧）。你的任务是：提取故事梗概中的情节点（plot points），把它们分配到各集，并为每一集设计开场钩子与结尾悬念。\n\n要求：\n1. 每个情节点必须且只能分配到一集，不遗漏、不重复。\n2. 允许虚构丰富细节，但禁止虚构矛盾于梗概的重大事件。\n3. opening_hook 必须是开场3-5秒内可拍摄的具体动作或冲突，禁止旁白。\n4. cliffhanger 必须切在未回答的问题上，不切在答案上。\n5. 若用户要求的集数与故事容量不符（每集约1-3个情节点为宜），在 episode_count_suggestion 给出建议集数及理由。\n6. 每3-5集安排一次改变局势的重大揭示。';
@@ -1050,6 +1104,8 @@ function getLockedSuffix(key) {
   switch (key) {
     case 'story_expansion_system':
       return null;
+    case 'episode_script_system':
+      return '\n\n**输出格式（必须严格遵守）**：返回 JSON 对象 { "title": "...", "content": "约800字剧本正文" }。**必须只返回纯 JSON，不要 markdown。**';
     case 'story_outline_system':
       return '\n\n**输出格式（必须严格遵守）**：返回一个 JSON 对象，包含 plot_points、episode_count_suggestion、episode_count_reason、episodes（每项含 episode/title/goal/plot_point_ids/opening_hook/cliffhanger）。**必须只返回纯 JSON 对象，不要 markdown。**';
     case 'storyboard_system':
@@ -1648,6 +1704,10 @@ module.exports = {
   buildStoryExpansionUserPrompt,
   getStoryOutlineSystemPrompt,
   buildStoryOutlineUserPrompt,
+  getEpisodeScriptSystemPrompt,
+  buildEpisodeScriptUserPrompt,
+  getCoverageCheckSystemPrompt,
+  buildCoverageCheckUserPrompt,
   getRolePolishPrompt,
   getRoleGenerateImagePrompt,
   getScenePolishPrompt,
