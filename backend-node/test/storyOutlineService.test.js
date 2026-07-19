@@ -98,3 +98,33 @@ describe('save/get outline', () => {
     assert.deepEqual(svc.getOutline(db, 7).coverage, { 1: { missing_ids: [] } });
   });
 });
+
+describe('parseEpisodeScriptResponse', () => {
+  it('parses JSON object {title, content}', () => {
+    const out = svc.parseEpisodeScriptResponse('{"title":"初遇","content":"正文……"}', 1, null);
+    assert.equal(out.title, '初遇');
+    assert.equal(out.content, '正文……');
+  });
+
+  it('falls back to raw text as content', () => {
+    const out = svc.parseEpisodeScriptResponse('纯文本剧本', 3, null);
+    assert.equal(out.title, '第3集');
+    assert.equal(out.content, '纯文本剧本');
+  });
+});
+
+describe('upsertEpisode', () => {
+  it('inserts then updates without soft-deleting other episodes', () => {
+    const db = createTestDb();
+    svc.upsertEpisode(db, 7, { episode_number: 1, title: 'T1', script_content: 'A' });
+    svc.upsertEpisode(db, 7, { episode_number: 2, title: 'T2', script_content: 'B' });
+    svc.upsertEpisode(db, 7, { episode_number: 2, title: 'T2x', script_content: 'B2' });
+    const rows = db
+      .prepare('SELECT episode_number, title, script_content, deleted_at FROM episodes WHERE drama_id = 7 ORDER BY episode_number')
+      .all();
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].deleted_at, null); // tập 1 KHÔNG bị xóa mềm khi upsert tập 2
+    assert.equal(rows[1].title, 'T2x');
+    assert.equal(rows[1].script_content, 'B2');
+  });
+});

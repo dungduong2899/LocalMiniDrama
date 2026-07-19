@@ -182,6 +182,21 @@ function setupRouter(cfg, db, log) {
     }
   });
 
+  // 按已确认大纲逐集生成剧本 + Gate 1 覆盖检查（异步任务）
+  r.post('/generation/story-from-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const taskId = storyOutlineService.startEpisodesFromOutline(db, log, req.body || {});
+      response.success(res, { task_id: taskId, status: 'pending' });
+    } catch (err) {
+      log.error('generation/story-from-outline', { error: err.message });
+      if (err.message && (err.message.includes('必填') || err.message.includes('不存在'))) {
+        return response.badRequest(res, err.message);
+      }
+      response.internalError(res, err.message || '创建任务失败');
+    }
+  });
+
   // ---------- character-library ----------
   r.get('/character-library', charLibrary.list);
   r.post('/character-library', charLibrary.create);
