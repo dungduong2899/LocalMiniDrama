@@ -1617,7 +1617,8 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 - [ ] **Step 1: Chạy toàn bộ test backend**
 
-Run (từ `backend-node/`): `node --test test/`
+Run (từ `backend-node/`): `node --test`
+(LƯU Ý: `node --test test/` hoặc `node --test test` — truyền thẳng đường dẫn thư mục — bị lỗi `Cannot find module .../test` trên Node v24.11.1 vì runner cố `require()` path đó thay vì quét thư mục. Chạy bare `node --test` (không đối số) để tự động quét toàn bộ `test/*.test.js`; đã xác minh cách này chạy đúng 41 test baseline hiện có.)
 Expected: PASS toàn bộ (bao gồm các test cũ — xác nhận không phá gì)
 
 - [ ] **Step 2: E2E thủ công luồng đầy đủ**
@@ -1632,7 +1633,7 @@ Với backend + frontend dev server đang chạy:
 
 - [ ] **Step 3: Sửa lỗi phát hiện (nếu có), chạy lại test**
 
-Run: `node --test test/`
+Run (từ `backend-node/`): `node --test`
 Expected: PASS
 
 - [ ] **Step 4: Commit cuối**
