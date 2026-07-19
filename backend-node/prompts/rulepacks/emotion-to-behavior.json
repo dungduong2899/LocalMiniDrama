@@ -1,0 +1,20 @@
+{
+  "description": "情绪→可拍摄行为翻译表。生成图像/视频提示词时禁止写情绪名称，必须查表翻译成行为描述。",
+  "rules": [
+    "提示词中禁止出现情绪名称本身，必须使用行为描述",
+    "每组行为按 起始→变化→结束 的进程书写",
+    "优先描写眼睛与嘴部（特写最清晰的部位）"
+  ],
+  "table": [
+    { "key": "sad_repressed", "zh": "压抑的悲伤", "prompt_zh": "试图保持平静但嘴角下垂，下巴微颤，眼睛湿润，缓慢眨眼后垂下目光", "prompt_en": "tries to keep a neutral face but lip corners pull down, chin trembles slightly, eyes glisten, she blinks slowly and looks down" },
+    { "key": "burst_crying", "zh": "崩溃大哭", "prompt_zh": "克制的表情瞬间崩塌，眉头紧蹙上扬，捂住嘴，肩膀无声抽动", "prompt_en": "her composed face cracks, brows pull together and up, she covers her mouth, shoulders shake with silent sobs" },
+    { "key": "shock", "zh": "震惊", "prompt_zh": "表情在动作中途凝固，眼睛缓缓睁大，嘴唇微张，后退半步，手抓住桌沿", "prompt_en": "her expression freezes mid-motion, eyes widen slowly, lips part, she takes a small step back, hand grips the table edge" },
+    { "key": "anger_suppressed", "zh": "压抑的愤怒", "prompt_zh": "下颌收紧，鼻翼微张，用鼻子缓慢呼气，凝视不眨眼，嘴唇抿成一条线", "prompt_en": "jaw tightens, nostrils flare slightly, he exhales slowly through his nose, stares without blinking, lips pressed thin" },
+    { "key": "fake_smile", "zh": "假笑/社交微笑", "prompt_zh": "礼貌的微笑但未达眼底，脸颊抬起而眼神平淡疲惫，笑容提前一秒褪去", "prompt_en": "a polite smile that doesn't reach her eyes, cheeks lift but eyes stay flat and tired, smile fades a second too early" },
+    { "key": "genuine_joy", "zh": "真心的喜悦", "prompt_zh": "笑容缓缓绽开，眼角皱起，轻声笑出来并害羞地移开视线", "prompt_en": "a genuine smile spreading slowly, eyes crinkle at the corners, she laughs softly and looks away shyly" },
+    { "key": "fear", "zh": "恐惧", "prompt_zh": "呼吸加快，目光扫向门口，用力吞咽，手指反复揉搓衣袖", "prompt_en": "breath quickens, eyes dart to the door, she swallows hard, fingers fidget with her sleeve" },
+    { "key": "contempt", "zh": "轻蔑（反派）", "prompt_zh": "一侧嘴角缓缓上挑，下巴微抬，眯起眼睛带着冷冷的玩味", "prompt_en": "one corner of his mouth lifts in a slow smirk, chin tilts up, eyes narrow with cold amusement" },
+    { "key": "hidden_love", "zh": "隐忍的爱意", "prompt_zh": "趁对方不注意时目光温柔地注视，对方转身时立刻压下浮起的微笑", "prompt_en": "she watches him with soft eyes while he isn't looking, a faint smile she suppresses when he turns around" },
+    { "key": "resolve", "zh": "下定决心（反击）", "prompt_zh": "用手背擦去眼泪，咬紧下颌，眼神变硬，抬起下巴直视前方", "prompt_en": "she wipes her tears with the back of her hand, jaw sets, eyes harden, she lifts her chin and looks straight ahead" }
+  ]
+}
