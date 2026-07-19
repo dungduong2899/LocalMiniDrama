@@ -142,6 +142,46 @@ function setupRouter(cfg, db, log) {
     }
   });
 
+  // 分集大纲：从梗概生成（同步，1次 LLM 调用）
+  r.post('/generation/story-outline', async (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const result = await storyOutlineService.generateOutline(db, log, req.body || {});
+      response.success(res, result);
+    } catch (err) {
+      log.error('generation/story-outline', { error: err.message });
+      if (err.message && (err.message.includes('必填') || err.message.includes('请提供'))) {
+        return response.badRequest(res, err.message);
+      }
+      response.internalError(res, err.message || '生成分集大纲失败');
+    }
+  });
+
+  r.get('/dramas/:id/story-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    const row = storyOutlineService.getOutline(db, Number(req.params.id));
+    response.success(res, row || {});
+  });
+
+  r.put('/dramas/:id/story-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const content = (req.body || {}).content;
+      if (!content || !Array.isArray(content.episodes)) {
+        return response.badRequest(res, 'content.episodes 必填');
+      }
+      const v = storyOutlineService.validateOutline(content, content.episodes.length);
+      if (!v.ok) {
+        return response.badRequest(res, '大纲校验失败：' + v.errors.join('；'));
+      }
+      const row = storyOutlineService.saveOutline(db, Number(req.params.id), content, 'edited');
+      response.success(res, row);
+    } catch (err) {
+      log.error('put story-outline', { error: err.message });
+      response.internalError(res, err.message || '保存大纲失败');
+    }
+  });
+
   // ---------- character-library ----------
   r.get('/character-library', charLibrary.list);
   r.post('/character-library', charLibrary.create);

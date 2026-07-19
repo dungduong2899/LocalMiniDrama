@@ -1,5 +1,8 @@
 // 分集大纲：解析/校验/存取（AI 调用在 Task 4/6 补充）
 const { safeParseAIJSON } = require('../utils/safeJson');
+const aiClient = require('./aiClient');
+const promptI18n = require('./promptI18n');
+const loadConfig = require('../config').loadConfig;
 
 function parseOutlineResponse(rawText, log) {
   let parsed = null;
@@ -77,4 +80,45 @@ function saveCoverage(db, dramaId, coverage) {
     .run(JSON.stringify(coverage || {}), Number(dramaId));
 }
 
-module.exports = { parseOutlineResponse, validateOutline, saveOutline, getOutline, saveCoverage };
+async function generateOutline(db, log, body) {
+  const premise = (body.premise || '').trim();
+  if (!premise) throw new Error('请提供故事梗概');
+  const dramaId = Number(body.drama_id);
+  if (!dramaId) throw new Error('drama_id 必填');
+  const cfg = loadConfig();
+  const episodeCount = Math.max(1, Math.floor(Number(body.episode_count) || 1));
+  const systemPrompt = promptI18n.getStoryOutlineSystemPrompt(cfg);
+  const userPrompt = promptI18n.buildStoryOutlineUserPrompt(cfg, premise, body.style || null, body.type || null, episodeCount);
+
+  let outline = null;
+  let lastErrors = [];
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const raw = await aiClient.generateText(db, log, 'text', userPrompt, systemPrompt, {
+      scene_key: 'story_outline',
+      temperature: attempt === 0 ? 0.7 : 0.4,
+      min_max_tokens: Math.max(1500, episodeCount * 400),
+    });
+    const parsed = parseOutlineResponse(raw, log);
+    if (!parsed) {
+      lastErrors = ['AI 返回内容无法解析为大纲 JSON'];
+      continue;
+    }
+    const v = validateOutline(parsed, episodeCount);
+    if (v.ok) {
+      outline = parsed;
+      break;
+    }
+    lastErrors = v.errors;
+    log && log.warn && log.warn('Outline validate failed, retrying', { attempt, errors: v.errors.slice(0, 5) });
+  }
+  if (!outline) throw new Error('生成分集大纲失败：' + lastErrors.join('；'));
+
+  const warnings = [];
+  if (outline.episode_count_suggestion && outline.episode_count_suggestion !== episodeCount) {
+    warnings.push(`AI 建议 ${outline.episode_count_suggestion} 集：${outline.episode_count_reason || '容量更合适'}`);
+  }
+  saveOutline(db, dramaId, outline, 'draft');
+  return { outline, warnings };
+}
+
+module.exports = { parseOutlineResponse, validateOutline, saveOutline, getOutline, saveCoverage, generateOutline };
