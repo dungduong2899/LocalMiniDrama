@@ -221,7 +221,7 @@
                       style="width: 100px"
                     />
                   </div>
-                  <el-button type="primary" :loading="isStoryGenRunning" @click="onGenerateStory">
+                  <el-button type="primary" :loading="storyOutline.generating.value" @click="onGenerateStoryOutline">
                     Tạo kịch bản
                   </el-button>
                   <el-button plain @click="showNovelImport = true">
@@ -229,6 +229,17 @@
                     Nhập tiểu thuyết
                   </el-button>
                 </div>
+                <StoryOutlinePanel
+                  :outline="storyOutline.outline.value"
+                  :coverage="storyOutline.coverage.value"
+                  :warnings="storyOutline.warnings.value"
+                  :writing="storyOutline.writing.value"
+                  :status="storyOutline.outlineStatus.value"
+                  @update:outline="(v) => (storyOutline.outline.value = v)"
+                  @confirm="onConfirmOutline"
+                  @rewrite-episode="onRewriteEpisode"
+                  @regenerate="onGenerateStoryOutline"
+                />
               </div>
               <div class="script-sub-divider" />
               <div id="anchor-script" class="script-sub-block">
@@ -2635,6 +2646,7 @@ import { exportStoryboardSheet } from '@/utils/exportStoryboardSheet'
 import StylePickerButton from '@/components/StylePickerButton.vue'
 import AIConfigContent from '@/components/AIConfigContent.vue'
 import UniversalSegmentOmniAtEditor from '@/components/UniversalSegmentOmniAtEditor.vue'
+import StoryOutlinePanel from '@/components/StoryOutlinePanel.vue'
 import {
   generationStyleOptions,
   getStylePromptEn,
@@ -2644,6 +2656,7 @@ import {
 } from '@/constants/styleOptions'
 import { useNavigation } from '@/composables/filmCreate/useNavigation'
 import { runGenerateStoryFromPremise } from '@/composables/useStoryGeneration'
+import { useStoryOutline } from '@/composables/useStoryOutline'
 import { useCharacters } from '@/composables/filmCreate/useCharacters'
 import { useProps as usePropsComposable } from '@/composables/filmCreate/useProps'
 import { useScenes } from '@/composables/filmCreate/useScenes'
@@ -2654,6 +2667,7 @@ const store = useFilmStore()
 const genStore = useGenerationTaskStore()
 const { isDark, toggle: toggleTheme } = useTheme()
 const { videoResolution: storeVideoResolution } = storeToRefs(store)
+const storyOutline = useStoryOutline()
 
 // ── Composable: Navigation ─────────────────────────────
 const { navCollapsed, storyboardMenuExpanded, toggleNav, scrollToTop, scrollToAnchor } = useNavigation()
@@ -4989,6 +5003,72 @@ async function onGenerateStory() {
       })
     },
   })
+}
+
+async function onGenerateStoryOutline() {
+  const text = (storyInput.value || '').trim()
+  if (!text) {
+    ElMessage.warning('Vui lòng nhập story premise trước')
+    return
+  }
+  // Nếu chưa có drama thì tạo trước (tái dùng logic tạo drama trong runGenerateStoryFromPremise bằng cách gọi dramaAPI.create tương tự)
+  let id = store.dramaId
+  if (!id) {
+    const drama = await dramaAPI.create({
+      title: scriptTitle.value || 'Câu chuyện mới',
+      description: text,
+      genre: storyType.value || undefined,
+      style: generationStyle.value || undefined,
+      metadata: { story_style: storyStyle.value || undefined, aspect_ratio: projectAspectRatio.value || '16:9' },
+    })
+    store.setDrama(drama)
+    id = drama.id
+    if (route?.params?.id === 'new') router.replace('/film/' + id)
+  }
+  await storyOutline.generateOutline({
+    dramaId: id,
+    premise: text,
+    style: storyStyle.value,
+    type: storyType.value,
+    episodeCount: storyEpisodeCount.value,
+  })
+}
+
+async function onConfirmOutline() {
+  const id = store.dramaId
+  const meta = {
+    dramaId: id,
+    episodeId: 0,
+    dramaTitle: store.drama?.title || 'Dự án',
+    episodeNumber: 1,
+    resourceType: GEN_RESOURCE.GENERATE_STORY,
+    resourceId: Number(id),
+    label: `${store.drama?.title || 'Dự án'} viết kịch bản theo đề cương`,
+  }
+  const res = await storyOutline.confirmAndWrite({
+    dramaId: id,
+    pollTask,
+    meta,
+    onSaved: () => loadDrama?.(),
+  })
+  if (res.ok) {
+    await loadDrama()
+    const firstEp = (store.drama?.episodes || [])[0]
+    if (firstEp) {
+      selectedEpisodeId.value = firstEp.id
+      onEpisodeSelect(firstEp.id)
+    }
+  }
+}
+
+function onRewriteEpisode(n) {
+  const id = store.dramaId
+  const meta = {
+    dramaId: id, episodeId: 0, dramaTitle: store.drama?.title || 'Dự án', episodeNumber: n,
+    resourceType: GEN_RESOURCE.GENERATE_STORY, resourceId: Number(id),
+    label: `${store.drama?.title || 'Dự án'} viết lại tập ${n}`,
+  }
+  return storyOutline.rewriteEpisode({ dramaId: id, episodeNumber: n, pollTask, meta, onSaved: () => loadDrama?.() })
 }
 
 function openSelectScriptDialog() {
@@ -8062,6 +8142,7 @@ function applyRouteToStore() {
       selectedEpisodeId.value = Number(route.query.episode)
     }
     loadDrama()
+    storyOutline.loadOutline(store.dramaId)
   } else {
     store.reset()
     storyInput.value = ''
