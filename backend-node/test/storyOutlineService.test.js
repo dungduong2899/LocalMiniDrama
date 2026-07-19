@@ -113,6 +113,26 @@ describe('parseEpisodeScriptResponse', () => {
   });
 });
 
+describe('shouldRefetchPrevTail', () => {
+  it('always refetches on the first loop iteration', () => {
+    const targets = [{ episode: 3 }, { episode: 5 }];
+    assert.equal(svc.shouldRefetchPrevTail(targets, 0), true);
+  });
+
+  it('trusts the carried-over prevTail when targets are contiguous (1,2,3)', () => {
+    const targets = [{ episode: 1 }, { episode: 2 }, { episode: 3 }];
+    assert.equal(svc.shouldRefetchPrevTail(targets, 1), false);
+    assert.equal(svc.shouldRefetchPrevTail(targets, 2), false);
+  });
+
+  it('refetches from DB when targets skip an episode (episode_numbers: [3, 5])', () => {
+    // Tập 4 không nằm trong targets nên prevTail của tập 5 KHÔNG được lấy từ
+    // prevTail còn sót lại sau khi viết tập 3 — phải refetch tập 4 từ DB.
+    const targets = [{ episode: 3 }, { episode: 5 }];
+    assert.equal(svc.shouldRefetchPrevTail(targets, 1), true);
+  });
+});
+
 describe('upsertEpisode', () => {
   it('inserts then updates without soft-deleting other episodes', () => {
     const db = createTestDb();

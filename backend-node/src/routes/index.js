@@ -159,8 +159,13 @@ function setupRouter(cfg, db, log) {
 
   r.get('/dramas/:id/story-outline', (req, res) => {
     const storyOutlineService = require('../services/storyOutlineService');
-    const row = storyOutlineService.getOutline(db, Number(req.params.id));
-    response.success(res, row || {});
+    try {
+      const row = storyOutlineService.getOutline(db, Number(req.params.id));
+      response.success(res, row || {});
+    } catch (err) {
+      log.error('get story-outline', { error: err.message });
+      response.internalError(res, err.message || '获取分集大纲失败');
+    }
   });
 
   r.put('/dramas/:id/story-outline', (req, res) => {

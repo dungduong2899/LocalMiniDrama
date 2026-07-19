@@ -190,6 +190,16 @@ async function checkEpisodeCoverage(db, log, cfg, outlineEp, plotPoints, scriptC
   return { missing_ids: [], hook_ok: true, cliffhanger_ok: true, notes: '检查失败，默认通过' };
 }
 
+// Quyết định xem prevTail của vòng lặp có nên được refetch lại từ DB hay không.
+// true  = phải refetch (vòng đầu tiên, HOẶC tập hiện tại không liền kề tập ngay trước nó
+//         trong mảng targets — nghĩa là có "khoảng trống" do episode_numbers không liên tục).
+// false = có thể tin tưởng prevTail còn giữ lại từ cuối vòng lặp trước (tập trước đó vừa
+//         được viết trong CHÍNH vòng lặp này và đúng là tập liền kề).
+function shouldRefetchPrevTail(targets, i) {
+  if (i === 0) return true;
+  return Number(targets[i].episode) !== Number(targets[i - 1].episode) + 1;
+}
+
 async function processEpisodesFromOutline(db, log, taskId, req) {
   const dramaId = Number(req.drama_id);
   try {
@@ -227,8 +237,8 @@ async function processEpisodesFromOutline(db, log, taskId, req) {
       const pct = 5 + Math.floor((i / targets.length) * 80);
       taskService.updateTaskStatus(db, taskId, 'processing', pct, `正在撰写第${ep.episode}集…`);
 
-      if (i === 0 && ep.episode > 1) {
-        prevTail = tailOf(getScriptOf(Number(ep.episode) - 1));
+      if (shouldRefetchPrevTail(targets, i)) {
+        prevTail = ep.episode > 1 ? tailOf(getScriptOf(Number(ep.episode) - 1)) : '';
       }
 
       const plotTexts = (ep.plot_point_ids || []).map((id) => (pointById.get(id) || {}).text).filter(Boolean);
@@ -306,4 +316,5 @@ module.exports = {
   checkEpisodeCoverage,
   processEpisodesFromOutline,
   startEpisodesFromOutline,
+  shouldRefetchPrevTail,
 };
