@@ -142,6 +142,66 @@ function setupRouter(cfg, db, log) {
     }
   });
 
+  // 分集大纲：从梗概生成（同步，1次 LLM 调用）
+  r.post('/generation/story-outline', async (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const result = await storyOutlineService.generateOutline(db, log, req.body || {});
+      response.success(res, result);
+    } catch (err) {
+      log.error('generation/story-outline', { error: err.message });
+      if (err.message && (err.message.includes('必填') || err.message.includes('请提供') || err.message.includes('不存在'))) {
+        return response.badRequest(res, err.message);
+      }
+      response.internalError(res, err.message || '生成分集大纲失败');
+    }
+  });
+
+  r.get('/dramas/:id/story-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const row = storyOutlineService.getOutline(db, Number(req.params.id));
+      response.success(res, row || {});
+    } catch (err) {
+      log.error('get story-outline', { error: err.message });
+      response.internalError(res, err.message || '获取分集大纲失败');
+    }
+  });
+
+  r.put('/dramas/:id/story-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const content = (req.body || {}).content;
+      if (!content || !Array.isArray(content.episodes)) {
+        return response.badRequest(res, 'content.episodes 必填');
+      }
+      const v = storyOutlineService.validateOutline(content, content.episodes.length);
+      if (!v.ok) {
+        return response.badRequest(res, '大纲校验失败：' + v.errors.join('；'));
+      }
+      const row = storyOutlineService.saveOutline(db, Number(req.params.id), content, 'edited');
+      response.success(res, row);
+    } catch (err) {
+      log.error('put story-outline', { error: err.message });
+      response.internalError(res, err.message || '保存大纲失败');
+    }
+  });
+
+  // 按已确认大纲逐集生成剧本 + Gate 1 覆盖检查（异步任务）
+  r.post('/generation/story-from-outline', (req, res) => {
+    const storyOutlineService = require('../services/storyOutlineService');
+    try {
+      const taskId = storyOutlineService.startEpisodesFromOutline(db, log, req.body || {});
+      response.success(res, { task_id: taskId, status: 'pending' });
+    } catch (err) {
+      log.error('generation/story-from-outline', { error: err.message });
+      if (err.message && (err.message.includes('必填') || err.message.includes('不存在'))) {
+        return response.badRequest(res, err.message);
+      }
+      response.internalError(res, err.message || '创建任务失败');
+    }
+  });
+
   // ---------- character-library ----------
   r.get('/character-library', charLibrary.list);
   r.post('/character-library', charLibrary.create);
